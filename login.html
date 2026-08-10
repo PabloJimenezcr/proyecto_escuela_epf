@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Plataforma institucional de la Escuela Enrique Pinto Fernández."
+    />
+    <meta name="author" content="Escuela Enrique Pinto Fernández" />
+    <title>Iniciar sesión | Escuela Enrique Pinto Fernández</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="sass/style.css" />
+  </head>
+
+  <body class="login-page">
+    <main class="login">
+      <section class="login__visual">
+        <div class="login__orb login__orb--one"></div>
+
+        <div class="login__orb login__orb--two"></div>
+
+        <div class="login__grid"></div>
+
+        <div class="login__visual-content">
+          <a href="index.html" class="brand brand--login">
+            <span class="brand__icon">
+              <i class="ri-school-fill"></i>
+            </span>
+
+            <span class="brand__text">
+              Escuela
+
+              <strong> Enrique Pinto Fernández </strong>
+            </span>
+          </a>
+
+          <!-- =================================================
+                     MENSAJE PRINCIPAL
+                ================================================== -->
+
+          <div class="login__message">
+            <span class="login__eyebrow">
+              <i class="ri-sparkling-2-fill"></i>
+
+              Plataforma educativa
+            </span>
+
+            <h1>
+              La educación abre
+
+              <span> nuevos caminos. </span>
+            </h1>
+
+            <p>
+              Bienvenido a la plataforma institucional de la Escuela Enrique
+              Pinto Fernández. Un espacio creado para nuestra comunidad
+              educativa.
+            </p>
+          </div>
+
+          <!-- =================================================
+                     CARACTERÍSTICAS
+                ================================================== -->
+
+          <div class="login__features">
+            <!-- FEATURE -->
+
+            <div class="login__feature">
+              <div class="login__feature-icon">
+                <i class="ri-book-open-fill"></i>
+              </div>
+
+              <div>
+                <strong> Información académica </strong>
+
+                <span>
+                  Consulta información educativa de manera sencilla.
+                </span>
+              </div>
+            </div>
+
+            <!-- FEATURE -->
+
+            <div class="login__feature">
+              <div class="login__feature-icon">
+                <i class="ri-notification-3-fill"></i>
+              </div>
+
+              <div>
+                <strong> Comunicados </strong>
+
+                <span>
+                  Mantente informado sobre las novedades de la escuela.
+                </span>
+              </div>
+            </div>
+
+            <!-- FEATURE -->
+
+            <div class="login__feature">
+              <div class="login__feature-icon">
+                <i class="ri-shield-check-fill"></i>
+              </div>
+
+              <div>
+                <strong> Plataforma segura </strong>
+
+                <span> Tu información se encuentra protegida. </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- =================================================
+                     FRASE
+                ================================================== -->
+
+          <div class="login__quote">
+            <i class="ri-double-quotes-l"></i>
+
+            <p>
+              "La educación es el arma más poderosa que puedes usar para cambiar
+              el mundo."
+            </p>
+
+            <span> — Nelson Mandela </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+             PANEL LOGIN
+        ====================================================== -->
+
+      <section class="login__form-container">
+        <div class="login__form-wrapper">
+          <!-- =================================================
+                     REGRESAR
+                ================================================== -->
+
+          <a href="index.html" class="login__back">
+            <i class="ri-arrow-left-line"></i>
+
+            Volver al inicio
+          </a>
+
+          <!-- =================================================
+                     HEADER DEL FORMULARIO
+                ================================================== -->
+
+          <div class="login__form-header">
+            <!-- LOGO MOBILE -->
+
+            <div class="login__mobile-logo">
+              <div>
+                <i class="ri-school-fill"></i>
+              </div>
+            </div>
+
+            <span> Bienvenido </span>
+
+            <h2>Inicia sesión</h2>
+
+            <p>
+              Ingresa tus credenciales para acceder a la plataforma educativa.
+            </p>
+          </div>
+
+          <!-- =================================================
+                     FORMULARIO
+                ================================================== -->
+
+          <form id="loginForm" class="login-form">
+            <!-- =================================================
+                         CORREO
+                    ================================================== -->
+
+            <div class="form-group">
+              <label for="email"> Correo electrónico </label>
+
+              <div class="input-wrapper">
+                <i class="ri-mail-line"></i>
+
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Ingresa tu correo"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- =================================================
+                         CONTRASEÑA
+                    ================================================== -->
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <label for="password"> Contraseña </label>
+
+                <a href="#"> ¿Olvidaste tu contraseña? </a>
+              </div>
+
+              <div class="input-wrapper">
+                <i class="ri-lock-2-line"></i>
+
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Ingresa tu contraseña"
+                  autocomplete="current-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  id="togglePassword"
+                  aria-label="Mostrar contraseña"
+                >
+                  <i class="ri-eye-line"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="login-form__options">
+              <label class="remember">
+                <input type="checkbox" id="remember" />
+
+                <span class="remember__check">
+                  <i class="ri-check-line"></i>
+                </span>
+
+                <span> Recordar sesión </span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn login-form__submit">
+              <span> Iniciar sesión </span>
+
+              <i class="ri-arrow-right-line"></i>
+            </button>
+
+            <div class="login-form__divider">
+              <span> Acceso institucional </span>
+            </div>
+
+            <div class="login-form__security">
+              <i class="ri-shield-check-line"></i>
+
+              <span>
+                Tu información personal está protegida mediante medidas de
+                seguridad institucional.
+              </span>
+            </div>
+          </form>
+
+          <div class="login__footer">
+            <p>
+              ¿Necesitas ayuda?
+
+              <a href="#"> Contacta al soporte de la escuela </a>
+            </p>
+
+            <span> © 2026 Escuela Enrique Pinto Fernández </span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="js/login.js"></script>
+  </body>
+</html>
+```

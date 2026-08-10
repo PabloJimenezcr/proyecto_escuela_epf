@@ -1,0 +1,179 @@
+.header {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+
+    z-index: $z-header;
+}
+
+.navbar {
+    padding: 25px 0;
+
+    transition: $transition-normal;
+
+    .container {
+        position: relative;
+    }
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+
+    &__icon {
+        width: 46px;
+        height: 46px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 14px;
+
+        background: $accent-color;
+
+        color: $primary-dark;
+
+        font-size: 24px;
+
+        box-shadow: 0 8px 25px rgba($accent-color, 0.2);
+    }
+
+    &__text {
+        display: flex;
+        flex-direction: column;
+
+        color: $white;
+
+        font-family: $font-title;
+        font-size: 0.85rem;
+        font-weight: $font-medium;
+
+        line-height: 1.1;
+
+        strong {
+            font-size: 1rem;
+            font-weight: $font-bold;
+        }
+    }
+}
+
+.navbar-nav {
+    gap: 8px;
+}
+
+.nav-link {
+    position: relative;
+
+    padding: 10px 16px !important;
+
+    color: rgba($white, 0.78) !important;
+
+    font-family: $font-title;
+    font-size: $text-sm;
+    font-weight: $font-semibold;
+
+    transition: $transition-normal;
+
+    &::after {
+        content: "";
+
+        position: absolute;
+
+        left: 16px;
+        right: 16px;
+        bottom: 4px;
+
+        height: 2px;
+
+        transform: scaleX(0);
+
+        transform-origin: center;
+
+        background: $accent-color;
+
+        transition: transform 0.3s ease;
+    }
+
+    &:hover,
+    &.active {
+        color: $white !important;
+
+        &::after {
+            transform: scaleX(1);
+        }
+    }
+}
+
+.btn-login {
+    @include button-base;
+
+    padding: 12px 20px;
+
+    border-radius: $radius-pill;
+
+    background: $white;
+
+    color: $primary-color;
+
+    box-shadow: $shadow-md;
+
+    &:hover {
+        transform: translateY(-2px);
+
+        background: $accent-color;
+
+        color: $primary-dark;
+
+        box-shadow: 0 12px 30px rgba($accent-color, 0.25);
+    }
+}
+
+.navbar-toggler {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba($white, 0.2) !important;
+
+    border-radius: 12px;
+
+    color: $white;
+
+    font-size: 24px;
+
+    box-shadow: none !important;
+}
+
+@include responsive(lg) {
+    .navbar-collapse {
+        margin-top: 20px;
+
+        padding: 20px;
+
+        border-radius: $radius-lg;
+
+        background: rgba($primary-dark, 0.97);
+
+        backdrop-filter: blur(20px);
+    }
+
+    .navbar-nav {
+        align-items: stretch !important;
+    }
+
+    .nav-link {
+        padding: 12px 5px !important;
+    }
+
+    .btn-login {
+        margin-top: 10px;
+    }
+}

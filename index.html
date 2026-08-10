@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Instituto - Formación académica, innovación y desarrollo integral."
+    />
+
+    <meta name="author" content="Escuela Enrique Pinto Fernández" />
+
+    <title>Escuela Enrique Pinto Fernández</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="sass/style.css" />
+  </head>
+
+  <body>
+    <!-- LOADER, FALTA TRABAJAR 
+    <div class="loader" id="loader">
+      <div class="loader__content">
+        <div class="loader__logo">
+          <div class="loader__logo-icon">
+            <i class="ri-graduation-cap-fill"></i>
+          </div>
+        </div>
+
+        <div class="loader__title">Escuela Enrique Pinto Fernández</div>
+
+        <div class="loader__line">
+          <span></span>
+        </div>
+
+        <p class="loader__text">Preparando tu experiencia...</p>
+      </div>
+    </div>
+
+    -->
+
+    <header class="header">
+      <nav class="navbar navbar-expand-lg">
+        <div class="container">
+          <!-- LOGO -->
+
+          <a href="index.html" class="navbar-brand brand">
+            <span class="brand__icon">
+              <i class="ri-graduation-cap-fill"></i>
+            </span>
+
+            <span class="brand__text">
+              Escuela Enrique
+              <strong>Pinto Fernández</strong>
+            </span>
+          </a>
+
+
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavigation"
+            aria-controls="mainNavigation"
+            aria-expanded="false"
+            aria-label="Abrir navegación"
+          >
+            <i class="ri-menu-3-line"></i>
+          </button>
+
+
+          <div class="collapse navbar-collapse" id="mainNavigation">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+              <li class="nav-item">
+                <a href="#inicio" class="nav-link active"> Inicio </a>
+              </li>
+
+              <li class="nav-item">
+                <a href="#nosotros" class="nav-link"> Nosotros </a>
+              </li>
+
+              <li class="nav-item">
+                <a href="#programas" class="nav-link"> Programas </a>
+              </li>
+
+              <li class="nav-item">
+                <a href="#valores" class="nav-link"> Valores </a>
+              </li>
+
+              <li class="nav-item ms-lg-3">
+                <a href="login.html" class="btn btn-login">
+                  <i class="ri-login-circle-line"></i>
+
+                  Iniciar sesión
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="page-content" id="pageContent">
+      <section class="hero" id="inicio">
+        <div class="hero__background"></div>
+
+        <div class="container">
+          <div class="row align-items-center min-vh-100">
+            <div class="col-lg-7">
+              <div class="hero__content">
+                <span class="hero__badge">
+                  <i class="ri-sparkling-2-fill"></i>
+
+                  Educación que transforma
+                </span>
+
+                <h1>
+                  Construimos el
+
+                  <span>futuro</span>
+
+                  desde hoy.
+                </h1>
+
+                <p>
+                  Somos una institución comprometida con la formación integral,
+                  la innovación y el desarrollo de estudiantes preparados para
+                  enfrentar los desafíos del mundo actual.
+                </p>
+
+                <div class="hero__buttons">
+                  <a href="#nosotros" class="btn btn-primary-custom">
+                    Conoce nuestra institución
+
+                    <i class="ri-arrow-right-line"></i>
+                  </a>
+
+                  <a href="#programas" class="btn btn-outline-custom">
+                    <i class="ri-book-open-line"></i>
+
+                    Ver programas
+                  </a>
+                </div>
+
+                <div class="hero__trust">
+                  <div class="hero__trust-item">
+                    <i class="ri-checkbox-circle-fill"></i>
+
+                    <span> Formación integral </span>
+                  </div>
+
+                  <div class="hero__trust-item">
+                    <i class="ri-checkbox-circle-fill"></i>
+
+                    <span> Educación innovadora </span>
+                  </div>
+
+                  <div class="hero__trust-item">
+                    <i class="ri-checkbox-circle-fill"></i>
+
+                    <span> Comunidad educativa </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="hero__visual">
+                <div class="hero__circle"></div>
+
+                <div class="hero__card hero__card--main">
+                  <div class="hero__card-icon">
+                    <i class="ri-graduation-cap-fill"></i>
+                  </div>
+
+                  <span> Nuestra misión </span>
+
+                  <strong>
+                    Formar personas capaces de transformar su entorno.
+                  </strong>
+                </div>
+
+                <div class="hero__floating-card hero__floating-card--top">
+                  <i class="ri-lightbulb-flash-fill"></i>
+
+                  <div>
+                    <small> Innovación </small>
+
+                    <strong> + Educación </strong>
+                  </div>
+                </div>
+
+                <div class="hero__floating-card hero__floating-card--bottom">
+                  <i class="ri-user-heart-fill"></i>
+
+                  <div>
+                    <small> Comunidad </small>
+
+                    <strong> + Crecimiento </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <a href="#nosotros" class="hero__scroll">
+          <span> Descubre más </span>
+
+          <i class="ri-arrow-down-line"></i>
+        </a>
+      </section>
+
+      <section class="stats">
+        <div class="container">
+          <div class="row g-4">
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="ri-user-3-fill"></i>
+
+                <strong> +1,500 </strong>
+
+                <span> Estudiantes </span>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="ri-team-fill"></i>
+
+                <strong> +80 </strong>
+
+                <span> Docentes </span>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="ri-book-open-fill"></i>
+
+                <strong> +25 </strong>
+
+                <span> Programas </span>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="ri-award-fill"></i>
+
+                <strong> 15+ </strong>
+
+                <span> Años formando </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="about section-padding" id="nosotros">
+        <div class="container">
+          <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+              <div class="about__visual">
+                <div class="about__main-card">
+                  <i class="ri-building-4-fill"></i>
+
+                  <span> Desde nuestra escuela </span>
+
+                  <strong>
+                    Creamos oportunidades para crecer, aprender y transformar.
+                  </strong>
+                </div>
+
+                <div class="about__experience">
+                  <strong> 15+ </strong>
+
+                  <span> años de experiencia </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="section-heading">
+                <span class="section-heading__eyebrow">
+                  <i class="ri-school-fill"></i>
+
+                  Sobre nosotros
+                </span>
+
+                <h2>
+                  Más que una escuela,
+
+                  <span> somos una comunidad. </span>
+                </h2>
+
+                <p>
+                  En Instituto Horizonte creemos que la educación es una
+                  herramienta poderosa para generar cambios positivos en las
+                  personas y en la sociedad.
+                </p>
+
+                <p>
+                  Nuestro modelo educativo combina conocimiento, tecnología,
+                  creatividad y valores humanos para brindar una experiencia de
+                  aprendizaje significativa.
+                </p>
+
+                <a href="#valores" class="link-arrow">
+                  Conoce nuestros valores
+
+                  <i class="ri-arrow-right-line"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <section class="programs section-padding" id="programas">
+        <div class="container">
+          <div class="section-heading section-heading--center">
+            <span class="section-heading__eyebrow">
+              <i class="ri-book-mark-fill"></i>
+
+              Formación académica
+            </span>
+
+            <h2>
+              Espacios para
+
+              <span> aprender y crecer. </span>
+            </h2>
+
+            <p>Conoce algunas de nuestras principales áreas de formación.</p>
+          </div>
+
+          <div class="row g-4 mt-4">
+            <div class="col-lg-4 col-md-6">
+              <article class="program-card">
+                <div class="program-card__icon">
+                  <i class="ri-code-s-slash-line"></i>
+                </div>
+
+                <span> Tecnología </span>
+
+                <h3>Innovación y tecnología</h3>
+
+                <p>
+                  Desarrollamos competencias digitales para preparar a nuestros
+                  estudiantes para un mundo cada vez más tecnológico.
+                </p>
+
+                <a href="#">
+                  Explorar área
+
+                  <i class="ri-arrow-right-up-line"></i>
+                </a>
+              </article>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <article class="program-card">
+                <div class="program-card__icon">
+                  <i class="ri-book-2-line"></i>
+                </div>
+
+                <span> Formación </span>
+
+                <h3>Desarrollo académico</h3>
+
+                <p>
+                  Fortalecemos conocimientos y habilidades mediante metodologías
+                  educativas actualizadas.
+                </p>
+
+                <a href="#">
+                  Explorar área
+
+                  <i class="ri-arrow-right-up-line"></i>
+                </a>
+              </article>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <article class="program-card">
+                <div class="program-card__icon">
+                  <i class="ri-global-line"></i>
+                </div>
+
+                <span> Proyección </span>
+
+                <h3>Desarrollo integral</h3>
+
+                <p>
+                  Impulsamos habilidades sociales, liderazgo, creatividad y
+                  pensamiento crítico.
+                </p>
+
+                <a href="#">
+                  Explorar área
+
+                  <i class="ri-arrow-right-up-line"></i>
+                </a>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="values section-padding" id="valores">
+        <div class="container">
+          <div class="row align-items-center g-5">
+            <div class="col-lg-5">
+              <div class="section-heading">
+                <span class="section-heading__eyebrow">
+                  <i class="ri-heart-3-fill"></i>
+
+                  Lo que nos representa
+                </span>
+
+                <h2>
+                  Educamos con
+
+                  <span> propósito. </span>
+                </h2>
+
+                <p>
+                  Cada decisión que tomamos busca crear experiencias educativas
+                  que generen un impacto positivo y duradero.
+                </p>
+              </div>
+            </div>
+
+            <div class="col-lg-7">
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <div class="value-card">
+                    <div class="value-card__number">01</div>
+
+                    <i class="ri-lightbulb-fill"></i>
+
+                    <h3>Innovación</h3>
+
+                    <p>Buscamos nuevas formas de enseñar, aprender y crear.</p>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="value-card">
+                    <div class="value-card__number">02</div>
+
+                    <i class="ri-team-fill"></i>
+
+                    <h3>Comunidad</h3>
+
+                    <p>
+                      Construimos relaciones basadas en respeto y colaboración.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="value-card">
+                    <div class="value-card__number">03</div>
+
+                    <i class="ri-medal-fill"></i>
+
+                    <h3>Excelencia</h3>
+
+                    <p>
+                      Trabajamos constantemente para alcanzar nuestros
+                      objetivos.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="value-card">
+                    <div class="value-card__number">04</div>
+
+                    <i class="ri-user-heart-fill"></i>
+
+                    <h3>Humanidad</h3>
+
+                    <p>
+                      Ponemos a las personas en el centro de nuestra educación.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div class="container">
+          <div class="cta__content">
+            <div>
+              <span> ¿Ya formas parte de nuestra comunidad? </span>
+
+              <h2>Ingresa a nuestra plataforma.</h2>
+
+              <p>
+                Accede a tus servicios académicos y administrativos desde un
+                solo lugar.
+              </p>
+            </div>
+
+            <a href="login.html" class="btn btn-cta">
+              Iniciar sesión
+
+              <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="row g-5">
+          <div class="col-lg-5">
+            <a href="index.html" class="brand brand--footer">
+              <span class="brand__icon">
+                <i class="ri-graduation-cap-fill"></i>
+              </span>
+
+              <span class="brand__text">
+                Escuela Enrique
+                <strong>Pinto Fernández</strong>
+              </span>
+            </a>
+
+            <p class="footer__description">
+              Formación integral, innovación y compromiso con nuestra comunidad
+              educativa.
+            </p>
+
+            <div class="footer__social">
+              <a href="#">
+                <i class="ri-facebook-fill"></i>
+              </a>
+
+              <a href="#">
+                <i class="ri-instagram-line"></i>
+              </a>
+
+              <a href="#">
+                <i class="ri-youtube-line"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="col-lg-2 col-md-4">
+            <h4>Institución</h4>
+
+            <ul>
+              <li>
+                <a href="#nosotros"> Nosotros </a>
+              </li>
+
+              <li>
+                <a href="#programas"> Programas </a>
+              </li>
+
+              <li>
+                <a href="#valores"> Valores </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-lg-2 col-md-4">
+            <h4>Plataforma</h4>
+
+            <ul>
+              <li>
+                <a href="login.html"> Iniciar sesión </a>
+              </li>
+
+              <li>
+                <a href="#"> Estudiantes </a>
+              </li>
+
+              <li>
+                <a href="#"> Docentes </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-lg-3 col-md-4">
+            <h4>Contacto</h4>
+
+            <ul class="footer__contact">
+              <li>
+                <i class="ri-map-pin-line"></i>
+
+                San José, Costa Rica
+              </li>
+
+              <li>
+                <i class="ri-phone-line"></i>
+
+                +506 2438-0448
+              </li>
+
+              <li>
+                <i class="ri-mail-line"></i>
+
+                info@escuelapintocr.com
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer__bottom">
+          <span> © 2026 Escuela Enrique. Todos los derechos reservados. </span>
+
+          <span> Proyecto institucional </span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>

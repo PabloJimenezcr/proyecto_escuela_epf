@@ -1,0 +1,348 @@
+// ============================================================
+// LOADER
+// ESCUELA ENRIQUE PINTO FERNÁNDEZ
+// ============================================================
+
+.loader {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: $z-loader;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(circle at 50% 45%, rgba($primary-light, 0.22), transparent 35%),
+        linear-gradient(135deg, #061522 0%, $primary-dark 50%, #092b43 100%);
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transition:
+        opacity 0.9s cubic-bezier(0.77, 0, 0.175, 1),
+        visibility 0.9s ease;
+
+    // ========================================================
+    // CUANDO TERMINA
+    // ========================================================
+
+    &.hidden {
+        opacity: 0;
+
+        visibility: hidden;
+
+        pointer-events: none;
+    }
+
+    // ========================================================
+    // LÍNEAS DE FONDO
+    // ========================================================
+
+    &::before {
+        content: "";
+
+        position: absolute;
+
+        inset: 0;
+
+        background-image:
+            linear-gradient(rgba($white, 0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba($white, 0.025) 1px, transparent 1px);
+
+        background-size: 55px 55px;
+
+        mask-image: radial-gradient(circle at center, black 0%, transparent 75%);
+    }
+
+    // ========================================================
+    // LUZ CENTRAL
+    // ========================================================
+
+    &::after {
+        content: "";
+
+        position: absolute;
+
+        width: 600px;
+        height: 600px;
+
+        border-radius: 50%;
+
+        background: radial-gradient(circle, rgba($accent-color, 0.08), transparent 65%);
+
+        animation: loaderGlow 4s ease-in-out infinite;
+    }
+
+    // ========================================================
+    // CONTENIDO
+    // ========================================================
+
+    &__content {
+        position: relative;
+
+        z-index: 3;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        text-align: center;
+
+        animation: loaderContent 1s ease both;
+    }
+
+    // ========================================================
+    // LOGO
+    // ========================================================
+
+    &__logo {
+        position: relative;
+
+        width: 110px;
+        height: 110px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        margin-bottom: 30px;
+
+        border: 1px solid rgba($white, 0.15);
+
+        border-radius: 32px;
+
+        background: rgba($white, 0.06);
+
+        backdrop-filter: blur(20px);
+
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+
+        animation: loaderFloat 3s ease-in-out infinite;
+
+        // Anillo exterior
+
+        &::before {
+            content: "";
+
+            position: absolute;
+
+            inset: -12px;
+
+            border: 1px solid rgba($accent-color, 0.25);
+
+            border-radius: 38px;
+
+            animation: loaderRing 3s linear infinite;
+        }
+
+        // Segundo anillo
+
+        &::after {
+            content: "";
+
+            position: absolute;
+
+            inset: -25px;
+
+            border: 1px solid rgba($white, 0.05);
+
+            border-radius: 45px;
+        }
+    }
+
+    // ========================================================
+    // ICONO
+    // ========================================================
+
+    &__logo-icon {
+        width: 68px;
+        height: 68px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 20px;
+
+        background: linear-gradient(135deg, $accent-light, $accent-color);
+
+        color: $primary-dark;
+
+        font-size: 34px;
+
+        box-shadow: 0 12px 35px rgba($accent-color, 0.25);
+
+        animation: loaderIcon 2s ease-in-out infinite;
+    }
+
+    // ========================================================
+    // NOMBRE
+    // ========================================================
+
+    &__title {
+        color: $white;
+
+        font-family: $font-title;
+
+        font-size: clamp(0.85rem, 2vw, 1.15rem);
+
+        font-weight: $font-bold;
+
+        letter-spacing: 2px;
+
+        line-height: 1.5;
+
+        animation: loaderText 1s 0.2s ease both;
+    }
+
+    // ========================================================
+    // LÍNEA DE CARGA
+    // ========================================================
+
+    &__line {
+        position: relative;
+
+        width: 210px;
+
+        height: 3px;
+
+        margin-top: 24px;
+
+        overflow: hidden;
+
+        border-radius: $radius-pill;
+
+        background: rgba($white, 0.1);
+
+        span {
+            display: block;
+
+            width: 45%;
+
+            height: 100%;
+
+            border-radius: inherit;
+
+            background: linear-gradient(90deg, $accent-dark, $accent-color, $accent-light);
+
+            box-shadow: 0 0 15px rgba($accent-color, 0.5);
+
+            animation: loaderLine 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+        }
+    }
+
+    // ========================================================
+    // TEXTO
+    // ========================================================
+
+    &__text {
+        margin-top: 17px;
+
+        color: rgba($white, 0.45);
+
+        font-size: $text-sm;
+
+        letter-spacing: 0.5px;
+
+        animation: loaderText 1s 0.4s ease both;
+    }
+}
+
+// ============================================================
+// ANIMACIONES
+// ============================================================
+
+@keyframes loaderContent {
+    from {
+        opacity: 0;
+
+        transform: translateY(25px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes loaderFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes loaderIcon {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.04);
+    }
+}
+
+@keyframes loaderRing {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes loaderGlow {
+    0%,
+    100% {
+        transform: scale(0.9);
+
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.1);
+
+        opacity: 1;
+    }
+}
+
+@keyframes loaderLine {
+    0% {
+        transform: translateX(-150%);
+    }
+
+    100% {
+        transform: translateX(450%);
+    }
+}
+
+@keyframes loaderText {
+    from {
+        opacity: 0;
+
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+}

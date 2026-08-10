@@ -1,0 +1,144 @@
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@mixin transition($property: all, $duration: 0.3s) {
+    transition: $property $duration ease;
+}
+
+
+@mixin hover-lift($distance: -6px) {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY($distance);
+        box-shadow: $shadow-lg;
+    }
+}
+
+
+@mixin circle($size) {
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+}
+
+
+@mixin text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@mixin absolute-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@mixin primary-gradient {
+    background: linear-gradient(
+        135deg,
+        $primary-dark 0%,
+        $primary-color 55%,
+        $primary-light 100%
+    );
+}
+
+@mixin accent-gradient {
+    background: linear-gradient(
+        135deg,
+        $accent-dark 0%,
+        $accent-color 50%,
+        $accent-light 100%
+    );
+}
+
+@mixin glass($background: rgba(255, 255, 255, 0.08)) {
+    background: $background;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+@mixin responsive($breakpoint) {
+
+    @if $breakpoint == sm {
+
+        @media (max-width: 575.98px) {
+            @content;
+        }
+
+    }
+
+    @else if $breakpoint == md {
+
+        @media (max-width: 767.98px) {
+            @content;
+        }
+
+    }
+
+    @else if $breakpoint == lg {
+
+        @media (max-width: 991.98px) {
+            @content;
+        }
+
+    }
+
+    @else if $breakpoint == xl {
+
+        @media (max-width: 1199.98px) {
+            @content;
+        }
+
+    }
+
+    @else if $breakpoint == xxl {
+
+        @media (max-width: 1399.98px) {
+            @content;
+        }
+
+    }
+}
+
+@mixin fade-up($duration: 0.8s) {
+
+    animation: fadeUp $duration ease both;
+
+}
+
+
+@mixin button-base {
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    border: none;
+
+    font-family: $font-title;
+    font-weight: $font-semibold;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        background 0.3s ease;
+
+}
