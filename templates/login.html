@@ -44,7 +44,7 @@
         <div class="login__grid"></div>
 
         <div class="login__visual-content">
-          <a href="index.html" class="brand brand--login">
+          <a href="{{ url_for('index') }}" class="brand brand--login">
             <span class="brand__icon">
               <i class="ri-school-fill"></i>
             </span>
@@ -191,7 +191,7 @@
                      FORMULARIO
                 ================================================== -->
 
-          <form id="loginForm" class="login-form">
+           <form id="loginForm" class="login-form" action="{{ url_for('login') }}" method="POST">
             <!-- =================================================
                          CORREO
                     ================================================== -->
@@ -221,7 +221,7 @@
               <div class="form-label-row">
                 <label for="password"> Contraseña </label>
 
-                <a href="#"> ¿Olvidaste tu contraseña? </a>
+                <a href="{{ url_for('recuperar') }}" style="color: #1a365d; font-size: 0.9rem; text-decoration: underline; font-weight: 700;"> ¿Olvidaste tu contraseña? </a>
               </div>
 
               <div class="input-wrapper">
@@ -280,6 +280,11 @@
           </form>
 
           <div class="login__footer">
+            <p style="margin-bottom: 0.5rem; color: #4a5568;">
+              ¿No tienes una cuenta institucional? 
+              <a href="{{ url_for('register') }}" style="color: #1a365d; font-weight: 700; text-decoration: underline;"> Créala aquí </a>
+            </p>
+
             <p>
               ¿Necesitas ayuda?
 
