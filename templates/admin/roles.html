@@ -1,0 +1,871 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}
+EPF | Roles
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <span class="page-eyebrow">
+            ADMINISTRACIÓN
+        </span>
+
+        <h1>
+            Roles y niveles de acceso
+        </h1>
+
+        <p>
+            Define los perfiles de la plataforma y administra
+            los permisos disponibles para cada tipo de usuario.
+        </p>
+
+    </div>
+
+
+    <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#modalCrearRol">
+        <i class="ri-add-line"></i>
+        Nuevo rol
+    </button>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- ALERTA ÉXITO -->
+<!-- ========================================================= -->
+
+{% if request.args.get('success') %}
+
+<div class="custom-alert success-alert">
+
+    <div class="alert-icon">
+        <i class="ri-check-line"></i>
+    </div>
+
+    <div>
+
+        <strong>
+            Operación completada
+        </strong>
+
+        <p>
+
+            {% if request.args.get('success') == 'creado' %}
+
+            El rol fue creado correctamente.
+
+            {% elif request.args.get('success') == 'editado' %}
+
+            El rol fue actualizado correctamente.
+
+            {% elif request.args.get('success') == 'eliminado' %}
+
+            El rol fue eliminado correctamente.
+
+            {% elif request.args.get('success') == 'permisos' %}
+
+            Los permisos fueron actualizados correctamente.
+
+            {% else %}
+
+            La operación se realizó correctamente.
+
+            {% endif %}
+
+        </p>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- ========================================================= -->
+<!-- ALERTA ERROR -->
+<!-- ========================================================= -->
+
+{% if request.args.get('error') %}
+
+<div class="custom-alert error-alert">
+
+    <div class="alert-icon">
+        <i class="ri-error-warning-line"></i>
+    </div>
+
+    <div>
+
+        <strong>
+            No fue posible completar la operación
+        </strong>
+
+        <p>
+            {{ request.args.get('error') }}
+        </p>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- ========================================================= -->
+<!-- TOOLBAR -->
+<!-- ========================================================= -->
+
+<div class="roles-toolbar">
+
+    <div class="search-box">
+
+        <i class="ri-search-line"></i>
+
+        <input type="search" id="roleSearch" placeholder="Buscar rol..." autocomplete="off">
+
+    </div>
+
+
+    <div class="roles-counter">
+
+        <span>
+            {{ roles|length }}
+        </span>
+
+        roles registrados
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- GRID DE ROLES -->
+<!-- IMPORTANTE: AQUÍ SOLO VAN LAS TARJETAS -->
+<!-- ========================================================= -->
+
+<div class="roles-grid" id="rolesGrid">
+
+    {% for rol in roles %}
+
+    <article class="role-card" data-role-name="{{ rol.nombre|lower }}">
+
+        <!-- HEADER -->
+
+        <div class="role-card-top">
+
+            <div class="role-icon">
+
+                {% if rol.nombre == 'Administrador' %}
+
+                <i class="ri-shield-star-line"></i>
+
+                {% elif rol.nombre == 'Docente' %}
+
+                <i class="ri-graduation-cap-line"></i>
+
+                {% elif rol.nombre == 'Estudiante' %}
+
+                <i class="ri-book-open-line"></i>
+
+                {% elif rol.nombre == 'Padre de Familia' %}
+
+                <i class="ri-parent-line"></i>
+
+                {% else %}
+
+                <i class="ri-user-settings-line"></i>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if rol.es_sistema == 1 %}
+
+            <span class="role-badge system-badge">
+
+                <i class="ri-lock-line"></i>
+
+                Sistema
+
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- INFORMACIÓN -->
+
+        <div class="role-card-body">
+
+            <h2>
+                {{ rol.nombre }}
+            </h2>
+
+            <p>
+                {{ rol.descripcion or 'Sin descripción registrada.' }}
+            </p>
+
+        </div>
+
+
+        <!-- PERMISOS -->
+
+        <div class="role-permission-summary">
+
+            {% if rol.nombre == 'Administrador' %}
+
+            <div class="permission-total admin-total">
+
+                <i class="ri-shield-check-line"></i>
+
+                <div>
+
+                    <strong>
+                        Acceso total
+                    </strong>
+
+                    <span>
+                        Todos los módulos habilitados
+                    </span>
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="permission-total">
+
+                <i class="ri-key-2-line"></i>
+
+                <div>
+
+                    <strong>
+
+                        {{ rol.total_permisos }}
+
+                        permisos
+
+                    </strong>
+
+                    <span>
+                        Nivel de acceso configurado
+                    </span>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="role-card-footer">
+
+            {% if rol.nombre == 'Administrador' %}
+
+            <span>
+                <i class="ri-shield-check-line"></i>
+                Rol protegido
+            </span>
+
+            {% else %}
+
+            <button type="button" class="permission-manage-button" data-bs-toggle="modal"
+                data-bs-target="#modalPermisos-{{ rol.id_rol }}" aria-label="Gestionar permisos de {{ rol.nombre }}">
+
+                <i class="ri-settings-3-line"></i>
+
+                Gestionar permisos
+
+            </button>
+
+            {% endif %}
+
+
+            {% if rol.es_sistema == 0 %}
+
+            <div class="role-actions">
+
+                <button type="button" class="icon-button" title="Editar rol" aria-label="Editar {{ rol.nombre }}"
+                    data-bs-toggle="modal" data-bs-target="#modalEditarRol-{{ rol.id_rol }}">
+
+                    <i class="ri-edit-line"></i>
+
+                </button>
+
+
+                <button type="button" class="icon-button danger" title="Eliminar rol"
+                    aria-label="Eliminar {{ rol.nombre }}" data-bs-toggle="modal"
+                    data-bs-target="#modalEliminarRol-{{ rol.id_rol }}">
+
+                    <i class="ri-delete-bin-line"></i>
+
+                </button>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </article>
+
+    {% endfor %}
+
+
+    <!-- ===================================================== -->
+    <!-- SIN RESULTADOS -->
+    <!-- ===================================================== -->
+
+    <div class="empty-search" id="emptySearch" style="display: none;">
+
+        <div>
+            <i class="ri-search-eye-line"></i>
+        </div>
+
+        <h3>
+            No encontramos ese rol
+        </h3>
+
+        <p>
+            Intenta con otro término de búsqueda.
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- MODALES -->
+<!-- FUERA DEL GRID -->
+<!-- ========================================================= -->
+
+
+<!-- ========================================================= -->
+<!-- MODAL CREAR -->
+<!-- ========================================================= -->
+
+<div class="modal fade" id="modalCrearRol" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content custom-modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-eyebrow">
+                        NUEVO ROL
+                    </span>
+
+                    <h3>
+                        Crear perfil
+                    </h3>
+
+                </div>
+
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('admin_roles_crear') }}" id="createRoleForm">
+
+                <div class="modal-body">
+
+                    <div class="form-group-custom">
+
+                        <label for="createRoleName">
+                            Nombre del rol
+                        </label>
+
+                        <input type="text" name="nombre" id="createRoleName" maxlength="40"
+                            placeholder="Ej. Coordinador Académico" required>
+
+                        <small>
+                            Máximo 40 caracteres.
+                        </small>
+
+                    </div>
+
+
+                    <div class="form-group-custom">
+
+                        <label for="createRoleDescription">
+                            Descripción
+                        </label>
+
+                        <textarea name="descripcion" id="createRoleDescription" rows="4" maxlength="150"
+                            placeholder="Describe brevemente las responsabilidades del rol..."></textarea>
+
+                        <small>
+                            Máximo 150 caracteres.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer-custom">
+
+                    <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+
+                    <button type="submit" class="btn-primary-custom">
+
+                        <i class="ri-add-line"></i>
+
+                        Crear rol
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- MODALES DE PERMISOS -->
+<!-- ========================================================= -->
+
+{% for rol in roles %}
+
+{% if rol.nombre != 'Administrador' %}
+
+<div class="modal fade" id="modalPermisos-{{ rol.id_rol }}" tabindex="-1"
+    aria-labelledby="tituloPermisos-{{ rol.id_rol }}" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+
+        <div class="modal-content custom-modal permission-modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-eyebrow">
+                        CONTROL DE ACCESO
+                    </span>
+
+                    <h3 id="tituloPermisos-{{ rol.id_rol }}">
+                        Permisos de {{ rol.nombre }}
+                    </h3>
+
+                    <p class="permission-modal-description">
+                        Selecciona las funcionalidades que este perfil
+                        podrá utilizar dentro de la plataforma.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for(
+                    'admin_roles_permisos',
+                    id_rol=rol.id_rol
+                ) }}" class="permission-form">
+
+                <div class="modal-body permission-modal-body">
+
+                    {% set permisos_asignados =
+                    permisos_por_rol.get(
+                    rol.id_rol,
+                    []
+                    )
+                    %}
+
+
+                    <!-- RESUMEN -->
+
+                    <div class="permission-toolbar">
+
+                        <div>
+
+                            <strong>
+                                Configuración de acceso
+                            </strong>
+
+                            <span>
+                                Selecciona las acciones disponibles para este perfil.
+                            </span>
+
+                        </div>
+
+
+                        <div class="permission-live-counter">
+
+                            <span class="selected-permissions">
+                                {{ rol.total_permisos }}
+                            </span>
+
+                            seleccionados
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- GRUPOS DE PERMISOS -->
+                    <!-- ================================================= -->
+
+                    <div class="permission-groups">
+
+                        {% for grupo in permisos|groupby('modulo') %}
+
+                        <section class="permission-group">
+
+                            <!-- HEADER MODULO -->
+
+                            <div class="permission-group-header">
+
+                                <div class="permission-group-title">
+
+                                    {% if grupo.grouper == 'Usuarios' %}
+
+                                    <i class="ri-user-settings-line"></i>
+
+                                    {% elif grupo.grouper == 'Roles' %}
+
+                                    <i class="ri-shield-user-line"></i>
+
+                                    {% elif grupo.grouper == 'Grupos' %}
+
+                                    <i class="ri-group-line"></i>
+
+                                    {% elif grupo.grouper == 'Asistencia' %}
+
+                                    <i class="ri-calendar-check-line"></i>
+
+                                    {% elif grupo.grouper == 'Tareas' %}
+
+                                    <i class="ri-task-line"></i>
+
+                                    {% elif grupo.grouper == 'Calificaciones' %}
+
+                                    <i class="ri-bar-chart-box-line"></i>
+
+                                    {% elif grupo.grouper == 'Comunicados' %}
+
+                                    <i class="ri-megaphone-line"></i>
+
+                                    {% elif grupo.grouper == 'Calendario' %}
+
+                                    <i class="ri-calendar-event-line"></i>
+
+                                    {% elif grupo.grouper == 'Reportes' %}
+
+                                    <i class="ri-file-chart-line"></i>
+
+                                    {% else %}
+
+                                    <i class="ri-apps-line"></i>
+
+                                    {% endif %}
+
+
+                                    <div>
+
+                                        <strong>
+                                            {{ grupo.grouper }}
+                                        </strong>
+
+                                        <span>
+                                            Permisos disponibles
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- OPCIONES -->
+
+                            <div class="permission-options">
+
+                                {% for permiso in grupo.list %}
+
+                                <label class="permission-option">
+
+                                    <input type="checkbox" name="permisos" value="{{ permiso.id_permiso }}"
+                                        data-permission-checkbox {% if permiso.id_permiso in permisos_asignados %}
+                                        checked {% endif %}>
+
+
+                                    <span class="permission-check">
+
+                                        <i class="ri-check-line"></i>
+
+                                    </span>
+
+
+                                    <span class="permission-option-content">
+
+                                        <strong>
+                                            {{ permiso.nombre }}
+                                        </strong>
+
+                                        <span>
+                                            {{ permiso.descripcion }}
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </section>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer-custom">
+
+                    <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+
+                    <button type="submit" class="btn-primary-custom">
+
+                        <i class="ri-save-line"></i>
+
+                        Guardar permisos
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endfor %}
+
+
+<!-- ========================================================= -->
+<!-- MODALES EDITAR -->
+<!-- ========================================================= -->
+
+{% for rol in roles %}
+
+{% if rol.es_sistema == 0 %}
+
+<div class="modal fade" id="modalEditarRol-{{ rol.id_rol }}" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content custom-modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-eyebrow">
+                        EDITAR ROL
+                    </span>
+
+                    <h3>
+                        Actualizar información
+                    </h3>
+
+                </div>
+
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for(
+                    'admin_roles_editar',
+                    id_rol=rol.id_rol
+                ) }}">
+
+                <div class="modal-body">
+
+                    <div class="form-group-custom">
+
+                        <label for="editNombre-{{ rol.id_rol }}">
+                            Nombre del rol
+                        </label>
+
+                        <input type="text" id="editNombre-{{ rol.id_rol }}" name="nombre" value="{{ rol.nombre }}"
+                            maxlength="40" required>
+
+                    </div>
+
+
+                    <div class="form-group-custom">
+
+                        <label for="editDescripcion-{{ rol.id_rol }}">
+                            Descripción
+                        </label>
+
+                        <textarea id="editDescripcion-{{ rol.id_rol }}" name="descripcion" rows="4"
+                            maxlength="150">{{ rol.descripcion or '' }}</textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer-custom">
+
+                    <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+
+                    <button type="submit" class="btn-primary-custom">
+
+                        <i class="ri-save-line"></i>
+
+                        Guardar cambios
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endfor %}
+
+
+<!-- ========================================================= -->
+<!-- MODALES ELIMINAR -->
+<!-- ========================================================= -->
+
+{% for rol in roles %}
+
+{% if rol.es_sistema == 0 %}
+
+<div class="modal fade" id="modalEliminarRol-{{ rol.id_rol }}" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content custom-modal delete-modal">
+
+            <div class="delete-icon">
+
+                <i class="ri-delete-bin-line"></i>
+
+            </div>
+
+
+            <h3>
+                Eliminar rol
+            </h3>
+
+
+            <p>
+
+                ¿Seguro que deseas eliminar
+                <strong>
+                    {{ rol.nombre }}
+                </strong>?
+
+            </p>
+
+
+            <p class="delete-warning">
+
+                Esta acción no se puede deshacer.
+                Además, el rol no podrá eliminarse si
+                tiene usuarios asociados.
+
+            </p>
+
+
+            <form method="POST" action="{{ url_for(
+                    'admin_roles_eliminar',
+                    id_rol=rol.id_rol
+                ) }}">
+
+                <div class="modal-footer-custom">
+
+                    <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+
+                    <button type="submit" class="btn-danger-custom">
+
+                        <i class="ri-delete-bin-line"></i>
+
+                        Eliminar rol
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endfor %}
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script src="{{ url_for('static', filename='js/roles.js') }}"></script>
+
+{% endblock %}

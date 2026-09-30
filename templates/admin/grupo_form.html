@@ -1,0 +1,682 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}
+Nuevo grupo
+{% endblock %}
+
+
+{% block content %}
+
+<section class="group-form-page">
+
+    <!-- =========================================
+         BREADCRUMB
+    ========================================== -->
+
+    <div class="group-form-breadcrumb">
+
+        <a href="{{ url_for('admin_grupos') }}">
+            <i class="ri-arrow-left-line"></i>
+            Grupos y secciones
+        </a>
+
+        <span>/</span>
+
+        <strong>
+            Nuevo grupo
+        </strong>
+
+    </div>
+
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <div class="group-form-heading">
+
+        <div class="group-form-heading-icon">
+
+            <i class="ri-group-line"></i>
+
+        </div>
+
+        <div>
+
+            <span class="group-form-kicker">
+                CONFIGURACIÓN ACADÉMICA
+            </span>
+
+            <h1>
+                Crear nuevo grupo
+            </h1>
+
+            <p>
+                Define el nivel, sección, año lectivo y docente responsable del grupo.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         LAYOUT
+    ========================================== -->
+
+    <div class="group-form-layout">
+
+
+        <!-- =====================================
+             FORMULARIO
+        ====================================== -->
+
+        <div class="group-form-card">
+
+            <div class="group-form-card-header">
+
+                <div class="form-step-number">
+                    01
+                </div>
+
+                <div>
+
+                    <span>
+                        INFORMACIÓN ACADÉMICA
+                    </span>
+
+                    <h2>
+                        Datos del grupo
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('admin_grupos_nuevo') }}" id="newGroupForm">
+
+
+                <!-- =================================
+                     NIVEL
+                ================================== -->
+
+                <div class="group-form-field">
+
+                    <label for="nivel">
+
+                        Nivel académico
+
+                        <span>
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <div class="group-input-wrapper">
+
+                        <i class="ri-graduation-cap-line"></i>
+
+                        <select name="nivel" id="nivel" required>
+
+                            <option value="">
+                                Selecciona un nivel
+                            </option>
+
+                            <option value="Primero">
+                                Primero
+                            </option>
+
+                            <option value="Segundo">
+                                Segundo
+                            </option>
+
+                            <option value="Tercero">
+                                Tercero
+                            </option>
+
+                            <option value="Cuarto">
+                                Cuarto
+                            </option>
+
+                            <option value="Quinto">
+                                Quinto
+                            </option>
+
+                            <option value="Sexto">
+                                Sexto
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <small>
+                        Selecciona el nivel correspondiente al grupo.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================
+                     SECCIÓN
+                ================================== -->
+
+                <div class="group-form-field">
+
+                    <label>
+
+                        Sección
+
+                        <span>
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <div class="section-options">
+
+                        {% for section in ['A', 'B', 'C', 'D', 'E'] %}
+
+                        <label class="section-choice">
+
+                            <input type="radio" name="seccion" value="{{ section }}" {% if loop.first %}checked{% endif
+                                %} required>
+
+                            <span>
+
+                                <strong>
+                                    {{ section }}
+                                </strong>
+
+                                <small>
+                                    Sección {{ section }}
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <small>
+                        Cada nivel puede tener varias secciones.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================
+                     AÑO
+                ================================== -->
+
+                <div class="group-form-field">
+
+                    <label for="anio_lectivo">
+
+                        Año lectivo
+
+                        <span>
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <div class="group-input-wrapper">
+
+                        <i class="ri-calendar-event-line"></i>
+
+                        <input type="number" name="anio_lectivo" id="anio_lectivo" value="{{ current_year or 2026 }}"
+                            min="2020" max="2100" required>
+
+                    </div>
+
+                    <small>
+                        Indica el año académico al que pertenece el grupo.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================
+                     DOCENTE
+                ================================== -->
+
+                <div class="group-form-field">
+
+                    <label for="id_docente_guia">
+
+                        Docente guía
+
+                        <span class="optional">
+                            OPCIONAL
+                        </span>
+
+                    </label>
+
+
+                    <div class="group-input-wrapper">
+
+                        <i class="ri-user-star-line"></i>
+
+                        <select name="id_docente_guia" id="id_docente_guia">
+
+                            <option value="">
+                                Sin docente guía
+                            </option>
+
+                            {% for docente in docentes %}
+
+                            <option value="{{ docente.id_docente }}">
+                                {{ docente.nombre }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    {% if docentes %}
+
+                    <small>
+                        Puedes asignar un docente ahora o hacerlo posteriormente.
+                    </small>
+
+                    {% else %}
+
+                    <div class="no-teachers-message">
+
+                        <i class="ri-information-line"></i>
+
+                        <span>
+                            Actualmente no hay docentes registrados en el sistema.
+                            Puedes crear el grupo y asignar el docente posteriormente.
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- =================================
+                     ACTIONS
+                ================================== -->
+
+                <div class="group-form-actions">
+
+                    <a href="{{ url_for('admin_grupos') }}" class="group-btn-secondary">
+
+                        <i class="ri-arrow-left-line"></i>
+
+                        Cancelar
+
+                    </a>
+
+
+                    <button type="submit" class="group-btn-primary" id="submitGroup">
+
+                        <i class="ri-add-line"></i>
+
+                        Crear grupo
+
+                    </button>
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+
+
+        <!-- =====================================
+             PREVIEW / INFO
+        ====================================== -->
+
+        <aside class="group-form-sidebar">
+
+
+            <!-- PREVIEW -->
+
+            <div class="group-preview-card">
+
+                <div class="group-preview-header">
+
+                    <div>
+
+                        <span>
+                            VISTA PREVIA
+                        </span>
+
+                        <h3>
+                            Así se verá el grupo
+                        </h3>
+
+                    </div>
+
+                    <div class="preview-status">
+                        <i class="ri-eye-line"></i>
+                    </div>
+
+                </div>
+
+
+                <div class="group-preview-main">
+
+                    <div class="preview-school-icon">
+
+                        <i class="ri-graduation-cap-line"></i>
+
+                    </div>
+
+
+                    <span class="preview-level" id="previewLevel">
+
+                        Selecciona un nivel
+
+                    </span>
+
+
+                    <strong class="preview-name" id="previewName">
+
+                        --
+
+                    </strong>
+
+
+                    <div class="preview-details">
+
+                        <div>
+
+                            <span>
+                                Sección
+                            </span>
+
+                            <strong id="previewSection">
+                                A
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Año lectivo
+                            </span>
+
+                            <strong id="previewYear">
+                                2026
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="preview-footer">
+
+                    <i class="ri-information-line"></i>
+
+                    <span>
+                        El nombre del grupo se genera automáticamente
+                        según el nivel y la sección.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- INFORMATION -->
+
+            <div class="group-info-card">
+
+                <div class="group-info-header">
+
+                    <div class="group-info-icon">
+
+                        <i class="ri-lightbulb-line"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            RECOMENDACIÓN
+                        </span>
+
+                        <h3>
+                            Organización académica
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="group-info-list">
+
+                    <div class="group-info-line">
+
+                        <div class="group-info-line-icon">
+                            <i class="ri-checkbox-circle-line"></i>
+                        </div>
+
+                        <p>
+                            Cada grupo debe tener un nivel y una sección.
+                        </p>
+
+                    </div>
+
+
+                    <div class="group-info-line">
+
+                        <div class="group-info-line-icon">
+                            <i class="ri-checkbox-circle-line"></i>
+                        </div>
+
+                        <p>
+                            El año lectivo permite diferenciar grupos de distintos períodos.
+                        </p>
+
+                    </div>
+
+
+                    <div class="group-info-line">
+
+                        <div class="group-info-line-icon">
+                            <i class="ri-checkbox-circle-line"></i>
+                        </div>
+
+                        <p>
+                            El docente guía puede asignarse posteriormente.
+                        </p>
+
+                    </div>
+
+
+                    <div class="group-info-line">
+
+                        <div class="group-info-line-icon">
+                            <i class="ri-shield-check-line"></i>
+                        </div>
+
+                        <p>
+                            El sistema evita crear grupos duplicados para el mismo nivel,
+                            sección y año.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const levelSelect =
+            document.getElementById('nivel');
+
+        const yearInput =
+            document.getElementById('anio_lectivo');
+
+        const sectionInputs =
+            document.querySelectorAll(
+                'input[name="seccion"]'
+            );
+
+        const form =
+            document.getElementById('newGroupForm');
+
+        const submitButton =
+            document.getElementById('submitGroup');
+
+
+        const previewLevel =
+            document.getElementById('previewLevel');
+
+        const previewName =
+            document.getElementById('previewName');
+
+        const previewSection =
+            document.getElementById('previewSection');
+
+        const previewYear =
+            document.getElementById('previewYear');
+
+
+        const names = {
+
+            'Primero': '1°',
+            'Segundo': '2°',
+            'Tercero': '3°',
+            'Cuarto': '4°',
+            'Quinto': '5°',
+            'Sexto': '6°'
+
+        };
+
+
+        function updatePreview() {
+
+            const level =
+                levelSelect.value;
+
+            let section = 'A';
+
+            sectionInputs.forEach(function (input) {
+
+                if (input.checked) {
+                    section = input.value;
+                }
+
+            });
+
+
+            const year =
+                yearInput.value || '2026';
+
+
+            if (level) {
+
+                previewLevel.textContent =
+                    level;
+
+                previewName.textContent =
+                    `${names[level]} ${section}`;
+
+            } else {
+
+                previewLevel.textContent =
+                    'Selecciona un nivel';
+
+                previewName.textContent =
+                    '--';
+
+            }
+
+
+            previewSection.textContent =
+                section;
+
+            previewYear.textContent =
+                year;
+
+        }
+
+
+        levelSelect.addEventListener(
+            'change',
+            updatePreview
+        );
+
+
+        yearInput.addEventListener(
+            'input',
+            updatePreview
+        );
+
+
+        sectionInputs.forEach(function (input) {
+
+            input.addEventListener(
+                'change',
+                updatePreview
+            );
+
+        });
+
+
+        if (form && submitButton) {
+
+            form.addEventListener(
+                'submit',
+                function () {
+
+                    submitButton.disabled =
+                        true;
+
+                    submitButton.innerHTML =
+                        '<i class="ri-loader-4-line ri-spin"></i> Creando grupo...';
+
+                }
+            );
+
+        }
+
+
+        updatePreview();
+
+    });
+
+</script>
+
+{% endblock %}
