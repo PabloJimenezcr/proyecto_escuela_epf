@@ -248,7 +248,7 @@ def dashboard():
     # ======================================================
 
     return render_template(
-        'dashboard.html',
+         'admin/dashboard.html',
         nombre=session.get('nombre_usuario'),
         rol=rol_usuario
     )
