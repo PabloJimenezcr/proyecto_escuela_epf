@@ -1,0 +1,442 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}
+EPF | Dashboard
+{% endblock %}
+
+
+{% block content %}
+
+<div class="dashboard-page">
+
+    <!-- ================================================= -->
+    <!-- HERO -->
+    <!-- ================================================= -->
+
+    <section class="dashboard-hero">
+
+        <div class="dashboard-hero-content">
+
+            <span class="page-eyebrow">
+                PANEL ADMINISTRATIVO
+            </span>
+
+            <h1>
+                Buenos días,
+                <span>{{ session.get('nombre_usuario', 'Administrador') }}</span>
+                <span class="hero-wave">👋</span>
+            </h1>
+
+            <p>
+                Desde aquí puedes supervisar y gestionar
+                los principales procesos de la Escuela
+                Enrique Pinto Fernández.
+            </p>
+
+        </div>
+
+
+        <div class="dashboard-hero-decoration">
+
+            <div class="hero-orbit orbit-one"></div>
+            <div class="hero-orbit orbit-two"></div>
+
+            <div class="hero-decoration-icon">
+                <i class="ri-school-line"></i>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- STATS -->
+    <!-- ================================================= -->
+
+    <section class="dashboard-stats">
+
+        <article class="stat-card stat-primary">
+
+            <div class="stat-card-header">
+
+                <div class="stat-icon">
+                    <i class="ri-user-line"></i>
+                </div>
+
+                <span class="stat-trend positive">
+                    <i class="ri-arrow-up-line"></i>
+                    Sistema
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ total_usuarios }}
+            </div>
+
+            <div class="stat-label">
+                Usuarios registrados
+            </div>
+
+        </article>
+
+
+        <article class="stat-card stat-accent">
+
+            <div class="stat-card-header">
+
+                <div class="stat-icon">
+                    <i class="ri-graduation-cap-line"></i>
+                </div>
+
+                <span class="stat-trend">
+                    Activos
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ total_estudiantes }}
+            </div>
+
+            <div class="stat-label">
+                Estudiantes
+            </div>
+
+        </article>
+
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <div class="stat-icon">
+                    <i class="ri-presentation-line"></i>
+                </div>
+
+                <span class="stat-trend">
+                    Académico
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ total_docentes }}
+            </div>
+
+            <div class="stat-label">
+                Docentes
+            </div>
+
+        </article>
+
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <div class="stat-icon">
+                    <i class="ri-group-line"></i>
+                </div>
+
+                <span class="stat-trend">
+                    Organización
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ total_grupos }}
+            </div>
+
+            <div class="stat-label">
+                Grupos registrados
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- MAIN GRID -->
+    <!-- ================================================= -->
+
+    <section class="dashboard-main-grid">
+
+
+        <!-- ACTIVIDAD -->
+
+        <article class="dashboard-panel activity-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-eyebrow">
+                        ACTIVIDAD
+                    </span>
+
+                    <h2>
+                        Actividad reciente
+                    </h2>
+                </div>
+
+                <button type="button" class="panel-more-button" aria-label="Más opciones">
+                    <i class="ri-more-2-fill"></i>
+                </button>
+
+            </div>
+
+
+            <div class="activity-list">
+
+                <div class="activity-item">
+
+                    <div class="activity-icon blue">
+                        <i class="ri-user-add-line"></i>
+                    </div>
+
+                    <div class="activity-content">
+
+                        <strong>
+                            Gestión de usuarios
+                        </strong>
+
+                        <span>
+                            El sistema está preparado para administrar
+                            perfiles y accesos.
+                        </span>
+
+                    </div>
+
+                    <span class="activity-time">
+                        Sistema
+                    </span>
+
+                </div>
+
+
+                <div class="activity-item">
+
+                    <div class="activity-icon yellow">
+                        <i class="ri-shield-user-line"></i>
+                    </div>
+
+                    <div class="activity-content">
+
+                        <strong>
+                            Roles
+                        </strong>
+
+                        <span>
+                            Administra los niveles de acceso de la plataforma.
+                        </span>
+
+                    </div>
+
+                    <span class="activity-time">
+                        EPF-01-04
+                    </span>
+
+                </div>
+
+
+                <div class="activity-item">
+
+                    <div class="activity-icon green">
+                        <i class="ri-group-line"></i>
+                    </div>
+
+                    <div class="activity-content">
+
+                        <strong>
+                            Grupos y secciones
+                        </strong>
+
+                        <span>
+                            Próximamente podrás organizar los grupos académicos.
+                        </span>
+
+                    </div>
+
+                    <span class="activity-time">
+                        Próximo
+                    </span>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- ACCIONES -->
+
+        <article class="dashboard-panel quick-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-eyebrow">
+                        ACCIONES RÁPIDAS
+                    </span>
+
+                    <h2>
+                        Gestión
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="quick-actions">
+
+
+                <a href="{{ url_for('admin_roles') }}" class="quick-action">
+
+                    <div class="quick-action-icon purple">
+                        <i class="ri-shield-user-line"></i>
+                    </div>
+
+                    <div class="quick-action-content">
+
+                        <strong>
+                            Gestionar roles
+                        </strong>
+
+                        <span>
+                            Niveles de acceso
+                        </span>
+
+                    </div>
+
+                    <i class="ri-arrow-right-line quick-arrow"></i>
+
+                </a>
+
+
+                <a href="#" class="quick-action disabled">
+
+                    <div class="quick-action-icon blue">
+                        <i class="ri-user-settings-line"></i>
+                    </div>
+
+                    <div class="quick-action-content">
+
+                        <strong>
+                            Usuarios
+                        </strong>
+
+                        <span>
+                            Próximamente
+                        </span>
+
+                    </div>
+
+                    <i class="ri-lock-line quick-arrow"></i>
+
+                </a>
+
+
+                <a href="#" class="quick-action disabled">
+
+                    <div class="quick-action-icon yellow">
+                        <i class="ri-group-line"></i>
+                    </div>
+
+                    <div class="quick-action-content">
+
+                        <strong>
+                            Grupos
+                        </strong>
+
+                        <span>
+                            Próximamente
+                        </span>
+
+                    </div>
+
+                    <i class="ri-lock-line quick-arrow"></i>
+
+                </a>
+
+
+                <a href="#" class="quick-action disabled">
+
+                    <div class="quick-action-icon green">
+                        <i class="ri-bar-chart-box-line"></i>
+                    </div>
+
+                    <div class="quick-action-content">
+
+                        <strong>
+                            Reportes
+                        </strong>
+
+                        <span>
+                            Próximamente
+                        </span>
+
+                    </div>
+
+                    <i class="ri-lock-line quick-arrow"></i>
+
+                </a>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- STATUS -->
+    <!-- ================================================= -->
+
+    <section class="dashboard-status-panel">
+
+        <div class="status-information">
+
+            <div class="status-icon">
+                <i class="ri-checkbox-circle-line"></i>
+            </div>
+
+            <div>
+
+                <span class="panel-eyebrow">
+                    ESTADO DEL SISTEMA
+                </span>
+
+                <h2>
+                    Plataforma operativa
+                </h2>
+
+                <p>
+                    La conexión con el sistema y la base de datos
+                    se encuentra disponible.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="system-status">
+
+            <span class="status-dot"></span>
+
+            <strong>
+                Operativo
+            </strong>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

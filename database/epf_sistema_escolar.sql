@@ -305,4 +305,13 @@ INSERT INTO periodos_academicos (nombre, fecha_inicio, fecha_fin, anio_lectivo) 
 ('III Periodo 2026','2026-10-01', '2026-12-15', 2026);
 
 
-
+INSERT INTO usuarios (nombre, apellido1, apellido2, correo, contrasena_hash, telefono, id_rol, estado) 
+VALUES (
+'Jefferson', 
+'Córdoba', 
+'Hernández', 
+'jefferson@escuela.com', 
+'scrypt:32768:8:1$QFISeEKHWqLEX2sk$7bbda60ba8d8a3e875daae95dfe5b6f481ba8ae8825d4ef26b5c27b6c7e68824107779e47988c1a78348be16c342b26dd142c327bab893cd47140a57e1f5f55d', 
+'22493010', 
+1, 
+'activo');
