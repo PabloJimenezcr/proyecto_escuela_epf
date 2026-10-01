@@ -1,0 +1,258 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Grupo {{ grupo.nombre }}{% endblock %}
+
+{% block content %}
+<section class="groups-page grupo-detalle">
+
+    <!-- ENCABEZADO -->
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon">
+                <i class="ri-community-line"></i>
+            </div>
+            <div>
+                <span class="page-kicker">
+                    {{ grupo.nivel }} · SECCIÓN {{ grupo.seccion }} · {{ grupo.anio_lectivo }}
+                </span>
+                <h1>Grupo {{ grupo.nombre }}</h1>
+                <p>Docente guía: {{ grupo.docente_guia or 'Sin asignar' }}</p>
+            </div>
+        </div>
+
+        <div class="page-heading-actions">
+            <a href="{{ url_for('admin_grupos') }}" class="gd-back">
+                <i class="ri-arrow-left-line"></i> Volver a grupos
+            </a>
+        </div>
+    </div>
+
+    <!-- ALERTAS -->
+    {% if request.args.get('success') %}
+    <div class="custom-alert success-alert">
+        <div class="custom-alert-icon"><i class="ri-checkbox-circle-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>Acción realizada</strong>
+            <span>{{ request.args.get('success') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    {% if request.args.get('error') %}
+    <div class="custom-alert error-alert">
+        <div class="custom-alert-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>No se pudo completar la acción</strong>
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- RESUMEN -->
+    <div class="groups-overview">
+        <div class="overview-card">
+            <div class="overview-card-icon green"><i class="ri-user-line"></i></div>
+            <div class="overview-card-content">
+                <span>Estudiantes</span>
+                <strong>{{ estudiantes|length }}</strong>
+            </div>
+        </div>
+
+        <div class="overview-card">
+            <div class="overview-card-icon blue"><i class="ri-presentation-line"></i></div>
+            <div class="overview-card-content">
+                <span>Materias con docente</span>
+                <strong>{{ docentes|length }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCENTES -->
+        <!-- DOCENTES (EPF-02-03 y EPF-02-05) -->
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">EPF-02-05</span>
+                <h2>Docentes asignados</h2>
+            </div>
+        </div>
+
+        {% if puede_editar %}
+        <form action="{{ url_for('admin_grupos_asignar_docente', id_grupo=grupo.id_grupo) }}"
+              method="POST" class="gd-form" style="margin-bottom:18px">
+            <select name="id_docente" required>
+                <option value="">Selecciona un docente...</option>
+                {% for d in docentes_disponibles %}
+                <option value="{{ d.id_docente }}">{{ d.nombre_completo }}</option>
+                {% endfor %}
+            </select>
+            <select name="id_materia" required>
+                <option value="">Selecciona una materia...</option>
+                {% for m in materias %}
+                <option value="{{ m.id_materia }}">{{ m.nombre }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="gd-btn">
+                <i class="ri-user-add-line"></i> Asignar docente
+            </button>
+        </form>
+        {% endif %}
+
+        <div class="gd-wrap">
+            <table class="gd-tabla">
+                <thead>
+                    <tr>
+                        <th>Materia</th>
+                        <th>Docente</th>
+                        {% if puede_editar %}<th></th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for d in docentes %}
+                    <tr>
+                        <td><span class="gd-chip">{{ d.materia }}</span></td>
+                        <td>{{ d.nombre }} {{ d.apellido1 }} {{ d.apellido2 or '' }}</td>
+                        {% if puede_editar %}
+                        <td style="text-align:right">
+                            <form action="{{ url_for('admin_grupos_quitar_docente', id_grupo=grupo.id_grupo, id_asignacion=d.id_asignacion) }}"
+                                  method="POST" onsubmit="return confirm('¿Quitar esta asignación?');">
+                                <button type="submit" class="gd-btn gd-btn-light">
+                                    <i class="ri-delete-bin-line"></i> Quitar
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="{{ 3 if puede_editar else 2 }}" class="gd-vacio">
+                            Sin docentes asignados.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <!-- ASIGNAR ESTUDIANTE (EPF-02-04) -->
+    {% if puede_editar %}
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">EPF-02-04</span>
+                <h2>Asignar estudiante a este grupo</h2>
+            </div>
+        </div>
+
+        {% if disponibles %}
+        <form action="{{ url_for('admin_grupos_asignar_estudiante', id_grupo=grupo.id_grupo) }}"
+              method="POST" class="gd-form">
+            <select name="id_estudiante" required>
+                <option value="">Selecciona un estudiante...</option>
+                {% for d in disponibles %}
+                <option value="{{ d.id_estudiante }}">
+                    {{ d.apellido1 }} {{ d.apellido2 or '' }}, {{ d.nombre }} (actual: {{ d.grupo_actual }})
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="gd-btn">
+                <i class="ri-user-add-line"></i> Asignar
+            </button>
+        </form>
+        <p class="gd-nota">El estudiante se moverá desde su grupo actual a este grupo.</p>
+        {% else %}
+        <p class="gd-vacio">No hay estudiantes en otros grupos para asignar.</p>
+        {% endif %}
+    </article>
+    {% endif %}
+
+    <!-- ESTUDIANTES -->
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">ESTUDIANTES</span>
+                <h2>Estudiantes del grupo</h2>
+            </div>
+        </div>
+
+        <div class="gd-wrap">
+            <table class="gd-tabla">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        {% if puede_editar %}<th>Mover a otro grupo</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for e in estudiantes %}
+                    <tr>
+                        <td>{{ e.apellido1 }} {{ e.apellido2 or '' }}, {{ e.nombre }}</td>
+                        <td>{{ e.correo }}</td>
+                        {% if puede_editar %}
+                        <td>
+                            {% if otros_grupos %}
+                            <form action="{{ url_for('admin_estudiante_mover', id_estudiante=e.id_estudiante) }}"
+                                  method="POST" class="gd-form">
+                                <input type="hidden" name="id_grupo_origen" value="{{ grupo.id_grupo }}">
+                                <select name="id_grupo_destino" required>
+                                    <option value="">Grupo...</option>
+                                    {% for g in otros_grupos %}
+                                    <option value="{{ g.id_grupo }}">{{ g.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="gd-btn gd-btn-light">Mover</button>
+                            </form>
+                            {% else %}
+                            <span class="gd-nota">No hay otros grupos del mismo año</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="{{ 3 if puede_editar else 2 }}" class="gd-vacio">
+                            Sin estudiantes en este grupo.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+</section>
+
+<style>
+.grupo-detalle .gd-back { display:inline-flex; align-items:center; gap:6px; font-weight:600;
+                          font-size:.9rem; color:#1b3d5e; text-decoration:none; }
+.grupo-detalle .gd-back:hover { text-decoration:underline; }
+.grupo-detalle .dashboard-panel { margin-bottom:24px; }
+.grupo-detalle .gd-wrap { overflow-x:auto; }
+.grupo-detalle .gd-tabla { width:100%; border-collapse:collapse; }
+.grupo-detalle .gd-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                              color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.grupo-detalle .gd-tabla td { padding:14px 12px; border-bottom:1px solid #f0f2f5; }
+.grupo-detalle .gd-tabla tr:last-child td { border-bottom:0; }
+.grupo-detalle .gd-vacio { text-align:center; color:#6b7280; padding:28px; }
+.grupo-detalle .gd-chip { display:inline-block; padding:3px 12px; border-radius:999px; background:#e0ecf8;
+                          color:#1b3d5e; font-weight:600; font-size:.8rem; }
+.grupo-detalle .gd-form { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.grupo-detalle .gd-form select { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px;
+                                 font-size:.9rem; min-width:200px; background:#fff; }
+.grupo-detalle .gd-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:0;
+                         border-radius:8px; background:#1b3d5e; color:#fff; font-weight:600;
+                         font-size:.85rem; cursor:pointer; }
+.grupo-detalle .gd-btn:hover { background:#0f2a43; }
+.grupo-detalle .gd-btn-light { background:#e0ecf8; color:#1b3d5e; }
+.grupo-detalle .gd-btn-light:hover { background:#cfe0f3; }
+.grupo-detalle .gd-nota { margin:10px 0 0; color:#6b7280; font-size:.82rem; }
+</style>
+{% endblock %}

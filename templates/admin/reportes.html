@@ -1,0 +1,167 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Reportes{% endblock %}
+
+{% block content %}
+<section class="groups-page reportes-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-bar-chart-box-line"></i></div>
+            <div>
+                <span class="page-kicker">ADMINISTRACIÓN ACADÉMICA</span>
+                <h1>Reportes</h1>
+                <p>Genera reportes de asistencia, calificaciones y comunicados, y expórtalos.</p>
+            </div>
+        </div>
+    </div>
+
+    {% if request.args.get('error') %}
+    <div class="custom-alert error-alert">
+        <div class="custom-alert-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>No se pudo completar la acción</strong>
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- FILTROS (EPF-02-06) -->
+    <article class="dashboard-panel rp-filtros">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">EPF-02-06</span>
+                <h2>Filtros del reporte</h2>
+            </div>
+        </div>
+
+        <form method="GET" action="{{ url_for('admin_reportes') }}" class="rp-form">
+            <label>Tipo
+                <select name="tipo" id="rpTipo">
+                    {% for clave, nombre in tipos.items() %}
+                    <option value="{{ clave }}" {% if filtros.tipo == clave %}selected{% endif %}>{{ nombre }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>Grupo
+                <select name="grupo">
+                    <option value="">Todos</option>
+                    {% for g in grupos %}
+                    <option value="{{ g.id_grupo }}" {% if filtros.id_grupo|string == g.id_grupo|string %}selected{% endif %}>
+                        {{ g.nombre }} ({{ g.anio_lectivo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="rp-periodo">Periodo
+                <select name="periodo">
+                    <option value="">Todos</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}" {% if filtros.id_periodo|string == p.id_periodo|string %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="rp-fecha">Desde
+                <input type="date" name="desde" value="{{ filtros.desde or '' }}">
+            </label>
+
+            <label class="rp-fecha">Hasta
+                <input type="date" name="hasta" value="{{ filtros.hasta or '' }}">
+            </label>
+
+            <button type="submit" class="rp-btn"><i class="ri-search-line"></i> Generar</button>
+        </form>
+    </article>
+
+    <!-- RESULTADOS + EXPORTAR (EPF-02-07) -->
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">EPF-02-07</span>
+                <h2>{{ titulo }} ({{ filas|length }})</h2>
+            </div>
+
+            {% if filas %}
+            <div class="rp-export">
+                <a class="rp-btn" href="{{ url_for('admin_reportes_exportar', formato='csv', **request.args) }}">
+                    <i class="ri-file-excel-2-line"></i> Excel (CSV)
+                </a>
+                <button type="button" class="rp-btn rp-btn-light" onclick="window.print()">
+                    <i class="ri-file-pdf-2-line"></i> Imprimir / PDF
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="rp-wrap">
+            <table class="rp-tabla">
+                <thead>
+                    <tr>{% for c in columnas %}<th>{{ c }}</th>{% endfor %}</tr>
+                </thead>
+                <tbody>
+                {% for fila in filas %}
+                    <tr>{% for celda in fila %}<td>{{ celda }}</td>{% endfor %}</tr>
+                {% else %}
+                    <tr><td colspan="5" class="rp-vacio">No hay datos con los filtros seleccionados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+</section>
+
+<style>
+.reportes-page .dashboard-panel { margin-bottom:24px; }
+.reportes-page .rp-form { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+.reportes-page .rp-form label { display:flex; flex-direction:column; gap:4px; font-size:.78rem;
+                                font-weight:600; color:#6b7280; }
+.reportes-page .rp-form select, .reportes-page .rp-form input {
+    padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:.9rem;
+    background:#fff; min-width:150px; }
+.reportes-page .rp-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border:0;
+                         border-radius:8px; background:#1b3d5e; color:#fff; font-weight:600;
+                         font-size:.85rem; cursor:pointer; text-decoration:none; }
+.reportes-page .rp-btn:hover { background:#0f2a43; }
+.reportes-page .rp-btn-light { background:#e0ecf8; color:#1b3d5e; }
+.reportes-page .rp-export { display:flex; gap:8px; }
+.reportes-page .rp-wrap { overflow-x:auto; }
+.reportes-page .rp-tabla { width:100%; border-collapse:collapse; }
+.reportes-page .rp-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                              color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.reportes-page .rp-tabla td { padding:12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.reportes-page .rp-vacio { text-align:center; color:#6b7280; padding:28px; }
+
+@media print {
+    aside, nav, header, .sidebar, .rp-filtros, .rp-export,
+    .page-heading, .custom-alert { display:none !important; }
+    .reportes-page .dashboard-panel { box-shadow:none; border:0; }
+    .reportes-page .rp-tabla th, .reportes-page .rp-tabla td { font-size:11px; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tipo = document.getElementById('rpTipo');
+    const periodo = document.querySelector('.rp-periodo');
+    const fechas = document.querySelectorAll('.rp-fecha');
+
+    function ajustar() {
+        const esCalif = tipo.value === 'calificaciones';
+        periodo.style.display = esCalif ? '' : 'none';
+        fechas.forEach(f => f.style.display = esCalif ? 'none' : '');
+    }
+
+    tipo.addEventListener('change', ajustar);
+    ajustar();
+});
+</script>
+{% endblock %}

@@ -577,7 +577,9 @@ Gestión de Grupos
             <!-- FOOTER -->
 
             <div class="group-card-footer">
-
+                        <a href="{{ url_for('admin_grupos_detalle', id_grupo=grupo.id_grupo) }}" class="group-detail-link">
+                    Ver detalle <i class="ri-arrow-right-line"></i>
+                    </a>
                 <div class="student-counter">
 
                     <div class="student-counter-icon">
