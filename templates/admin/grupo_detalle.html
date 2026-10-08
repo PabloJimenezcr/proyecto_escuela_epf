@@ -5,12 +5,9 @@
 {% block content %}
 <section class="groups-page grupo-detalle">
 
-    <!-- ENCABEZADO -->
     <div class="page-heading">
         <div class="page-heading-main">
-            <div class="page-heading-icon">
-                <i class="ri-community-line"></i>
-            </div>
+            <div class="page-heading-icon"><i class="ri-community-line"></i></div>
             <div>
                 <span class="page-kicker">
                     {{ grupo.nivel }} · SECCIÓN {{ grupo.seccion }} · {{ grupo.anio_lectivo }}
@@ -19,7 +16,6 @@
                 <p>Docente guía: {{ grupo.docente_guia or 'Sin asignar' }}</p>
             </div>
         </div>
-
         <div class="page-heading-actions">
             <a href="{{ url_for('admin_grupos') }}" class="gd-back">
                 <i class="ri-arrow-left-line"></i> Volver a grupos
@@ -27,7 +23,6 @@
         </div>
     </div>
 
-    <!-- ALERTAS -->
     {% if request.args.get('success') %}
     <div class="custom-alert success-alert">
         <div class="custom-alert-icon"><i class="ri-checkbox-circle-line"></i></div>
@@ -54,7 +49,6 @@
     </div>
     {% endif %}
 
-    <!-- RESUMEN -->
     <div class="groups-overview">
         <div class="overview-card">
             <div class="overview-card-icon green"><i class="ri-user-line"></i></div>
@@ -63,7 +57,6 @@
                 <strong>{{ estudiantes|length }}</strong>
             </div>
         </div>
-
         <div class="overview-card">
             <div class="overview-card-icon blue"><i class="ri-presentation-line"></i></div>
             <div class="overview-card-content">
@@ -73,8 +66,7 @@
         </div>
     </div>
 
-    <!-- DOCENTES -->
-        <!-- DOCENTES (EPF-02-03 y EPF-02-05) -->
+        <!-- DOCENTES (EPF-02-05) -->
     <article class="dashboard-panel">
         <div class="panel-header">
             <div>
@@ -181,7 +173,6 @@
                 <h2>Estudiantes del grupo</h2>
             </div>
         </div>
-
         <div class="gd-wrap">
             <table class="gd-tabla">
                 <thead>

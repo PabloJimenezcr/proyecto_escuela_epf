@@ -1,3 +1,4 @@
+import mysql.connector
 from db import get_db_connection
 
 
@@ -978,102 +979,6 @@ def eliminar_grupo(id_grupo):
         connection.close()
 
 # ============================================================
-# EPF-02-03 - DETALLE DEL GRUPO (ESTUDIANTES Y DOCENTES)
-# ============================================================
-
-def obtener_detalle_grupo(id_grupo):
-    """
-    Devuelve (grupo, estudiantes, docentes).
-    Si el grupo no existe, devuelve (None, [], []).
-    """
-
-    connection = get_db_connection()
-
-    if not connection:
-        return None, [], []
-
-    cursor = None
-
-    try:
-
-        cursor = connection.cursor(dictionary=True)
-
-        cursor.execute(
-            """
-                SELECT
-                    dmg.id_asignacion,
-                    m.nombre AS materia,
-                    u.nombre,
-                    u.apellido1,
-                    u.apellido2
-                FROM docente_materia_grupo dmg
-                INNER JOIN docentes d  ON d.id_docente = dmg.id_docente
-                INNER JOIN usuarios u  ON u.id_usuario = d.id_usuario
-                INNER JOIN materias m  ON m.id_materia = dmg.id_materia
-                WHERE dmg.id_grupo = %s
-                ORDER BY m.nombre
-            """,
-            (id_grupo,)
-        )
-
-        grupo = cursor.fetchone()
-
-        if not grupo:
-            return None, [], []
-
-        cursor.execute(
-            """
-                SELECT
-                    e.id_estudiante,
-                    u.nombre,
-                    u.apellido1,
-                    u.apellido2,
-                    u.correo
-                FROM estudiantes e
-                INNER JOIN usuarios u ON u.id_usuario = e.id_usuario
-                WHERE e.id_grupo = %s
-                ORDER BY u.apellido1, u.apellido2, u.nombre
-            """,
-            (id_grupo,)
-        )
-
-        estudiantes = cursor.fetchall()
-
-        cursor.execute(
-            """
-                SELECT
-                    m.nombre AS materia,
-                    u.nombre,
-                    u.apellido1,
-                    u.apellido2
-                FROM docente_materia_grupo dmg
-                INNER JOIN docentes d  ON d.id_docente = dmg.id_docente
-                INNER JOIN usuarios u  ON u.id_usuario = d.id_usuario
-                INNER JOIN materias m  ON m.id_materia = dmg.id_materia
-                WHERE dmg.id_grupo = %s
-                ORDER BY m.nombre
-            """,
-            (id_grupo,)
-        )
-
-        docentes = cursor.fetchall()
-
-        return grupo, estudiantes, docentes
-
-    except Exception as e:
-
-        print(f"Error al obtener detalle del grupo: {e}")
-
-        return None, [], []
-
-    finally:
-
-        if cursor:
-            cursor.close()
-
-        connection.close()
-
-# ============================================================
 # EPF-02-04 - ASIGNAR ESTUDIANTES A UN GRUPO
 # ============================================================
 
@@ -1378,6 +1283,115 @@ def quitar_docente_de_grupo(id_asignacion, id_grupo):
         print(f"Error al quitar docente: {e}")
 
         return False, "No fue posible quitar la asignación."
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+
+# ============================================================
+# EPF-02-03 - DETALLE DEL GRUPO (ESTUDIANTES Y DOCENTES)
+# ============================================================
+
+def obtener_detalle_grupo(id_grupo):
+    """
+    Devuelve (grupo, estudiantes, docentes).
+    Si el grupo no existe, devuelve (None, [], []).
+    """
+
+    connection = get_db_connection()
+
+    if not connection:
+        return None, [], []
+
+    cursor = None
+
+    try:
+
+        cursor = connection.cursor(dictionary=True)
+
+        # Datos del grupo y docente guía
+        cursor.execute(
+            """
+                SELECT
+                    g.id_grupo,
+                    g.nombre,
+                    g.nivel,
+                    g.seccion,
+                    g.anio_lectivo,
+                    CASE
+                        WHEN d.id_docente IS NOT NULL THEN
+                            CONCAT(
+                                u.nombre, ' ',
+                                COALESCE(u.apellido1, ''), ' ',
+                                COALESCE(u.apellido2, '')
+                            )
+                        ELSE NULL
+                    END AS docente_guia
+                FROM grupos g
+                LEFT JOIN docentes d ON d.id_docente = g.id_docente_guia
+                LEFT JOIN usuarios u ON u.id_usuario = d.id_usuario
+                WHERE g.id_grupo = %s
+                LIMIT 1
+            """,
+            (id_grupo,)
+        )
+
+        grupo = cursor.fetchone()
+
+        if not grupo:
+            return None, [], []
+
+        # Estudiantes del grupo
+        cursor.execute(
+            """
+                SELECT
+                    e.id_estudiante,
+                    u.nombre,
+                    u.apellido1,
+                    u.apellido2,
+                    u.correo
+                FROM estudiantes e
+                INNER JOIN usuarios u ON u.id_usuario = e.id_usuario
+                WHERE e.id_grupo = %s
+                ORDER BY u.apellido1, u.apellido2, u.nombre
+            """,
+            (id_grupo,)
+        )
+
+        estudiantes = cursor.fetchall()
+
+        # Docentes por materia
+        cursor.execute(
+            """
+                SELECT
+                    dmg.id_asignacion,
+                    m.nombre AS materia,
+                    u.nombre,
+                    u.apellido1,
+                    u.apellido2
+                FROM docente_materia_grupo dmg
+                INNER JOIN docentes d  ON d.id_docente = dmg.id_docente
+                INNER JOIN usuarios u  ON u.id_usuario = d.id_usuario
+                INNER JOIN materias m  ON m.id_materia = dmg.id_materia
+                WHERE dmg.id_grupo = %s
+                ORDER BY m.nombre
+            """,
+            (id_grupo,)
+        )
+
+        docentes = cursor.fetchall()
+
+        return grupo, estudiantes, docentes
+
+    except Exception as e:
+
+        print(f"Error al obtener detalle del grupo: {e}")
+
+        return None, [], []
 
     finally:
 

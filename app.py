@@ -1,22 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from controllers.group_controller import (
-    obtener_grupos,
-    obtener_docentes,
-    obtener_materias,
-    obtener_grupo_por_id,
-    obtener_detalle_grupo,
-    obtener_estudiantes_disponibles,
-    crear_grupo,
-    editar_grupo,
-    eliminar_grupo,
-    asignar_estudiante_a_grupo,
-    asignar_docente_a_grupo,
-    quitar_docente_de_grupo
+from controllers.user_controller import (
+    actualizar_contrasena_real,
+    buscar_usuario_por_correo,
+    crear_nuevo_usuario,
+    registrar_token_real
 )
 
-from controllers.user_controller import actualizar_contrasena_real, buscar_usuario_por_correo, crear_nuevo_usuario, registrar_token_real
 from db import get_db_connection
 
 from controllers.admin_required import admin_required
@@ -33,18 +24,18 @@ from controllers.role_controller import (
     guardar_permisos_rol
 )
 
-
 from controllers.group_controller import (
-    asignar_docente_a_grupo,
-    asignar_estudiante_a_grupo,
-    obtener_detalle_grupo,
-    obtener_estudiantes_disponibles,
     obtener_grupos,
     obtener_docentes,
-    crear_grupo,
+    obtener_materias,
     obtener_grupo_por_id,
+    obtener_detalle_grupo,
+    obtener_estudiantes_disponibles,
+    crear_grupo,
     editar_grupo,
     eliminar_grupo,
+    asignar_estudiante_a_grupo,
+    asignar_docente_a_grupo,
     quitar_docente_de_grupo
 )
 
@@ -578,7 +569,7 @@ def admin_grupos_eliminar(id_grupo):
     )
 
 # ============================================================
-# EPF-02-03 - CONSULTAR GRUPO CON ESTUDIANTES Y DOCENTES
+# EPF-02-03 / 02-04 / 02-05 - DETALLE DEL GRUPO
 # ============================================================
 
 @app.route('/admin/grupos/<int:id_grupo>', methods=['GET'])
@@ -592,7 +583,6 @@ def admin_grupos_detalle(id_grupo):
 
     disponibles = obtener_estudiantes_disponibles(id_grupo)
 
-    # Otros grupos del mismo año lectivo, como destino al mover estudiantes
     otros_grupos = [
         g for g in obtener_grupos()
         if g['id_grupo'] != id_grupo and g['anio_lectivo'] == grupo['anio_lectivo']
@@ -612,7 +602,7 @@ def admin_grupos_detalle(id_grupo):
 
 
 # ============================================================
-# EPF-02-04 - ASIGNAR ESTUDIANTE A ESTE GRUPO
+# EPF-02-04 - ASIGNAR / MOVER ESTUDIANTES
 # ============================================================
 
 @app.route('/admin/grupos/<int:id_grupo>/estudiantes/asignar', methods=['POST'])
@@ -626,15 +616,10 @@ def admin_grupos_asignar_estudiante(id_grupo):
                                 error='Selecciona un estudiante.'))
 
     exito, mensaje = asignar_estudiante_a_grupo(id_estudiante, id_grupo)
-
     clave = 'success' if exito else 'error'
 
     return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
 
-
-# ============================================================
-# EPF-02-04 - MOVER ESTUDIANTE A OTRO GRUPO
-# ============================================================
 
 @app.route('/admin/estudiantes/<int:id_estudiante>/mover', methods=['POST'])
 @permission_required('grupos.editar')
@@ -648,14 +633,13 @@ def admin_estudiante_mover(id_estudiante):
                                 error='Selecciona el grupo de destino.'))
 
     exito, mensaje = asignar_estudiante_a_grupo(id_estudiante, id_destino)
-
     clave = 'success' if exito else 'error'
 
     return redirect(url_for('admin_grupos_detalle', id_grupo=id_origen, **{clave: mensaje}))
 
 
 # ============================================================
-# EPF-02-05 - ASIGNAR DOCENTE A UN GRUPO
+# EPF-02-05 - ASIGNAR / QUITAR DOCENTES
 # ============================================================
 
 @app.route('/admin/grupos/<int:id_grupo>/docentes/asignar', methods=['POST'])
@@ -670,27 +654,27 @@ def admin_grupos_asignar_docente(id_grupo):
                                 error='Selecciona un docente y una materia.'))
 
     exito, mensaje = asignar_docente_a_grupo(id_docente, id_materia, id_grupo)
-
     clave = 'success' if exito else 'error'
 
     return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
 
-
-# ============================================================
-# EPF-02-05 - QUITAR DOCENTE DE UN GRUPO
-# ============================================================
 
 @app.route('/admin/grupos/<int:id_grupo>/docentes/quitar/<int:id_asignacion>', methods=['POST'])
 @permission_required('grupos.editar')
 def admin_grupos_quitar_docente(id_grupo, id_asignacion):
 
     exito, mensaje = quitar_docente_de_grupo(id_asignacion, id_grupo)
-
     clave = 'success' if exito else 'error'
 
     return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
 
 
+# ============================================================
+# ARRANQUE (siempre al final del archivo)
+# ============================================================
+
+if __name__ == '__main__':
+    app.run(debug=True)
 # ============================================================
 # ARRANQUE (siempre al final del archivo)
 # ============================================================

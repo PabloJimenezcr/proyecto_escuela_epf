@@ -9,240 +9,118 @@ Gestión de Grupos
 
 <section class="groups-page">
 
-    <!-- =========================================
-         ENCABEZADO
-    ========================================== -->
-
+    <!-- ENCABEZADO -->
     <div class="page-heading">
-
         <div class="page-heading-main">
-
             <div class="page-heading-icon">
                 <i class="ri-community-line"></i>
             </div>
-
             <div>
-
-                <span class="page-kicker">
-                    ADMINISTRACIÓN ACADÉMICA
-                </span>
-
-                <h1>
-                    Grupos y secciones
-                </h1>
-
+                <span class="page-kicker">ADMINISTRACIÓN ACADÉMICA</span>
+                <h1>Grupos y secciones</h1>
                 <p>
                     Organiza los grupos académicos de la institución,
                     asigna docentes y administra sus secciones.
                 </p>
-
             </div>
-
         </div>
-
 
         <div class="page-heading-actions">
-
             <a href="{{ url_for('admin_grupos_nuevo') }}" class="btn-primary-custom">
-
                 <i class="ri-add-line"></i>
-
-                <span>
-                    Nuevo grupo
-                </span>
-
+                <span>Nuevo grupo</span>
             </a>
-
         </div>
-
     </div>
 
 
-    <!-- =========================================
-     ALERTAS
-========================================== -->
-
+    <!-- ALERTAS -->
     {% if request.args.get('success') == 'creado' %}
-
     <div class="custom-alert success-alert">
-
-        <div class="custom-alert-icon">
-            <i class="ri-checkbox-circle-line"></i>
-        </div>
-
+        <div class="custom-alert-icon"><i class="ri-checkbox-circle-line"></i></div>
         <div class="custom-alert-content">
-
-            <strong>
-                Grupo creado correctamente
-            </strong>
-
-            <span>
-                El nuevo grupo fue registrado correctamente en el sistema.
-            </span>
-
+            <strong>Grupo creado correctamente</strong>
+            <span>El nuevo grupo fue registrado correctamente en el sistema.</span>
         </div>
-
         <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
-
             <i class="ri-close-line"></i>
-
         </button>
-
     </div>
-
     {% endif %}
-
 
     {% if request.args.get('success') == 'editado' %}
-
     <div class="custom-alert success-alert">
-
-        <div class="custom-alert-icon">
-            <i class="ri-checkbox-circle-line"></i>
-        </div>
-
+        <div class="custom-alert-icon"><i class="ri-checkbox-circle-line"></i></div>
         <div class="custom-alert-content">
-
-            <strong>
-                Grupo actualizado
-            </strong>
-
-            <span>
-                La información del grupo fue actualizada correctamente.
-            </span>
-
+            <strong>Grupo actualizado</strong>
+            <span>La información del grupo fue actualizada correctamente.</span>
         </div>
-
         <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
-
             <i class="ri-close-line"></i>
-
         </button>
-
     </div>
-
     {% endif %}
-
 
     {% if request.args.get('success') == 'eliminado' %}
-
     <div class="custom-alert success-alert">
-
-        <div class="custom-alert-icon">
-            <i class="ri-delete-bin-line"></i>
-        </div>
-
+        <div class="custom-alert-icon"><i class="ri-delete-bin-line"></i></div>
         <div class="custom-alert-content">
-
-            <strong>
-                Grupo eliminado
-            </strong>
-
-            <span>
-                El grupo fue eliminado correctamente.
-            </span>
-
+            <strong>Grupo eliminado</strong>
+            <span>El grupo fue eliminado correctamente.</span>
         </div>
-
         <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
-
             <i class="ri-close-line"></i>
-
         </button>
-
     </div>
+    {% endif %}
 
+    {% if request.args.get('error') %}
+    <div class="custom-alert error-alert">
+        <div class="custom-alert-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>No se pudo completar la acción</strong>
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
     {% endif %}
 
 
-    <!-- =========================================
-         RESUMEN
-    ========================================== -->
-
+    <!-- RESUMEN -->
     <div class="groups-overview">
 
         <div class="overview-card">
-
-            <div class="overview-card-icon blue">
-                <i class="ri-group-line"></i>
-            </div>
-
+            <div class="overview-card-icon blue"><i class="ri-group-line"></i></div>
             <div class="overview-card-content">
-
-                <span>
-                    Grupos registrados
-                </span>
-
-                <strong id="groupsTotal">
-                    {{ grupos|length }}
-                </strong>
-
+                <span>Grupos registrados</span>
+                <strong id="groupsTotal">{{ grupos|length }}</strong>
             </div>
-
         </div>
 
-
         <div class="overview-card">
-
-            <div class="overview-card-icon gold">
-                <i class="ri-user-star-line"></i>
-            </div>
-
+            <div class="overview-card-icon gold"><i class="ri-user-star-line"></i></div>
             <div class="overview-card-content">
-
-                <span>
-                    Secciones activas
-                </span>
-
-                <strong id="sectionsTotal">
-                    {{ grupos|length }}
-                </strong>
-
+                <span>Secciones activas</span>
+                <strong id="sectionsTotal">{{ grupos|length }}</strong>
             </div>
-
         </div>
 
-
         <div class="overview-card">
-
-            <div class="overview-card-icon green">
-                <i class="ri-user-line"></i>
-            </div>
-
+            <div class="overview-card-icon green"><i class="ri-user-line"></i></div>
             <div class="overview-card-content">
-
-                <span>
-                    Estudiantes asignados
-                </span>
-
+                <span>Estudiantes asignados</span>
                 <strong id="studentsTotal">
-
-                    {{
-                    grupos
-                    |map(attribute='total_estudiantes')
-                    |map('int')
-                    |sum
-                    }}
-
+                    {{ grupos|map(attribute='total_estudiantes')|map('int')|sum }}
                 </strong>
-
             </div>
-
         </div>
 
-
         <div class="overview-card">
-
-            <div class="overview-card-icon purple">
-                <i class="ri-calendar-line"></i>
-            </div>
-
+            <div class="overview-card-icon purple"><i class="ri-calendar-line"></i></div>
             <div class="overview-card-content">
-
-                <span>
-                    Año académico
-                </span>
-
+                <span>Año académico</span>
                 <strong>
                     {% if grupos %}
                     {{ grupos[0].anio_lectivo }}
@@ -250,101 +128,44 @@ Gestión de Grupos
                     {{ current_year }}
                     {% endif %}
                 </strong>
-
             </div>
-
         </div>
 
     </div>
 
 
-    <!-- =========================================
-         FILTROS
-    ========================================== -->
-
+    <!-- FILTROS -->
     <div class="groups-toolbar">
 
         <div class="groups-search">
-
             <i class="ri-search-line"></i>
-
             <input type="text" id="groupSearch" placeholder="Buscar grupo, nivel, sección o docente...">
-
         </div>
-
 
         <div class="groups-filters">
 
             <div class="filter-wrapper">
-
-                <label for="levelFilter">
-                    Nivel
-                </label>
-
+                <label for="levelFilter">Nivel</label>
                 <select id="levelFilter">
-
-                    <option value="">
-                        Todos los niveles
-                    </option>
-
-                    <option value="Primero">
-                        Primero
-                    </option>
-
-                    <option value="Segundo">
-                        Segundo
-                    </option>
-
-                    <option value="Tercero">
-                        Tercero
-                    </option>
-
-                    <option value="Cuarto">
-                        Cuarto
-                    </option>
-
-                    <option value="Quinto">
-                        Quinto
-                    </option>
-
-                    <option value="Sexto">
-                        Sexto
-                    </option>
-
+                    <option value="">Todos los niveles</option>
+                    <option value="Primero">Primero</option>
+                    <option value="Segundo">Segundo</option>
+                    <option value="Tercero">Tercero</option>
+                    <option value="Cuarto">Cuarto</option>
+                    <option value="Quinto">Quinto</option>
+                    <option value="Sexto">Sexto</option>
                 </select>
-
             </div>
-
 
             <div class="filter-wrapper">
-
-                <label for="yearFilter">
-                    Año
-                </label>
-
+                <label for="yearFilter">Año</label>
                 <select id="yearFilter">
-
-                    <option value="">
-                        Todos
-                    </option>
-
-                    {% set years = grupos
-                    |map(attribute='anio_lectivo')
-                    |list
-                    |unique
-                    |list
-                    %}
-
+                    <option value="">Todos</option>
+                    {% set years = grupos|map(attribute='anio_lectivo')|list|unique|list %}
                     {% for year in years|sort(reverse=true) %}
-
-                    <option value="{{ year }}">
-                        {{ year }}
-                    </option>
-
+                    <option value="{{ year }}">{{ year }}</option>
                     {% endfor %}
-
                 </select>
-
             </div>
 
         </div>
@@ -352,35 +173,17 @@ Gestión de Grupos
     </div>
 
 
-    <!-- =========================================
-         CONTADOR DE RESULTADOS
-    ========================================== -->
-
+    <!-- CONTADOR DE RESULTADOS -->
     <div class="results-header">
-
         <div>
-
-            <span class="results-label">
-                RESULTADOS
-            </span>
-
-            <strong id="visibleGroups">
-                {{ grupos|length }}
-            </strong>
-
-            <span>
-                grupos encontrados
-            </span>
-
+            <span class="results-label">RESULTADOS</span>
+            <strong id="visibleGroups">{{ grupos|length }}</strong>
+            <span>grupos encontrados</span>
         </div>
-
     </div>
 
 
-    <!-- =========================================
-         GRUPOS
-    ========================================== -->
-
+    <!-- GRUPOS -->
     {% if grupos %}
 
     <div class="groups-grid" id="groupsGrid">
@@ -389,49 +192,30 @@ Gestión de Grupos
 
         <article class="group-card" data-name="{{ grupo.nombre|lower }}" data-level="{{ grupo.nivel|lower }}"
             data-section="{{ grupo.seccion|lower }}" data-year="{{ grupo.anio_lectivo }}"
-            data-teacher="{{ (grupo.nombre_docente or '')|lower }}">
-
+            data-teacher="{{ (grupo.docente_guia or '')|lower }}">
 
             <!-- HEADER -->
-
             <div class="group-card-header">
 
                 <div class="group-card-number">
-
-                    <span>
-                        GRUPO
-                    </span>
-
-                    <strong>
-                        {{ "%02d"|format(loop.index) }}
-                    </strong>
-
+                    <span>GRUPO</span>
+                    <strong>{{ "%02d"|format(loop.index) }}</strong>
                 </div>
-
 
                 <div class="group-card-actions">
 
                     {% if puede_editar %}
-
                     <button type="button" class="group-action edit" data-bs-toggle="modal"
                         data-bs-target="#editGroupModal{{ grupo.id_grupo }}" title="Editar grupo">
-
                         <i class="ri-edit-line"></i>
-
                     </button>
-
                     {% endif %}
 
-
                     {% if puede_eliminar %}
-
                     <button type="button" class="group-action delete" data-bs-toggle="modal"
                         data-bs-target="#deleteGroupModal{{ grupo.id_grupo }}" title="Eliminar grupo">
-
                         <i class="ri-delete-bin-line"></i>
-
                     </button>
-
                     {% endif %}
 
                 </div>
@@ -439,192 +223,88 @@ Gestión de Grupos
             </div>
 
 
-            <!-- GRUPO -->
-
+            <!-- TÍTULO -->
             <div class="group-card-title">
-
                 <div class="group-level-badge">
-
                     <i class="ri-graduation-cap-line"></i>
-
                 </div>
-
                 <div>
-
-                    <span class="group-level">
-                        {{ grupo.nivel }}
-                    </span>
-
-                    <h2>
-                        {{ grupo.nombre }}
-                    </h2>
-
+                    <span class="group-level">{{ grupo.nivel }}</span>
+                    <h2>{{ grupo.nombre }}</h2>
                 </div>
-
             </div>
 
 
             <!-- DATOS -->
-
             <div class="group-info-grid">
 
-
                 <div class="group-info-item">
-
-                    <div class="group-info-icon">
-
-                        <i class="ri-layout-grid-line"></i>
-
-                    </div>
-
+                    <div class="group-info-icon"><i class="ri-layout-grid-line"></i></div>
                     <div>
-
-                        <span>
-                            Sección
-                        </span>
-
-                        <strong>
-                            {{ grupo.seccion }}
-                        </strong>
-
+                        <span>Sección</span>
+                        <strong>{{ grupo.seccion }}</strong>
                     </div>
-
                 </div>
 
-
                 <div class="group-info-item">
-
-                    <div class="group-info-icon">
-
-                        <i class="ri-calendar-event-line"></i>
-
-                    </div>
-
+                    <div class="group-info-icon"><i class="ri-calendar-event-line"></i></div>
                     <div>
-
-                        <span>
-                            Año lectivo
-                        </span>
-
-                        <strong>
-                            {{ grupo.anio_lectivo }}
-                        </strong>
-
+                        <span>Año lectivo</span>
+                        <strong>{{ grupo.anio_lectivo }}</strong>
                     </div>
-
                 </div>
 
-
                 <div class="group-info-item">
-
-                    <div class="group-info-icon">
-
-                        <i class="ri-user-star-line"></i>
-
-                    </div>
-
+                    <div class="group-info-icon"><i class="ri-user-star-line"></i></div>
                     <div>
-
-                        <span>
-                            Docente guía
-                        </span>
-
+                        <span>Docente guía</span>
                         <strong>
-
-                            {% if grupo.nombre_docente %}
-
-                            {{ grupo.nombre_docente }}
-
+                            {% if grupo.docente_guia %}
+                            {{ grupo.docente_guia }}
                             {% else %}
-
                             Sin asignar
-
                             {% endif %}
-
                         </strong>
-
                     </div>
-
                 </div>
-
 
                 <div class="group-info-item">
-
-                    <div class="group-info-icon">
-
-                        <i class="ri-team-line"></i>
-
-                    </div>
-
+                    <div class="group-info-icon"><i class="ri-team-line"></i></div>
                     <div>
-
-                        <span>
-                            Estudiantes
-                        </span>
-
-                        <strong>
-                            {{ grupo.total_estudiantes or 0 }}
-                        </strong>
-
+                        <span>Estudiantes</span>
+                        <strong>{{ grupo.total_estudiantes or 0 }}</strong>
                     </div>
-
                 </div>
-
 
             </div>
 
 
             <!-- FOOTER -->
-
             <div class="group-card-footer">
-                        <a href="{{ url_for('admin_grupos_detalle', id_grupo=grupo.id_grupo) }}" class="group-detail-link">
-                    Ver detalle <i class="ri-arrow-right-line"></i>
-                    </a>
+
                 <div class="student-counter">
-
-                    <div class="student-counter-icon">
-
-                        <i class="ri-team-line"></i>
-
-                    </div>
-
+                    <div class="student-counter-icon"><i class="ri-team-line"></i></div>
                     <div>
-
-                        <strong>
-                            {{ grupo.total_estudiantes or 0 }}
-                        </strong>
-
-                        <span>
-                            estudiantes
-                        </span>
-
+                        <strong>{{ grupo.total_estudiantes or 0 }}</strong>
+                        <span>estudiantes</span>
                     </div>
-
                 </div>
-
 
                 <div class="group-section-chip">
-
-                    <span>
-                        Sección
-                    </span>
-
-                    <strong>
-                        {{ grupo.seccion }}
-                    </strong>
-
+                    <span>Sección</span>
+                    <strong>{{ grupo.seccion }}</strong>
                 </div>
 
-            </div>
+                <a href="{{ url_for('admin_grupos_detalle', id_grupo=grupo.id_grupo) }}" class="group-detail-link">
+                    Ver detalle <i class="ri-arrow-right-line"></i>
+                </a>
 
+            </div>
 
         </article>
 
 
-        <!-- =================================
-                     MODAL EDITAR
-                ================================== -->
-
+        <!-- MODAL EDITAR -->
         {% if puede_editar %}
 
         <div class="modal fade" id="editGroupModal{{ grupo.id_grupo }}" tabindex="-1"
@@ -634,31 +314,17 @@ Gestión de Grupos
 
                 <div class="modal-content custom-group-modal">
 
-
                     <div class="modal-header custom-modal-header">
 
                         <div class="custom-modal-heading">
-
                             <div class="custom-modal-icon edit-icon">
-
                                 <i class="ri-edit-2-line"></i>
-
                             </div>
-
                             <div>
-
-                                <span>
-                                    GESTIÓN ACADÉMICA
-                                </span>
-
-                                <h2>
-                                    Editar grupo
-                                </h2>
-
+                                <span>GESTIÓN ACADÉMICA</span>
+                                <h2>Editar grupo</h2>
                             </div>
-
                         </div>
-
 
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
@@ -667,183 +333,88 @@ Gestión de Grupos
 
                     <form action="{{ url_for('admin_grupos_editar', id_grupo=grupo.id_grupo) }}" method="POST">
 
-
                         <div class="custom-modal-body">
 
-
                             <!-- NIVEL -->
-
                             <div class="form-group-custom">
-
-                                <label for="nivel{{ grupo.id_grupo }}">
-                                    Nivel académico
-                                </label>
-
+                                <label for="nivel{{ grupo.id_grupo }}">Nivel académico</label>
                                 <div class="input-custom">
-
                                     <i class="ri-graduation-cap-line"></i>
-
                                     <select name="nivel" id="nivel{{ grupo.id_grupo }}" required>
-
-                                        {% for nivel in [
-                                        'Primero',
-                                        'Segundo',
-                                        'Tercero',
-                                        'Cuarto',
-                                        'Quinto',
-                                        'Sexto'
-                                        ] %}
-
-                                        <option value="{{ nivel }}" {% if grupo.nivel==nivel %} selected {% endif %}>
-
+                                        {% for nivel in ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'] %}
+                                        <option value="{{ nivel }}" {% if grupo.nivel == nivel %}selected{% endif %}>
                                             {{ nivel }}
-
                                         </option>
-
                                         {% endfor %}
-
                                     </select>
-
                                 </div>
-
                             </div>
-
 
                             <!-- SECCIÓN -->
-
                             <div class="form-group-custom">
-
-                                <label>
-                                    Sección
-                                </label>
-
+                                <label>Sección</label>
                                 <div class="section-selector">
-
                                     {% for section in ['A','B','C','D','E'] %}
-
                                     <label class="section-option">
-
-                                        <input type="radio" name="seccion" value="{{ section }}" {% if
-                                            grupo.seccion==section %} checked {% endif %} required>
-
-                                        <span>
-                                            {{ section }}
-                                        </span>
-
+                                        <input type="radio" name="seccion" value="{{ section }}"
+                                            {% if grupo.seccion == section %}checked{% endif %} required>
+                                        <span>{{ section }}</span>
                                     </label>
-
                                     {% endfor %}
-
                                 </div>
-
                             </div>
-
 
                             <!-- AÑO -->
-
                             <div class="form-group-custom">
-
-                                <label for="year{{ grupo.id_grupo }}">
-                                    Año lectivo
-                                </label>
-
+                                <label for="year{{ grupo.id_grupo }}">Año lectivo</label>
                                 <div class="input-custom">
-
                                     <i class="ri-calendar-line"></i>
-
                                     <input type="number" name="anio_lectivo" id="year{{ grupo.id_grupo }}"
                                         value="{{ grupo.anio_lectivo }}" min="2020" max="2100" required>
-
                                 </div>
-
                             </div>
-
 
                             <!-- DOCENTE -->
-
                             <div class="form-group-custom">
-
-                                <label for="teacher{{ grupo.id_grupo }}">
-                                    Docente guía
-                                </label>
-
+                                <label for="teacher{{ grupo.id_grupo }}">Docente guía</label>
                                 <div class="input-custom">
-
                                     <i class="ri-user-star-line"></i>
-
                                     <select name="id_docente_guia" id="teacher{{ grupo.id_grupo }}">
-
-                                        <option value="">
-                                            Sin docente guía
-                                        </option>
-
+                                        <option value="">Sin docente guía</option>
                                         {% for docente in docentes %}
-
-                                        <option value="{{ docente.id_docente }}" {% if
-                                            grupo.id_docente_guia==docente.id_docente %} selected {% endif %}>
-
-                                            {{ docente.nombre }}
-
+                                        <option value="{{ docente.id_docente }}"
+                                            {% if grupo.id_docente_guia == docente.id_docente %}selected{% endif %}>
+                                            {{ docente.nombre_completo }}
                                         </option>
-
                                         {% endfor %}
-
                                     </select>
-
                                 </div>
-
                             </div>
 
-
                             <!-- INFORMACIÓN -->
-
                             <div class="edit-information">
-
-                                <div class="edit-information-icon">
-
-                                    <i class="ri-information-line"></i>
-
-                                </div>
-
+                                <div class="edit-information-icon"><i class="ri-information-line"></i></div>
                                 <div>
-
-                                    <strong>
-                                        Información del grupo
-                                    </strong>
-
+                                    <strong>Información del grupo</strong>
                                     <p>
                                         El nombre del grupo se actualiza
                                         automáticamente según el nivel
                                         seleccionado.
                                     </p>
-
                                 </div>
-
                             </div>
 
-
                         </div>
-
 
                         <div class="custom-modal-footer">
-
                             <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">
-
                                 Cancelar
-
                             </button>
-
-
                             <button type="submit" class="btn-modal-primary">
-
                                 <i class="ri-save-line"></i>
-
                                 Guardar cambios
-
                             </button>
-
                         </div>
-
 
                     </form>
 
@@ -856,11 +427,7 @@ Gestión de Grupos
         {% endif %}
 
 
-
-        <!-- =================================
-                     MODAL ELIMINAR
-                ================================== -->
-
+        <!-- MODAL ELIMINAR -->
         {% if puede_eliminar %}
 
         <div class="modal fade" id="deleteGroupModal{{ grupo.id_grupo }}" tabindex="-1"
@@ -870,114 +437,70 @@ Gestión de Grupos
 
                 <div class="modal-content delete-modal">
 
-
                     <div class="delete-modal-body">
 
                         <div class="delete-warning-icon">
-
                             <i class="ri-delete-bin-line"></i>
-
                         </div>
 
+                        <span class="delete-kicker">ELIMINAR GRUPO</span>
 
-                        <span class="delete-kicker">
-                            ELIMINAR GRUPO
-                        </span>
+                        <h3>¿Eliminar este grupo?</h3>
 
-
-                        <h3>
-                            ¿Eliminar este grupo?
-                        </h3>
-
-
-                        <p>
-                            Estás a punto de eliminar:
-                        </p>
-
+                        <p>Estás a punto de eliminar:</p>
 
                         <div class="delete-group-preview">
-
-                            <strong>
-                                {{ grupo.nombre }}
-                            </strong>
-
-                            <span>
-                                Sección {{ grupo.seccion }}
-                                ·
-                                {{ grupo.anio_lectivo }}
-                            </span>
-
+                            <strong>{{ grupo.nombre }}</strong>
+                            <span>Sección {{ grupo.seccion }} · {{ grupo.anio_lectivo }}</span>
                         </div>
-
 
                         {% if grupo.total_estudiantes and grupo.total_estudiantes > 0 %}
 
                         <div class="delete-danger-message">
-
                             <i class="ri-error-warning-line"></i>
-
                             <span>
                                 Este grupo tiene
-                                <strong>
-                                    {{ grupo.total_estudiantes }}
-                                </strong>
+                                <strong>{{ grupo.total_estudiantes }}</strong>
                                 estudiante(s) asignado(s).
                                 No puede eliminarse hasta que
                                 sean desvinculados.
                             </span>
-
                         </div>
 
                         {% else %}
 
-                        <p class="delete-note">
-                            Esta acción no se puede deshacer.
-                        </p>
+                        <p class="delete-note">Esta acción no se puede deshacer.</p>
 
                         {% endif %}
 
-
                     </div>
-
 
                     <div class="delete-modal-footer">
 
                         <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">
-
                             Cancelar
-
                         </button>
-
 
                         {% if not grupo.total_estudiantes or grupo.total_estudiantes == 0 %}
 
                         <form action="{{ url_for('admin_grupos_eliminar', id_grupo=grupo.id_grupo) }}" method="POST"
                             class="delete-form">
-
                             <button type="submit" class="btn-modal-danger">
-
                                 <i class="ri-delete-bin-line"></i>
-
                                 Eliminar grupo
-
                             </button>
-
                         </form>
 
                         {% else %}
 
                         <button type="button" class="btn-modal-danger disabled" disabled>
-
                             <i class="ri-lock-line"></i>
-
                             No disponible
-
                         </button>
 
                         {% endif %}
 
                     </div>
-
 
                 </div>
 
@@ -993,29 +516,13 @@ Gestión de Grupos
 
 
     <!-- SIN RESULTADOS -->
-
     <div class="groups-no-results" id="groupsNoResults" style="display:none;">
-
-        <div class="no-results-icon">
-
-            <i class="ri-search-eye-line"></i>
-
-        </div>
-
-        <h3>
-            No encontramos grupos
-        </h3>
-
-        <p>
-            Prueba cambiando los criterios de búsqueda o los filtros.
-        </p>
-
+        <div class="no-results-icon"><i class="ri-search-eye-line"></i></div>
+        <h3>No encontramos grupos</h3>
+        <p>Prueba cambiando los criterios de búsqueda o los filtros.</p>
         <button type="button" class="btn-clear-filters" id="clearFilters">
-
             Limpiar filtros
-
         </button>
-
     </div>
 
 
@@ -1023,55 +530,47 @@ Gestión de Grupos
 
 
     <!-- EMPTY STATE -->
-
     <div class="groups-empty-state">
 
         <div class="empty-state-visual">
-
-            <div class="empty-state-circle">
-
-                <i class="ri-community-line"></i>
-
-            </div>
-
+            <div class="empty-state-circle"><i class="ri-community-line"></i></div>
             <span></span>
             <span></span>
             <span></span>
-
         </div>
 
-
-        <span class="empty-kicker">
-            SIN GRUPOS REGISTRADOS
-        </span>
-
+        <span class="empty-kicker">SIN GRUPOS REGISTRADOS</span>
 
         <h2>
             Comienza a organizar<br>
             los grupos de la institución
         </h2>
 
-
         <p>
             Crea el primer grupo académico,
             define su sección y asigna un docente guía.
         </p>
 
-
         <a href="{{ url_for('admin_grupos_nuevo') }}" class="btn-primary-custom">
-
             <i class="ri-add-line"></i>
-
             Crear primer grupo
-
         </a>
 
     </div>
 
     {% endif %}
 
-
 </section>
+
+<style>
+.group-detail-link { display:inline-flex; align-items:center; gap:6px; font-weight:600;
+                     font-size:.85rem; color:#1b3d5e; text-decoration:none; }
+.group-detail-link:hover { text-decoration:underline; }
+
+/* Alerta de error (por si style.css aún no la define) */
+.custom-alert.error-alert { background:#fee2e2; border-color:#fca5a5; }
+.custom-alert.error-alert .custom-alert-icon { color:#b91c1c; }
+</style>
 
 {% endblock %}
 
@@ -1109,9 +608,7 @@ Gestión de Grupos
                 ? yearFilter.value
                 : '';
 
-
             let visibleCount = 0;
-
 
             cards.forEach(function (card) {
 
@@ -1121,7 +618,6 @@ Gestión de Grupos
                 const year = card.dataset.year || '';
                 const teacher = card.dataset.teacher || '';
 
-
                 const matchesSearch =
                     !searchValue ||
                     name.includes(searchValue) ||
@@ -1130,50 +626,28 @@ Gestión de Grupos
                     year.includes(searchValue) ||
                     teacher.includes(searchValue);
 
+                const matchesLevel = !selectedLevel || level === selectedLevel;
 
-                const matchesLevel =
-                    !selectedLevel ||
-                    level === selectedLevel;
+                const matchesYear = !selectedYear || year === selectedYear;
 
-
-                const matchesYear =
-                    !selectedYear ||
-                    year === selectedYear;
-
-
-                const visible =
-                    matchesSearch &&
-                    matchesLevel &&
-                    matchesYear;
-
+                const visible = matchesSearch && matchesLevel && matchesYear;
 
                 if (visible) {
-
                     card.style.display = '';
-
                     visibleCount++;
-
                 } else {
-
                     card.style.display = 'none';
-
                 }
 
             });
-
 
             if (visibleGroups) {
                 visibleGroups.textContent = visibleCount;
             }
 
-
             if (noResults) {
-
                 noResults.style.display =
-                    visibleCount === 0 && cards.length > 0
-                        ? 'flex'
-                        : 'none';
-
+                    visibleCount === 0 && cards.length > 0 ? 'flex' : 'none';
             }
 
         }
@@ -1183,32 +657,21 @@ Gestión de Grupos
             searchInput.addEventListener('input', filterGroups);
         }
 
-
         if (levelFilter) {
             levelFilter.addEventListener('change', filterGroups);
         }
-
 
         if (yearFilter) {
             yearFilter.addEventListener('change', filterGroups);
         }
 
-
         if (clearFilters) {
 
             clearFilters.addEventListener('click', function () {
 
-                if (searchInput) {
-                    searchInput.value = '';
-                }
-
-                if (levelFilter) {
-                    levelFilter.value = '';
-                }
-
-                if (yearFilter) {
-                    yearFilter.value = '';
-                }
+                if (searchInput) { searchInput.value = ''; }
+                if (levelFilter) { levelFilter.value = ''; }
+                if (yearFilter) { yearFilter.value = ''; }
 
                 filterGroups();
 
@@ -1217,17 +680,13 @@ Gestión de Grupos
         }
 
 
-        /*
-         * Evita doble envío accidental
-         */
+        /* Evita doble envío accidental */
 
         document.querySelectorAll('form').forEach(function (form) {
 
             form.addEventListener('submit', function () {
 
-                const submitButton = form.querySelector(
-                    'button[type="submit"]'
-                );
+                const submitButton = form.querySelector('button[type="submit"]');
 
                 if (!submitButton) {
                     return;
