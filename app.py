@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime
+from flask import send_file
 
 from controllers.user_controller import (
     actualizar_contrasena_real,
@@ -38,7 +40,12 @@ from controllers.group_controller import (
     asignar_docente_a_grupo,
     quitar_docente_de_grupo
 )
-
+from controllers.report_controller import (
+    TIPOS,
+    obtener_periodos,
+    generar_reporte,
+    exportar_csv
+)
 
 app = Flask(__name__)
 # Llave de cifrado obligatoria para proteger la sesión del usuario logueado
@@ -668,13 +675,70 @@ def admin_grupos_quitar_docente(id_grupo, id_asignacion):
 
     return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
 
+# ============================================================
+# EPF-02-06 - GENERAR REPORTES
+# ============================================================
+
+def _filtros_reporte():
+    return {
+        "tipo": request.args.get("tipo", "asistencia"),
+        "id_grupo": request.args.get("grupo") or None,
+        "id_periodo": request.args.get("periodo") or None,
+        "desde": request.args.get("desde") or None,
+        "hasta": request.args.get("hasta") or None,
+    }
+
+
+@app.route('/admin/reportes', methods=['GET'])
+@admin_required
+def admin_reportes():
+
+    f = _filtros_reporte()
+
+    titulo, columnas, filas = generar_reporte(
+        f["tipo"], f["id_grupo"], f["id_periodo"], f["desde"], f["hasta"]
+    )
+
+    return render_template(
+        'admin/reportes.html',
+        tipos=TIPOS,
+        filtros=f,
+        grupos=obtener_grupos(),
+        periodos=obtener_periodos(),
+        titulo=titulo,
+        columnas=columnas,
+        filas=filas
+    )
+
 
 # ============================================================
-# ARRANQUE (siempre al final del archivo)
+# EPF-02-07 - EXPORTAR REPORTES (CSV)
 # ============================================================
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route('/admin/reportes/exportar/<formato>', methods=['GET'])
+@admin_required
+def admin_reportes_exportar(formato):
+
+    f = _filtros_reporte()
+
+    titulo, columnas, filas = generar_reporte(
+        f["tipo"], f["id_grupo"], f["id_periodo"], f["desde"], f["hasta"]
+    )
+
+    if not filas:
+        return redirect(url_for('admin_reportes', error='No hay datos para exportar.'))
+
+    nombre = f"{f['tipo']}_{datetime.now():%Y%m%d_%H%M}"
+
+    if formato == 'csv':
+        return send_file(
+            exportar_csv(titulo, columnas, filas),
+            as_attachment=True,
+            download_name=f"{nombre}.csv",
+            mimetype="text/csv"
+        )
+
+    return redirect(url_for('admin_reportes', error='Formato de exportación no válido.'))
 # ============================================================
 # ARRANQUE (siempre al final del archivo)
 # ============================================================
