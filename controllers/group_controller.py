@@ -1,3 +1,4 @@
+import mysql.connector
 from db import get_db_connection
 
 
@@ -969,6 +970,428 @@ def eliminar_grupo(id_grupo):
             False,
             "No fue posible eliminar el grupo."
         )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+# ============================================================
+# EPF-02-04 - ASIGNAR ESTUDIANTES A UN GRUPO
+# ============================================================
+
+def obtener_estudiantes_disponibles(id_grupo):
+    """
+    Estudiantes que están en OTROS grupos (candidatos a ser asignados
+    a id_grupo), con el nombre de su grupo actual.
+    """
+
+    connection = get_db_connection()
+
+    if not connection:
+        return []
+
+    cursor = None
+
+    try:
+
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+                SELECT
+                    e.id_estudiante,
+                    u.nombre,
+                    u.apellido1,
+                    u.apellido2,
+                    g.nombre AS grupo_actual
+                FROM estudiantes e
+                INNER JOIN usuarios u ON u.id_usuario = e.id_usuario
+                INNER JOIN grupos g   ON g.id_grupo = e.id_grupo
+                WHERE e.id_grupo <> %s
+                  AND u.estado = 'activo'
+                ORDER BY u.apellido1, u.apellido2, u.nombre
+            """,
+            (id_grupo,)
+        )
+
+        return cursor.fetchall()
+
+    except Exception as e:
+
+        print(f"Error al obtener estudiantes disponibles: {e}")
+
+        return []
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+
+def asignar_estudiante_a_grupo(id_estudiante, id_grupo):
+    """
+    Mueve un estudiante a un grupo. Devuelve (exito, mensaje).
+    """
+
+    connection = get_db_connection()
+
+    if not connection:
+        return False, "No se pudo conectar a la base de datos."
+
+    cursor = None
+
+    try:
+
+        try:
+            id_estudiante = int(id_estudiante)
+            id_grupo = int(id_grupo)
+        except (TypeError, ValueError):
+            return False, "Los datos enviados no son válidos."
+
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id_grupo, nombre FROM grupos WHERE id_grupo = %s LIMIT 1",
+            (id_grupo,)
+        )
+
+        grupo = cursor.fetchone()
+
+        if not grupo:
+            return False, "El grupo seleccionado no existe."
+
+        cursor.execute(
+            "SELECT id_estudiante, id_grupo FROM estudiantes WHERE id_estudiante = %s LIMIT 1",
+            (id_estudiante,)
+        )
+
+        estudiante = cursor.fetchone()
+
+        if not estudiante:
+            return False, "El estudiante seleccionado no existe."
+
+        if estudiante["id_grupo"] == id_grupo:
+            return False, "El estudiante ya pertenece a ese grupo."
+
+        cursor.execute(
+            "UPDATE estudiantes SET id_grupo = %s WHERE id_estudiante = %s",
+            (id_grupo, id_estudiante)
+        )
+
+        connection.commit()
+
+        return True, f"Estudiante asignado al grupo {grupo['nombre']}."
+
+    except Exception as e:
+
+        connection.rollback()
+
+        print(f"Error al asignar estudiante: {e}")
+
+        return False, "No fue posible asignar al estudiante."
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+# ============================================================
+# EPF-02-05 - ASIGNAR DOCENTES A LOS GRUPOS
+# ============================================================
+
+def obtener_materias():
+    """Catálogo de materias para el formulario de asignación."""
+
+    connection = get_db_connection()
+
+    if not connection:
+        return []
+
+    cursor = None
+
+    try:
+
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id_materia, nombre FROM materias ORDER BY nombre"
+        )
+
+        return cursor.fetchall()
+
+    except Exception as e:
+
+        print(f"Error al obtener materias: {e}")
+
+        return []
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+
+def asignar_docente_a_grupo(id_docente, id_materia, id_grupo):
+    """
+    Asigna un docente a una materia dentro de un grupo.
+    Devuelve (exito, mensaje).
+    """
+
+    connection = get_db_connection()
+
+    if not connection:
+        return False, "No se pudo conectar a la base de datos."
+
+    cursor = None
+
+    try:
+
+        try:
+            id_docente = int(id_docente)
+            id_materia = int(id_materia)
+            id_grupo = int(id_grupo)
+        except (TypeError, ValueError):
+            return False, "Los datos enviados no son válidos."
+
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id_grupo FROM grupos WHERE id_grupo = %s LIMIT 1",
+            (id_grupo,)
+        )
+
+        if not cursor.fetchone():
+            return False, "El grupo seleccionado no existe."
+
+        cursor.execute(
+            """
+                SELECT d.id_docente
+                FROM docentes d
+                INNER JOIN usuarios u ON u.id_usuario = d.id_usuario
+                WHERE d.id_docente = %s AND u.estado = 'activo'
+                LIMIT 1
+            """,
+            (id_docente,)
+        )
+
+        if not cursor.fetchone():
+            return False, "El docente seleccionado no existe o está inactivo."
+
+        cursor.execute(
+            "SELECT id_materia FROM materias WHERE id_materia = %s LIMIT 1",
+            (id_materia,)
+        )
+
+        if not cursor.fetchone():
+            return False, "La materia seleccionada no existe."
+
+        # --- Regla: una materia, un docente por grupo (borrar para permitir varios) ---
+        cursor.execute(
+            """
+                SELECT id_asignacion
+                FROM docente_materia_grupo
+                WHERE id_grupo = %s AND id_materia = %s
+                LIMIT 1
+            """,
+            (id_grupo, id_materia)
+        )
+
+        if cursor.fetchone():
+            return False, (
+                "Esa materia ya tiene un docente en este grupo. "
+                "Quita la asignación actual antes de asignar otra."
+            )
+        # --------------------------------------------------------------------------------
+
+        cursor.execute(
+            """
+                INSERT INTO docente_materia_grupo
+                    (id_docente, id_materia, id_grupo)
+                VALUES (%s, %s, %s)
+            """,
+            (id_docente, id_materia, id_grupo)
+        )
+
+        connection.commit()
+
+        return True, "Docente asignado correctamente."
+
+    except Exception as e:
+
+        connection.rollback()
+
+        print(f"Error al asignar docente: {e}")
+
+        return False, "No fue posible asignar al docente."
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+
+def quitar_docente_de_grupo(id_asignacion, id_grupo):
+    """Elimina una asignación docente-materia de un grupo."""
+
+    connection = get_db_connection()
+
+    if not connection:
+        return False, "No se pudo conectar a la base de datos."
+
+    cursor = None
+
+    try:
+
+        try:
+            id_asignacion = int(id_asignacion)
+            id_grupo = int(id_grupo)
+        except (TypeError, ValueError):
+            return False, "Los datos enviados no son válidos."
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+                DELETE FROM docente_materia_grupo
+                WHERE id_asignacion = %s AND id_grupo = %s
+            """,
+            (id_asignacion, id_grupo)
+        )
+
+        if cursor.rowcount == 0:
+            return False, "La asignación no existe."
+
+        connection.commit()
+
+        return True, "Asignación eliminada correctamente."
+
+    except Exception as e:
+
+        connection.rollback()
+
+        print(f"Error al quitar docente: {e}")
+
+        return False, "No fue posible quitar la asignación."
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+
+# ============================================================
+# EPF-02-03 - DETALLE DEL GRUPO (ESTUDIANTES Y DOCENTES)
+# ============================================================
+
+def obtener_detalle_grupo(id_grupo):
+    """
+    Devuelve (grupo, estudiantes, docentes).
+    Si el grupo no existe, devuelve (None, [], []).
+    """
+
+    connection = get_db_connection()
+
+    if not connection:
+        return None, [], []
+
+    cursor = None
+
+    try:
+
+        cursor = connection.cursor(dictionary=True)
+
+        # Datos del grupo y docente guía
+        cursor.execute(
+            """
+                SELECT
+                    g.id_grupo,
+                    g.nombre,
+                    g.nivel,
+                    g.seccion,
+                    g.anio_lectivo,
+                    CASE
+                        WHEN d.id_docente IS NOT NULL THEN
+                            CONCAT(
+                                u.nombre, ' ',
+                                COALESCE(u.apellido1, ''), ' ',
+                                COALESCE(u.apellido2, '')
+                            )
+                        ELSE NULL
+                    END AS docente_guia
+                FROM grupos g
+                LEFT JOIN docentes d ON d.id_docente = g.id_docente_guia
+                LEFT JOIN usuarios u ON u.id_usuario = d.id_usuario
+                WHERE g.id_grupo = %s
+                LIMIT 1
+            """,
+            (id_grupo,)
+        )
+
+        grupo = cursor.fetchone()
+
+        if not grupo:
+            return None, [], []
+
+        # Estudiantes del grupo
+        cursor.execute(
+            """
+                SELECT
+                    e.id_estudiante,
+                    u.nombre,
+                    u.apellido1,
+                    u.apellido2,
+                    u.correo
+                FROM estudiantes e
+                INNER JOIN usuarios u ON u.id_usuario = e.id_usuario
+                WHERE e.id_grupo = %s
+                ORDER BY u.apellido1, u.apellido2, u.nombre
+            """,
+            (id_grupo,)
+        )
+
+        estudiantes = cursor.fetchall()
+
+        # Docentes por materia
+        cursor.execute(
+            """
+                SELECT
+                    dmg.id_asignacion,
+                    m.nombre AS materia,
+                    u.nombre,
+                    u.apellido1,
+                    u.apellido2
+                FROM docente_materia_grupo dmg
+                INNER JOIN docentes d  ON d.id_docente = dmg.id_docente
+                INNER JOIN usuarios u  ON u.id_usuario = d.id_usuario
+                INNER JOIN materias m  ON m.id_materia = dmg.id_materia
+                WHERE dmg.id_grupo = %s
+                ORDER BY m.nombre
+            """,
+            (id_grupo,)
+        )
+
+        docentes = cursor.fetchall()
+
+        return grupo, estudiantes, docentes
+
+    except Exception as e:
+
+        print(f"Error al obtener detalle del grupo: {e}")
+
+        return None, [], []
 
     finally:
 

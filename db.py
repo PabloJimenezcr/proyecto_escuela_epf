@@ -2,7 +2,6 @@ import os
 import mysql.connector
 from dotenv import load_dotenv
 
-# Carga las variables del archivo .env local
 load_dotenv()
 
 def get_db_connection():
@@ -12,7 +11,8 @@ def get_db_connection():
             host=os.getenv('DB_HOST'),
             user=os.getenv('DB_USER'),
             password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
+            database=os.getenv('DB_NAME'),
+            port=int(os.getenv('DB_PORT', 3306))
         )
         return connection
     except mysql.connector.Error as err:

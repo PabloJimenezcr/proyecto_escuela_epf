@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime
+from flask import send_file
 
 from controllers.user_controller import (
+    actualizar_contrasena_real,
     buscar_usuario_por_correo,
     crear_nuevo_usuario,
-    registrar_token_real,
-    actualizar_contrasena_real
+    registrar_token_real
 )
 
 from db import get_db_connection
@@ -24,16 +26,26 @@ from controllers.role_controller import (
     guardar_permisos_rol
 )
 
-
 from controllers.group_controller import (
     obtener_grupos,
     obtener_docentes,
-    crear_grupo,
+    obtener_materias,
     obtener_grupo_por_id,
+    obtener_detalle_grupo,
+    obtener_estudiantes_disponibles,
+    crear_grupo,
     editar_grupo,
-    eliminar_grupo
+    eliminar_grupo,
+    asignar_estudiante_a_grupo,
+    asignar_docente_a_grupo,
+    quitar_docente_de_grupo
 )
-
+from controllers.report_controller import (
+    TIPOS,
+    obtener_periodos,
+    generar_reporte,
+    exportar_csv
+)
 
 app = Flask(__name__)
 # Llave de cifrado obligatoria para proteger la sesión del usuario logueado
@@ -563,5 +575,174 @@ def admin_grupos_eliminar(id_grupo):
         url_for('admin_grupos', error=mensaje)
     )
 
+# ============================================================
+# EPF-02-03 / 02-04 / 02-05 - DETALLE DEL GRUPO
+# ============================================================
+
+@app.route('/admin/grupos/<int:id_grupo>', methods=['GET'])
+@permission_required('grupos.ver')
+def admin_grupos_detalle(id_grupo):
+
+    grupo, estudiantes, docentes = obtener_detalle_grupo(id_grupo)
+
+    if grupo is None:
+        return redirect(url_for('admin_grupos', error='El grupo no existe.'))
+
+    disponibles = obtener_estudiantes_disponibles(id_grupo)
+
+    otros_grupos = [
+        g for g in obtener_grupos()
+        if g['id_grupo'] != id_grupo and g['anio_lectivo'] == grupo['anio_lectivo']
+    ]
+
+    return render_template(
+        'admin/grupo_detalle.html',
+        grupo=grupo,
+        estudiantes=estudiantes,
+        docentes=docentes,
+        disponibles=disponibles,
+        otros_grupos=otros_grupos,
+        docentes_disponibles=obtener_docentes(),
+        materias=obtener_materias(),
+        puede_editar=True
+    )
+
+
+# ============================================================
+# EPF-02-04 - ASIGNAR / MOVER ESTUDIANTES
+# ============================================================
+
+@app.route('/admin/grupos/<int:id_grupo>/estudiantes/asignar', methods=['POST'])
+@permission_required('grupos.editar')
+def admin_grupos_asignar_estudiante(id_grupo):
+
+    id_estudiante = request.form.get('id_estudiante', '').strip()
+
+    if not id_estudiante:
+        return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo,
+                                error='Selecciona un estudiante.'))
+
+    exito, mensaje = asignar_estudiante_a_grupo(id_estudiante, id_grupo)
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
+
+
+@app.route('/admin/estudiantes/<int:id_estudiante>/mover', methods=['POST'])
+@permission_required('grupos.editar')
+def admin_estudiante_mover(id_estudiante):
+
+    id_origen = request.form.get('id_grupo_origen', '').strip()
+    id_destino = request.form.get('id_grupo_destino', '').strip()
+
+    if not id_destino:
+        return redirect(url_for('admin_grupos_detalle', id_grupo=id_origen,
+                                error='Selecciona el grupo de destino.'))
+
+    exito, mensaje = asignar_estudiante_a_grupo(id_estudiante, id_destino)
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_grupos_detalle', id_grupo=id_origen, **{clave: mensaje}))
+
+
+# ============================================================
+# EPF-02-05 - ASIGNAR / QUITAR DOCENTES
+# ============================================================
+
+@app.route('/admin/grupos/<int:id_grupo>/docentes/asignar', methods=['POST'])
+@permission_required('grupos.editar')
+def admin_grupos_asignar_docente(id_grupo):
+
+    id_docente = request.form.get('id_docente', '').strip()
+    id_materia = request.form.get('id_materia', '').strip()
+
+    if not id_docente or not id_materia:
+        return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo,
+                                error='Selecciona un docente y una materia.'))
+
+    exito, mensaje = asignar_docente_a_grupo(id_docente, id_materia, id_grupo)
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
+
+
+@app.route('/admin/grupos/<int:id_grupo>/docentes/quitar/<int:id_asignacion>', methods=['POST'])
+@permission_required('grupos.editar')
+def admin_grupos_quitar_docente(id_grupo, id_asignacion):
+
+    exito, mensaje = quitar_docente_de_grupo(id_asignacion, id_grupo)
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
+
+# ============================================================
+# EPF-02-06 - GENERAR REPORTES
+# ============================================================
+
+def _filtros_reporte():
+    return {
+        "tipo": request.args.get("tipo", "asistencia"),
+        "id_grupo": request.args.get("grupo") or None,
+        "id_periodo": request.args.get("periodo") or None,
+        "desde": request.args.get("desde") or None,
+        "hasta": request.args.get("hasta") or None,
+    }
+
+
+@app.route('/admin/reportes', methods=['GET'])
+@admin_required
+def admin_reportes():
+
+    f = _filtros_reporte()
+
+    titulo, columnas, filas = generar_reporte(
+        f["tipo"], f["id_grupo"], f["id_periodo"], f["desde"], f["hasta"]
+    )
+
+    return render_template(
+        'admin/reportes.html',
+        tipos=TIPOS,
+        filtros=f,
+        grupos=obtener_grupos(),
+        periodos=obtener_periodos(),
+        titulo=titulo,
+        columnas=columnas,
+        filas=filas
+    )
+
+
+# ============================================================
+# EPF-02-07 - EXPORTAR REPORTES (CSV)
+# ============================================================
+
+@app.route('/admin/reportes/exportar/<formato>', methods=['GET'])
+@admin_required
+def admin_reportes_exportar(formato):
+
+    f = _filtros_reporte()
+
+    titulo, columnas, filas = generar_reporte(
+        f["tipo"], f["id_grupo"], f["id_periodo"], f["desde"], f["hasta"]
+    )
+
+    if not filas:
+        return redirect(url_for('admin_reportes', error='No hay datos para exportar.'))
+
+    nombre = f"{f['tipo']}_{datetime.now():%Y%m%d_%H%M}"
+
+    if formato == 'csv':
+        return send_file(
+            exportar_csv(titulo, columnas, filas),
+            as_attachment=True,
+            download_name=f"{nombre}.csv",
+            mimetype="text/csv"
+        )
+
+    return redirect(url_for('admin_reportes', error='Formato de exportación no válido.'))
+# ============================================================
+# ARRANQUE (siempre al final del archivo)
+# ============================================================
+
 if __name__ == '__main__':
     app.run(debug=True)
+
