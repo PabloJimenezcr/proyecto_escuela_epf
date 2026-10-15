@@ -71,7 +71,7 @@
                         <span>Dashboard</span>
                     </a>
 
-                    <a href="#" class="sidebar-link disabled-link">
+                    <a href="{{ url_for('users') }}" class="sidebar-link {% if request.endpoint == 'users' %}active{% endif %}">
                         <i class="ri-user-3-line"></i>
                         <span>Usuarios</span>
                     </a>
