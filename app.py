@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 from flask import send_file
@@ -7,7 +7,8 @@ from controllers.user_controller import (
     actualizar_contrasena_real,
     buscar_usuario_por_correo,
     crear_nuevo_usuario,
-    registrar_token_real
+    registrar_token_real,
+    registrar_usuario_por_admin
 )
 
 from db import get_db_connection
@@ -287,6 +288,77 @@ def test_db():
         db.close()
         return "¡Conexión a MySQL exitosa de forma correcta!"
     return "Error al conectar a la base de datos."
+
+
+
+# ======================================================
+# Usuarios 03-01,3,4,5,6
+# ======================================================
+
+@app.route('/admin/users', methods=['GET', 'POST'])
+@admin_required
+def users():
+    if 'id_usuario' not in session:
+        return redirect(url_for('login'))
+        
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    # POST: Administrador registra 
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        apellido1 = request.form.get('apellido1')
+        apellido2 = request.form.get('apellido2')
+        correo = request.form.get('email')
+        contrasena = request.form.get('password')
+        telefono = request.form.get('telefono')
+        id_rol = request.form.get('id_rol') 
+
+        if not correo or not correo.lower().endswith('@escuela.com'):
+            flash('Error: El correo debe pertenecer estrictamente al dominio @escuela.com', 'danger')
+            return redirect(url_for('users'))
+        
+        registrar_usuario_por_admin(nombre, apellido1, apellido2, correo, contrasena, telefono, id_rol)
+        flash('Usuario registrado exitosamente', 'success')
+        return redirect(url_for('users'))
+        
+    # GET: Lee las cuentas 
+    cursor.execute("""
+        SELECT u.id_usuario, u.nombre, u.apellido1, u.apellido2, u.correo, u.telefono, u.estado, r.nombre AS nombre_rol 
+        FROM usuarios u
+        INNER JOIN roles r ON u.id_rol = r.id_rol
+    """)
+    usuarios_bd = cursor.fetchall()
+
+    cursor.execute("SELECT id_rol, nombre FROM roles ORDER BY id_rol ASC")
+    roles_disponibles = cursor.fetchall()
+    
+    cursor.close()
+    db.close()
+    
+    return render_template('admin/usuarios.html', users=usuarios_bd, roles=roles_disponibles)
+
+
+@app.route('/admin/users/toggle/<int:id_usuario>')
+@admin_required
+def toggle_user(id_usuario):
+    """activo e inactivo."""
+    if 'id_usuario' not in session:
+        return redirect(url_for('login'))
+        
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT estado FROM usuarios WHERE id_usuario = %s", (id_usuario,))
+    usuario = cursor.fetchone()
+    
+    if usuario:
+        nuevo_estado = 'inactivo' if usuario['estado'] == 'activo' else 'activo'
+        cursor.execute("UPDATE usuarios SET estado = %s WHERE id_usuario = %s", (nuevo_estado, id_usuario))
+        db.commit()
+        
+    cursor.close()
+    db.close()
+    return redirect(url_for('users'))
 
 
 # GESTION DE ROLES

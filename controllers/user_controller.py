@@ -122,3 +122,29 @@ def actualizar_contrasena_real(token, nueva_clave_plana):
     finally:
         cursor.close()
         db.close()
+
+# registro por admin (usuarios)
+
+def registrar_usuario_por_admin(nombre, apellido1, apellido2, correo, contrasena_plana, telefono, id_rol):
+    
+    db = get_db_connection()
+    if not db:
+        return False
+    try:
+        cursor = db.cursor()
+        contrasena_hash = generate_password_hash(contrasena_plana)
+        
+        sql = """
+            INSERT INTO usuarios (nombre, apellido1, apellido2, correo, contrasena_hash, telefono, id_rol, estado)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'activo')
+        """
+        valores = (nombre, apellido1, apellido2, correo, contrasena_hash, telefono, id_rol)
+        cursor.execute(sql, valores)
+        db.commit()
+        return True
+    except Exception as e:
+        print(f"Error interno al registrar usuario desde el panel: {e}")
+        return False
+    finally:
+        cursor.close()
+        db.close()

@@ -1,0 +1,266 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+
+<style>
+    .fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .interactive-card {
+        background: #ffffff !important; 
+        border: 1px solid #e2e8f0 !important; 
+        border-radius: 16px !important; 
+        padding: 28px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        transition: all 0.3s ease;
+    }
+    .interactive-card:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 24px rgba(26, 54, 93, 0.06) !important;
+    }
+
+    .animated-input {
+        background: #ffffff !important; 
+        border: 1px solid #cbd5e1 !important;
+        color: #1e293b !important; 
+        padding: 10px 14px !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .animated-input::placeholder {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+    }
+    .animated-input:focus {
+        border-color: #1a365d !important;
+        box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.15) !important;
+        color: #1e293b !important;
+    }
+
+    .table-school {
+        color: #1e293b !important;
+    }
+    .table-school th {
+        color: #475569 !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+    }
+    .hover-row {
+        transition: background-color 0.2s ease !important;
+        color: #334155 !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+    .hover-row:hover {
+        background-color: #f8fafc !important;
+    }
+
+    .btn-school {
+        background: #1a365d !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        padding: 11px 20px !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-school:hover {
+        background: #2a4a7d !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2) !important;
+    }
+</style>
+
+<div class="container-fluid pt-4 fade-in-up" style="color: #1e293b; font-family: 'DM Sans', sans-serif; padding-bottom: 40px;">
+    
+    <!-- ENCABEZADO DE LA SECCIÓN-->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 style="color: #1a365d; font-weight: 800; margin: 0; letter-spacing: -0.5px; font-size: 1.8rem;">
+                    <i class="ri-user-settings-fill me-2" style="vertical-align: middle;"></i>Control de Usuarios
+                </h2>
+                <p style="color: #475569; margin: 5px 0 0 0; font-size: 0.95rem; font-weight: 500;">Módulo de alta seguridad para la gestión de identidades y accesos del campus virtual.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloque para mostrar mensajes de Flask (Errores o éxitos) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container-fluid mt-3">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
+          <strong>{{ '¡Atención!' if category == 'danger' else '¡Éxito!' }}</strong> {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+    <div class="row g-4 justify-content-center">
+        <!-- FORMULARIO DE MATRÍCULA INTERNA -->
+        <div class="col-12 col-lg-4 col-xl-5">
+            <div class="interactive-card">
+                <div class="d-flex align-items-center mb-4">
+                    <div style="background: rgba(26, 54, 93, 0.05); padding: 10px; border-radius: 10px; margin-right: 12px; border: 1px solid rgba(26, 54, 93, 0.1);">
+                        <i class="ri-user-add-fill" style="color: #1a365d; font-size: 1.3rem;"></i>
+                    </div>
+                    <h4 style="color: #1a365d; font-weight: 700; margin: 0;">Crear Usuarios</h4>
+                </div>
+                
+                <form action="{{ url_for('users') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Nombre Propio</label>
+                        <input type="text" name="nombre" class="form-control animated-input" required placeholder="Ej. Carlos">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">1° Apellido</label>
+                            <input type="text" name="apellido1" class="form-control animated-input" required placeholder="Primer apellido">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">2° Apellido</label>
+                            <input type="text" name="apellido2" class="form-control animated-input" placeholder="Segundo apellido">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Correo Institucional</label>
+                            <!-- Se añade el atributo pattern y title -->
+                                <input type="email" name="email" class="form-control animated-input" required 
+                                placeholder="usuario@escuela.com" 
+                                pattern="[a-zA-Z0-9._%+-]+@escuela\.com$" 
+                                title="El correo debe pertenecer estrictamente al dominio @escuela.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Contraseña Inicial</label>
+                        <input type="password" name="password" class="form-control animated-input" required placeholder="Asigna clave temporal">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control animated-input" placeholder="Número de contacto">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" style="font-size: 0.8rem; color: #1a365d; font-weight: 700; text-transform: uppercase;">Asignar Rango / Rol</label>
+                        <select name="id_rol" class="form-select animated-input" required style="cursor: pointer;">
+                            <option value="" disabled selected>-- Selecciona un Perfil Escolar --</option>
+                            {% for r in roles %}
+                                <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-school w-100">
+                        <i class="ri-shield-user-line me-1" style="vertical-align: middle;"></i> Registrar en el Sistema
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TABLA DE REGISTROS -->
+         <div class="col-12 col-xl-11 mt-4">
+            <div class="interactive-card">
+                
+                <!-- SECCIÓN DE ENCABEZADO DE TABLA Y FILTRO BUSCADOR -->
+                <div class="row align-items-center mb-4 g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div style="background: rgba(26, 54, 93, 0.05); padding: 10px; border-radius: 10px; margin-right: 12px; border: 1px solid rgba(26, 54, 93, 0.1);">
+                                <i class="ri-team-fill" style="color: #1a365d; font-size: 1.3rem;"></i>
+                            </div>
+                            <div>
+                                <h4 style="color: #1a365d; font-weight: 700; margin: 0;">Registros de la Comunidad Escolar</h4>
+                                <small class="text-muted">Desplace dentro de la tabla para ver más cuentas</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- BARRA DE BÚSQUEDA GLOBAL -->
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 8px 0 0 8px;">
+                                <i class="ri-search-line"></i>
+                            </span>
+                            <input type="text" id="buscadorUsuarios" class="form-control bg-light border-start-0 animated-input" style="border-radius: 0 8px 8px 0 !important; margin: 0 !important;" placeholder="Buscar por nombre, correo o rol institucional...">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CONTENEDOR CON ALTO FIJO Y SCROLL INTERNO -->
+                <div class="table-responsive" style="max-height: 480px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);">
+                    <table class="table table-hover table-school mb-0" style="margin: 0; background: transparent; min-width: 850px;">
+                        <thead>
+                            <tr style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Miembro</th>
+                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Credenciales</th>
+                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Rol</th>
+                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Estado</th>
+                                <th class="pb-3 text-center" style="border-bottom: 2px solid #e2e8f0;">Acciones de Control</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                             <tr class="hover-row usuario-fila" style="vertical-align: middle;">
+                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 36px; height: 36px; border-radius: 50%; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
+                                            <i class="ri-user-3-line" style="color: #64748b;"></i>
+                                        </div>
+                                        <div>
+                                            <span style="font-weight: 600; display: block; color: #1e293b;">{{ u.nombre }} {{ u.apellido1 }}</span>
+                                            <span style="font-size: 0.8rem; color: #64748b;">ID #{{ u.id_usuario }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    <span style="display: block; font-size: 0.9rem; color: #334155; font-weight: 500;">{{ u.correo }}</span>
+                                    <span style="font-size: 0.8rem; color: #64748b;"><i class="ri-phone-line"></i> {{ u.telefono if u.telefono else 'Sin teléfono' }}</span>
+                                </td>
+                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    <span class="badge" style="background: rgba(26, 54, 93, 0.08); color: #1a365d; padding: 6px 12px; border-radius: 6px; font-weight: 600; border: 1px solid rgba(26, 54, 93, 0.15);">
+                                        {{ u.nombre_rol }}
+                                    </span>
+                                </td>
+                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    {% if u.estado == 'activo' %}
+                                        <span class="badge" style="background: rgba(40, 167, 69, 0.12); color: #1e7e34; padding: 6px 12px; border-radius: 6px; font-weight: 600;"><i class="ri-checkbox-blank-circle-fill me-1" style="font-size: 0.5rem; vertical-align: middle;"></i> Activo</span>
+                                    {% else %}
+                                        <span class="badge" style="background: rgba(220, 53, 69, 0.12); color: #bd2130; padding: 6px 12px; border-radius: 6px; font-weight: 600;"><i class="ri-checkbox-blank-circle-fill me-1" style="font-size: 0.5rem; vertical-align: middle;"></i> Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 text-center" style="border-bottom: 1px solid #f1f5f9;">
+                                    {% if u.estado == 'activo' %}
+                                        <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}" class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 6px; font-weight: 600; padding: 5px 12px; transition: all 0.2s;">
+                                            <i class="ri-user-unfollow-line me-1"></i> Desactivar
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}" class="btn btn-sm" style="background: transparent; border: 1px solid #28a745; color: #28a745; border-radius: 6px; font-weight: 600; padding: 5px 12px; transition: all 0.2s;">
+                                            <i class="ri-user-follow-line me-1"></i> Activar
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/usuarios.js') }}"></script>
+
+{% endblock %}

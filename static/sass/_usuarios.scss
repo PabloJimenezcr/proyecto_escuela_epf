@@ -1,0 +1,72 @@
+.fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.interactive-card {
+    background: #2b2b3a; 
+    border: 1px solid #3a3a4a; 
+    border-radius: 16px; 
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    &:hover {
+        transform: translateY(-5px);
+        border-color: #00ff88;
+        box-shadow: 0 12px 30px rgba(0, 255, 136, 0.08);
+    }
+}
+
+.animated-input {
+    background: #1e1e2e !important; 
+    border: 1px solid #4a4a5a !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    transition: all 0.25s ease;
+
+    &:focus {
+        border-color: #00ff88 !important;
+        box-shadow: 0 0 12px rgba(0, 255, 136, 0.25) !important;
+        transform: scale(1.008);
+    }
+}
+
+.hover-row {
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(0, 255, 136, 0.03) !important;
+        transform: scale(1.003);
+        box-shadow: inset 4px 0 0 #00ff88;
+    }
+}
+
+.btn-glow {
+    transition: all 0.25s ease;
+    position: relative;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 18px rgba(0, 255, 136, 0.45);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.stat-badge {
+    background: rgba(0, 255, 136, 0.08);
+    color: #00ff88;
+    border: 1px solid rgba(0, 255, 136, 0.15);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-block;
+}
