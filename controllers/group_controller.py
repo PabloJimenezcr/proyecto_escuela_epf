@@ -1399,3 +1399,55 @@ def obtener_detalle_grupo(id_grupo):
             cursor.close()
 
         connection.close()
+
+# ============================================================
+# EPF-05-03 - LISTA DE ESTUDIANTES DE UN GRUPO
+# ============================================================
+
+def obtener_estudiantes_por_grupo(id_grupo):
+    """Estudiantes de un grupo con sus datos de contacto."""
+
+    connection = get_db_connection()
+
+    if not connection:
+        return []
+
+    cursor = None
+
+    try:
+
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+                SELECT
+                    e.id_estudiante,
+                    u.nombre,
+                    u.apellido1,
+                    u.apellido2,
+                    u.correo,
+                    u.telefono,
+                    u.estado,
+                    e.fecha_nacimiento
+                FROM estudiantes e
+                INNER JOIN usuarios u ON u.id_usuario = e.id_usuario
+                WHERE e.id_grupo = %s
+                ORDER BY u.apellido1, u.apellido2, u.nombre
+            """,
+            (id_grupo,)
+        )
+
+        return cursor.fetchall()
+
+    except Exception as e:
+
+        print(f"Error al obtener estudiantes del grupo: {e}")
+
+        return []
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()

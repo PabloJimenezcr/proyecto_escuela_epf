@@ -1,0 +1,99 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Estudiantes por grupo{% endblock %}
+
+{% block content %}
+<section class="groups-page eg-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-team-line"></i></div>
+            <div>
+                <span class="page-kicker">EPF-05-03</span>
+                <h1>Estudiantes por grupo</h1>
+                <p>Consulta la lista de estudiantes de un grupo.</p>
+            </div>
+        </div>
+    </div>
+
+    <article class="dashboard-panel">
+        <form method="GET" action="{{ url_for('admin_estudiantes_grupo') }}" class="eg-form">
+            <label>Grupo
+                <select name="grupo" onchange="this.form.submit()">
+                    <option value="">Selecciona un grupo...</option>
+                    {% for g in grupos %}
+                    <option value="{{ g.id_grupo }}"
+                        {% if grupo_sel and grupo_sel.id_grupo == g.id_grupo %}selected{% endif %}>
+                        {{ g.nombre }} ({{ g.anio_lectivo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+        </form>
+    </article>
+
+    {% if grupo_sel %}
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">{{ grupo_sel.nivel }} · SECCIÓN {{ grupo_sel.seccion }}</span>
+                <h2>Grupo {{ grupo_sel.nombre }} ({{ estudiantes|length }})</h2>
+            </div>
+            <input type="text" id="egBuscar" class="eg-buscar" placeholder="Buscar por nombre o correo...">
+        </div>
+
+        <div class="eg-wrap">
+            <table class="eg-tabla" id="egTabla">
+                <thead>
+                    <tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Nacimiento</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                {% for e in estudiantes %}
+                    <tr>
+                        <td>{{ e.apellido1 }} {{ e.apellido2 or '' }}, {{ e.nombre }}</td>
+                        <td>{{ e.correo }}</td>
+                        <td>{{ e.telefono or '-' }}</td>
+                        <td>{{ e.fecha_nacimiento }}</td>
+                        <td>{{ e.estado }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="eg-vacio">Este grupo no tiene estudiantes.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+    {% else %}
+    <article class="dashboard-panel">
+        <p class="eg-vacio">Selecciona un grupo para ver sus estudiantes.</p>
+    </article>
+    {% endif %}
+
+</section>
+
+<style>
+.eg-page .dashboard-panel { margin-bottom:24px; }
+.eg-page .eg-form label { display:flex; flex-direction:column; gap:4px; font-size:.78rem; font-weight:600; color:#6b7280; }
+.eg-page select, .eg-page .eg-buscar { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px;
+                                       font-size:.9rem; min-width:240px; background:#fff; }
+.eg-page .eg-wrap { overflow-x:auto; }
+.eg-page .eg-tabla { width:100%; border-collapse:collapse; }
+.eg-page .eg-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                        color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.eg-page .eg-tabla td { padding:12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.eg-page .eg-vacio { text-align:center; color:#6b7280; padding:24px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const buscar = document.getElementById('egBuscar');
+    if (!buscar) return;
+    buscar.addEventListener('input', function () {
+        const q = buscar.value.trim().toLowerCase();
+        document.querySelectorAll('#egTabla tbody tr').forEach(function (tr) {
+            tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

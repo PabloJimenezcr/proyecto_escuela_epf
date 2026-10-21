@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 from flask import send_file
 
+from controllers.teacher_controller import actualizar_docente, obtener_lista_docentes
 from controllers.user_controller import (
     actualizar_contrasena_real,
     buscar_usuario_por_correo,
@@ -28,6 +29,7 @@ from controllers.role_controller import (
 )
 
 from controllers.group_controller import (
+    obtener_estudiantes_por_grupo,
     obtener_grupos,
     obtener_docentes,
     obtener_materias,
@@ -46,6 +48,19 @@ from controllers.report_controller import (
     obtener_periodos,
     generar_reporte,
     exportar_csv
+)
+from controllers.teacher_controller import (
+    obtener_lista_docentes,
+    actualizar_docente,
+    registrar_docente
+)
+from controllers.parent_controller import (
+    PARENTESCOS,
+    obtener_padres,
+    obtener_estudiantes_activos,
+    obtener_vinculos,
+    crear_vinculo,
+    eliminar_vinculo
 )
 
 app = Flask(__name__)
@@ -811,6 +826,129 @@ def admin_reportes_exportar(formato):
         )
 
     return redirect(url_for('admin_reportes', error='Formato de exportación no válido.'))
+# ============================================================
+# EPF-05-03 - LISTA DE ESTUDIANTES DE UN GRUPO
+# ============================================================
+
+@app.route('/admin/estudiantes-grupo', methods=['GET'])
+@admin_required
+def admin_estudiantes_grupo():
+
+    grupos = obtener_grupos()
+
+    id_grupo = request.args.get('grupo', '').strip()
+
+    grupo_sel = None
+    estudiantes = []
+
+    if id_grupo.isdigit():
+        grupo_sel = next(
+            (g for g in grupos if g['id_grupo'] == int(id_grupo)),
+            None
+        )
+        if grupo_sel:
+            estudiantes = obtener_estudiantes_por_grupo(int(id_grupo))
+
+    return render_template(
+        'admin/estudiantes_grupo.html',
+        grupos=grupos,
+        grupo_sel=grupo_sel,
+        estudiantes=estudiantes
+    )
+# ============================================================
+# EPF-05-02 - CONSULTAR Y ACTUALIZAR DOCENTES
+# ============================================================
+
+@app.route('/admin/docentes', methods=['GET'])
+@admin_required
+def admin_docentes():
+
+    return render_template(
+        'admin/docentes.html',
+        docentes=obtener_lista_docentes(),
+        materias=obtener_materias(),
+        grupos=obtener_grupos()
+    )
+
+
+@app.route('/admin/docentes/nuevo', methods=['POST'])
+@admin_required
+def admin_docentes_nuevo():
+
+    exito, mensaje = registrar_docente(
+        request.form.get('nombre'),
+        request.form.get('apellido1'),
+        request.form.get('apellido2'),
+        request.form.get('correo'),
+        request.form.get('telefono'),
+        request.form.get('contrasena'),
+        request.form.get('especialidad'),
+        request.form.get('id_materia'),
+        request.form.get('id_grupo')
+    )
+
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_docentes', **{clave: mensaje}))
+
+
+@app.route('/admin/docentes/editar/<int:id_docente>', methods=['POST'])
+@admin_required
+def admin_docentes_editar(id_docente):
+
+    exito, mensaje = actualizar_docente(
+        id_docente,
+        request.form.get('nombre'),
+        request.form.get('apellido1'),
+        request.form.get('apellido2'),
+        request.form.get('telefono'),
+        request.form.get('especialidad')
+    )
+
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_docentes', **{clave: mensaje}))
+# ============================================================
+# EPF-04-03 - VINCULAR PADRES CON ESTUDIANTES
+# ============================================================
+
+@app.route('/admin/vinculos', methods=['GET'])
+@admin_required
+def admin_vinculos():
+
+    return render_template(
+        'admin/vinculos.html',
+        padres=obtener_padres(),
+        estudiantes=obtener_estudiantes_activos(),
+        vinculos=obtener_vinculos(),
+        parentescos=PARENTESCOS
+    )
+
+
+@app.route('/admin/vinculos/nuevo', methods=['POST'])
+@admin_required
+def admin_vinculos_nuevo():
+
+    exito, mensaje = crear_vinculo(
+        request.form.get('id_padre'),
+        request.form.get('id_estudiante'),
+        request.form.get('parentesco')
+    )
+
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_vinculos', **{clave: mensaje}))
+
+
+@app.route('/admin/vinculos/eliminar/<int:id_vinculo>', methods=['POST'])
+@admin_required
+def admin_vinculos_eliminar(id_vinculo):
+
+    exito, mensaje = eliminar_vinculo(id_vinculo)
+
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for('admin_vinculos', **{clave: mensaje}))
 # ============================================================
 # ARRANQUE (siempre al final del archivo)
 # ============================================================
