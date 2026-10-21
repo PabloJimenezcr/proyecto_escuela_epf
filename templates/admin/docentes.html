@@ -1,0 +1,216 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Docentes{% endblock %}
+
+{% block content %}
+<section class="groups-page dc-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-presentation-line"></i></div>
+            <div>
+                <span class="page-kicker">EPF-05-02</span>
+                <h1>Docentes</h1>
+                <p>Consulta y actualiza la información de los docentes.</p>
+            </div>
+        </div>
+    </div>
+     <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#nuevoDocente">
+            <i class="ri-add-line"></i>
+            <span>Nuevo docente</span>
+    </button>
+
+    {% if request.args.get('success') %}
+    <div class="custom-alert success-alert">
+        <div class="custom-alert-icon"><i class="ri-checkbox-circle-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>Acción realizada</strong>
+            <span>{{ request.args.get('success') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    {% if request.args.get('error') %}
+    <div class="custom-alert error-alert">
+        <div class="custom-alert-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>No se pudo completar la acción</strong>
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">LISTADO</span>
+                <h2>Docentes registrados ({{ docentes|length }})</h2>
+            </div>
+            <input type="text" id="dcBuscar" class="dc-buscar" placeholder="Buscar por nombre, correo o especialidad...">
+        </div>
+
+        <div class="dc-wrap">
+            <table class="dc-tabla" id="dcTabla">
+                <thead>
+                    <tr>
+                        <th>Nombre</th><th>Correo</th><th>Teléfono</th>
+                        <th>Especialidad</th><th>Asignaciones</th><th>Estado</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for d in docentes %}
+                    <tr>
+                        <td>{{ d.apellido1 }} {{ d.apellido2 or '' }}, {{ d.nombre }}</td>
+                        <td>{{ d.correo }}</td>
+                        <td>{{ d.telefono or '-' }}</td>
+                        <td>{{ d.especialidad or '-' }}</td>
+                        <td>{{ d.total_asignaciones }}</td>
+                        <td>{{ d.estado }}</td>
+                        <td style="text-align:right">
+                            <button type="button" class="dc-btn" data-bs-toggle="modal"
+                                data-bs-target="#editDocente{{ d.id_docente }}">
+                                <i class="ri-edit-line"></i> Editar
+                            </button>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" class="dc-vacio">No hay docentes registrados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    {% for d in docentes %}
+    <div class="modal fade" id="editDocente{{ d.id_docente }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar docente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form action="{{ url_for('admin_docentes_editar', id_docente=d.id_docente) }}" method="POST">
+                    <div class="modal-body dc-modal-body">
+                        <label>Nombre
+                            <input type="text" name="nombre" value="{{ d.nombre }}" maxlength="60" required>
+                        </label>
+                        <label>Primer apellido
+                            <input type="text" name="apellido1" value="{{ d.apellido1 }}" maxlength="60" required>
+                        </label>
+                        <label>Segundo apellido
+                            <input type="text" name="apellido2" value="{{ d.apellido2 or '' }}" maxlength="60">
+                        </label>
+                        <label>Teléfono
+                            <input type="text" name="telefono" value="{{ d.telefono or '' }}" maxlength="20">
+                        </label>
+                        <label>Especialidad
+                            <input type="text" name="especialidad" value="{{ d.especialidad or '' }}" maxlength="80">
+                        </label>
+                        <p class="dc-nota">El correo y la contraseña se gestionan desde Usuarios.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="dc-btn dc-btn-light" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="dc-btn"><i class="ri-save-line"></i> Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="modal fade" id="nuevoDocente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar docente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form action="{{ url_for('admin_docentes_nuevo') }}" method="POST">
+                    <div class="modal-body dc-modal-body">
+                        <label>Nombre
+                            <input type="text" name="nombre" maxlength="60" required>
+                        </label>
+                        <label>Primer apellido
+                            <input type="text" name="apellido1" maxlength="60" required>
+                        </label>
+                        <label>Segundo apellido
+                            <input type="text" name="apellido2" maxlength="60">
+                        </label>
+                        <label>Correo
+                            <input type="email" name="correo" maxlength="120" required>
+                        </label>
+                        <label>Teléfono
+                            <input type="text" name="telefono" maxlength="20">
+                        </label>
+                        <label>Contraseña (mínimo 8 caracteres)
+                            <input type="password" name="contrasena" minlength="8" required>
+                        </label>
+                        <label>Especialidad
+                            <input type="text" name="especialidad" maxlength="80">
+                        </label>
+                        <label>Materia (opcional)
+                            <select name="id_materia">
+                                <option value="">Sin asignar</option>
+                                {% for m in materias %}
+                                <option value="{{ m.id_materia }}">{{ m.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label>Grupo (opcional)
+                            <select name="id_grupo">
+                                <option value="">Sin asignar</option>
+                                {% for g in grupos %}
+                                <option value="{{ g.id_grupo }}">{{ g.nombre }} ({{ g.anio_lectivo }})</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="dc-btn dc-btn-light" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="dc-btn"><i class="ri-save-line"></i> Registrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.dc-page .dashboard-panel { margin-bottom:24px; }
+.dc-page .dc-wrap { overflow-x:auto; }
+.dc-page .dc-tabla { width:100%; border-collapse:collapse; }
+.dc-page .dc-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                        color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.dc-page .dc-tabla td { padding:12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.dc-page .dc-vacio { text-align:center; color:#6b7280; padding:24px; }
+.dc-page .dc-buscar { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:.9rem; min-width:260px; }
+.dc-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:0; border-radius:8px;
+          background:#1b3d5e; color:#fff; font-weight:600; font-size:.85rem; cursor:pointer; }
+.dc-btn:hover { background:#0f2a43; }
+.dc-btn-light { background:#e0ecf8; color:#1b3d5e; }
+.dc-modal-body { display:flex; flex-direction:column; gap:12px; }
+.dc-modal-body label { display:flex; flex-direction:column; gap:4px; font-size:.8rem; font-weight:600; color:#6b7280; }
+.dc-modal-body input { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:.9rem; }
+.dc-nota { margin:0; color:#6b7280; font-size:.8rem; }
+.dc-modal-body select { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:.9rem; background:#fff; }
+.dc-page .dashboard-panel { margin-top: 24px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const buscar = document.getElementById('dcBuscar');
+    if (!buscar) return;
+    buscar.addEventListener('input', function () {
+        const q = buscar.value.trim().toLowerCase();
+        document.querySelectorAll('#dcTabla tbody tr').forEach(function (tr) {
+            tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

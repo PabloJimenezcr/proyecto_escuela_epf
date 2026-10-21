@@ -1,0 +1,159 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Vincular padres{% endblock %}
+
+{% block content %}
+<section class="groups-page vc-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-parent-line"></i></div>
+            <div>
+                <span class="page-kicker">EPF-04-03</span>
+                <h1>Padres y estudiantes</h1>
+                <p>Vincula padres de familia con sus hijos.</p>
+            </div>
+        </div>
+    </div>
+
+    {% if request.args.get('success') %}
+    <div class="custom-alert success-alert">
+        <div class="custom-alert-icon"><i class="ri-checkbox-circle-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>Acción realizada</strong>
+            <span>{{ request.args.get('success') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    {% if request.args.get('error') %}
+    <div class="custom-alert error-alert">
+        <div class="custom-alert-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>No se pudo completar la acción</strong>
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">NUEVO VÍNCULO</span>
+                <h2>Vincular padre con estudiante</h2>
+            </div>
+        </div>
+
+        {% if padres and estudiantes %}
+        <form action="{{ url_for('admin_vinculos_nuevo') }}" method="POST" class="vc-form">
+            <label>Padre de familia
+                <select name="id_padre" required>
+                    <option value="">Selecciona...</option>
+                    {% for p in padres %}
+                    <option value="{{ p.id_padre }}">{{ p.apellido1 }} {{ p.apellido2 or '' }}, {{ p.nombre }} ({{ p.correo }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Estudiante
+                <select name="id_estudiante" required>
+                    <option value="">Selecciona...</option>
+                    {% for e in estudiantes %}
+                    <option value="{{ e.id_estudiante }}">{{ e.apellido1 }} {{ e.apellido2 or '' }}, {{ e.nombre }} ({{ e.grupo }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Parentesco
+                <select name="parentesco" required>
+                    {% for pa in parentescos %}
+                    <option value="{{ pa }}">{{ pa }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" class="vc-btn"><i class="ri-links-line"></i> Vincular</button>
+        </form>
+        {% else %}
+        <p class="vc-vacio">
+            {% if not padres %}No hay padres registrados con perfil en la tabla padres. {% endif %}
+            {% if not estudiantes %}No hay estudiantes activos. {% endif %}
+        </p>
+        {% endif %}
+    </article>
+
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">VÍNCULOS</span>
+                <h2>Vínculos actuales ({{ vinculos|length }})</h2>
+            </div>
+            <input type="text" id="vcBuscar" class="vc-buscar" placeholder="Buscar padre o estudiante...">
+        </div>
+
+        <div class="vc-wrap">
+            <table class="vc-tabla" id="vcTabla">
+                <thead>
+                    <tr><th>Padre</th><th>Estudiante</th><th>Grupo</th><th>Parentesco</th><th></th></tr>
+                </thead>
+                <tbody>
+                {% for v in vinculos %}
+                    <tr>
+                        <td>{{ v.padre }}<br><small>{{ v.correo_padre }}</small></td>
+                        <td>{{ v.estudiante }}</td>
+                        <td>{{ v.grupo }}</td>
+                        <td>{{ v.parentesco }}</td>
+                        <td style="text-align:right">
+                            <form action="{{ url_for('admin_vinculos_eliminar', id_vinculo=v.id_vinculo) }}"
+                                  method="POST" onsubmit="return confirm('¿Quitar este vínculo?');">
+                                <button type="submit" class="vc-btn vc-btn-light">
+                                    <i class="ri-delete-bin-line"></i> Quitar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="vc-vacio">Aún no hay vínculos registrados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+</section>
+
+<style>
+.vc-page .dashboard-panel { margin-bottom:24px; }
+.vc-page .vc-form { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+.vc-page .vc-form label { display:flex; flex-direction:column; gap:4px; font-size:.78rem; font-weight:600; color:#6b7280; }
+.vc-page select, .vc-page .vc-buscar { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px;
+                                       font-size:.9rem; min-width:220px; background:#fff; }
+.vc-page .vc-wrap { overflow-x:auto; }
+.vc-page .vc-tabla { width:100%; border-collapse:collapse; }
+.vc-page .vc-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                        color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.vc-page .vc-tabla td { padding:12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.vc-page .vc-tabla small { color:#6b7280; }
+.vc-page .vc-vacio { text-align:center; color:#6b7280; padding:24px; }
+.vc-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border:0; border-radius:8px;
+          background:#1b3d5e; color:#fff; font-weight:600; font-size:.85rem; cursor:pointer; }
+.vc-btn:hover { background:#0f2a43; }
+.vc-btn-light { background:#e0ecf8; color:#1b3d5e; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const buscar = document.getElementById('vcBuscar');
+    if (!buscar) return;
+    buscar.addEventListener('input', function () {
+        const q = buscar.value.trim().toLowerCase();
+        document.querySelectorAll('#vcTabla tbody tr').forEach(function (tr) {
+            tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}
