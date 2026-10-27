@@ -15,7 +15,6 @@ from controllers.user_controller import (
 from db import get_db_connection
 
 from controllers.admin_required import admin_required
-
 from controllers.permission_required import permission_required
 
 from controllers.role_controller import (
@@ -43,146 +42,196 @@ from controllers.group_controller import (
     asignar_docente_a_grupo,
     quitar_docente_de_grupo
 )
+
 from controllers.report_controller import (
     TIPOS,
     obtener_periodos,
     generar_reporte,
     exportar_csv
 )
+
 from controllers.teacher_controller import (
     obtener_lista_docentes,
     actualizar_docente,
     registrar_docente
 )
+
 from controllers.parent_controller import (
     PARENTESCOS,
     obtener_padres,
     obtener_estudiantes_activos,
     obtener_vinculos,
+    registrar_padre_familia,
     crear_vinculo,
     eliminar_vinculo
 )
 
+from controllers.student_controller import (
+    registrar_estudiante,
+    obtener_estudiantes_registrados,
+    obtener_grupos_para_estudiantes,
+    actualizar_estudiante
+)
+
+
 app = Flask(__name__)
-# Llave de cifrado obligatoria para proteger la sesión del usuario logueado
+# llave de cifrado para proteger la sesion del usuario
 app.secret_key = 'clave_secretaEPF'
 
 
-#Página de inicio (Index)
+# pagina de inicio
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
-# RUTA DEL LOGIN, Formulario de acceso
+# inicio de sesion
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     if request.method == 'POST':
-        #recuperar contraseña,
+
         if 'recuperar_email' in request.form:
+
             correo_recuperar = request.form.get('recuperar_email')
             token = registrar_token_real(correo_recuperar)
-            
-            if token:
-                # El controlador creó el token en MySQL
-                return redirect(url_for('restablecer', token=token))
-            else:
-                return "<h3>El correo no está registrado o se encuentra inactivo.</h3>"
 
-        # cuadro de inicio de sesion 
+            if token:
+                return redirect(
+                    url_for('restablecer', token=token)
+                )
+
+            return "<h3>El correo no está registrado o se encuentra inactivo.</h3>"
+
         correo_usuario = request.form.get('email')
-        contrasena_usuario = request.form.get('password')   
+        contrasena_usuario = request.form.get('password')
+
         usuario = buscar_usuario_por_correo(correo_usuario)
-        
+
         if usuario:
+
             hash_bd = usuario['contrasena_hash']
+
             if isinstance(hash_bd, (bytes, bytearray)):
                 hash_bd = hash_bd.decode('utf-8')
-            
-            # Validación de la pass en la BD
+
             if check_password_hash(hash_bd, contrasena_usuario):
+
                 session['id_usuario'] = usuario['id_usuario']
                 session['nombre_usuario'] = usuario['nombre']
                 session['rol_usuario'] = usuario['nombre_rol']
+
                 return redirect(url_for('dashboard'))
-        
-        return render_template('login.html', error_login=True)
-            
+
+        return render_template(
+            'login.html',
+            error_login=True
+        )
+
     return render_template('login.html')
 
 
-# RUTA DEL REGISTRO, Crear estudiante
+# registro publico de usuarios
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+
     if request.method == 'POST':
-        correo = request.form.get('email')
-        
-        #Solo permite correos institucionales oficiales
-        # (Cambiar '@escuela.com' por el dominio oficial de tu institución, pero mas adelante supongo)
-        if not correo.endswith('@escuela.com'):
-            return "<h3>Error: El registro está restringido únicamente para correos institucionales autorizados.</h3>"
+
+        correo = request.form.get('email', '')
+
+        if not correo.lower().endswith('@escuela.com'):
+            return (
+                "<h3>Error: El registro está restringido "
+                "únicamente para correos institucionales autorizados.</h3>"
+            )
 
         nombre = request.form.get('nombre')
         apellido1 = request.form.get('apellido1')
         apellido2 = request.form.get('apellido2')
-        correo = request.form.get('email')
         contrasena = request.form.get('password')
         telefono = request.form.get('telefono')
 
-        # todo registro público se crea como estudiante
-
         id_rol = 3
-        
-        # Guardamos en la base de datos
-        exito = crear_nuevo_usuario(nombre, apellido1, apellido2, correo, contrasena, telefono, id_rol)
-        
+
+        exito = crear_nuevo_usuario(
+            nombre,
+            apellido1,
+            apellido2,
+            correo,
+            contrasena,
+            telefono,
+            id_rol
+        )
+
         if exito:
-            # Si se creó bien, el flujo te manda directo al Login a meter nuevas credenciales
             return redirect(url_for('login'))
-        else:
-            return render_template('register.html', error_registro=True)
-            
+
+        return render_template(
+            'register.html',
+            error_registro=True
+        )
+
     return render_template('register.html')
 
 
-#pantalla para ingresar el correo para la recuperacion de contraseña
+# recuperacion de contraseña
 
 @app.route('/recuperar', methods=['GET', 'POST'])
 def recuperar():
+
     if request.method == 'POST':
+
         correo = request.form.get('email')
-        
-        # El controlador busca el usuario en MySQL y genera el token 
         token = registrar_token_real(correo)
-        
+
         if token:
-            return redirect(url_for('restablecer', token=token))
-        else:
-            return "<h3>El correo electrónico ingresado no existe en el sistema escolar.</h3>"
-            
+            return redirect(
+                url_for('restablecer', token=token)
+            )
+
+        return (
+            "<h3>El correo electrónico ingresado "
+            "no existe en el sistema escolar.</h3>"
+        )
+
     return render_template('forgot_password.html')
 
 
-#Pantalla para asignar clave nueva
+# restablecer contraseña
 
 @app.route('/restablecer/<token>', methods=['GET', 'POST'])
 def restablecer(token):
+
     if request.method == 'POST':
+
         nueva_clave = request.form.get('password')
-        # El controlador hace el UPDATE del hash en la tabla usuarios
-        exito = actualizar_contrasena_real(token, nueva_clave)
-        
+
+        exito = actualizar_contrasena_real(
+            token,
+            nueva_clave
+        )
+
         if exito:
-            return "<h3>Contraseña restablecida con éxito en MySQL. Ya puedes ir a <a href='/login'>Iniciar Sesión</a> con tu nueva clave.</h3>"
-        return "<h3>Error: El enlace de recuperación es inválido, caducó o ya fue utilizado.</h3>"
-        
-    return render_template('reset_password.html', token=token)
+            return (
+                "<h3>Contraseña restablecida con éxito. "
+                "Ya puedes ir a <a href='/login'>Iniciar Sesión</a>.</h3>"
+            )
+
+        return (
+            "<h3>Error: El enlace de recuperación es inválido "
+            "caducó o ya fue utilizado.</h3>"
+        )
+
+    return render_template(
+        'reset_password.html',
+        token=token
+    )
 
 
-#Panel de Control Escolar (Dashboard), de prueba para ver si pasa la paagina 
+# dashboard
 
 @app.route('/dashboard')
 def dashboard():
@@ -192,10 +241,6 @@ def dashboard():
 
     rol_usuario = session.get('rol_usuario')
 
-    # ======================================================
-    # DASHBOARD ADMINISTRADOR
-    # ======================================================
-
     if rol_usuario == 'Administrador':
 
         connection = get_db_connection()
@@ -204,6 +249,7 @@ def dashboard():
         total_estudiantes = 0
         total_docentes = 0
         total_grupos = 0
+        cursor = None
 
         if connection:
 
@@ -211,7 +257,6 @@ def dashboard():
 
                 cursor = connection.cursor(dictionary=True)
 
-                # Usuarios
                 cursor.execute("""
                     SELECT COUNT(*) AS total
                     FROM usuarios
@@ -219,8 +264,6 @@ def dashboard():
 
                 total_usuarios = cursor.fetchone()['total']
 
-
-                # Estudiantes
                 cursor.execute("""
                     SELECT COUNT(*) AS total
                     FROM estudiantes
@@ -228,8 +271,6 @@ def dashboard():
 
                 total_estudiantes = cursor.fetchone()['total']
 
-
-                # Docentes
                 cursor.execute("""
                     SELECT COUNT(*) AS total
                     FROM docentes
@@ -237,15 +278,12 @@ def dashboard():
 
                 total_docentes = cursor.fetchone()['total']
 
-
-                # Grupos
                 cursor.execute("""
                     SELECT COUNT(*) AS total
                     FROM grupos
                 """)
 
                 total_grupos = cursor.fetchone()['total']
-
 
             except Exception as e:
 
@@ -255,12 +293,10 @@ def dashboard():
 
             finally:
 
-                try:
+                if cursor:
                     cursor.close()
-                    connection.close()
-                except Exception:
-                    pass
 
+                connection.close()
 
         return render_template(
             'admin/dashboard.html',
@@ -270,121 +306,285 @@ def dashboard():
             total_grupos=total_grupos
         )
 
-
-    # ======================================================
-    # OTROS PERFILES
-    # ======================================================
-
     return render_template(
-         'admin/dashboard.html',
+        'admin/dashboard.html',
         nombre=session.get('nombre_usuario'),
         rol=rol_usuario
     )
 
 
-
-#Ruta de cerrar sesion desde cualquier pantalla
+# cerrar sesion
 
 @app.route('/logout')
 def logout():
-    # Se borra la memoria del navegador
+
     session.clear()
-    # Expulsamos al usuario directo al Login
+
     return redirect(url_for('login'))
 
 
-#Ruta de prueba de conexión
+# prueba de conexion
 
 @app.route('/test-db')
 def test_db():
-    from db import get_db_connection
+
     db = get_db_connection()
+
     if db and db.is_connected():
         db.close()
         return "¡Conexión a MySQL exitosa de forma correcta!"
+
     return "Error al conectar a la base de datos."
 
 
-
-# ======================================================
-# Usuarios 03-01,3,4,5,6
-# ======================================================
+# gestion y consulta de usuarios
 
 @app.route('/admin/users', methods=['GET', 'POST'])
 @admin_required
 def users():
+
     if 'id_usuario' not in session:
         return redirect(url_for('login'))
-        
-    db = get_db_connection()
-    cursor = db.cursor(dictionary=True)
-    
-    # POST: Administrador registra 
+
     if request.method == 'POST':
-        nombre = request.form.get('nombre')
-        apellido1 = request.form.get('apellido1')
-        apellido2 = request.form.get('apellido2')
-        correo = request.form.get('email')
-        contrasena = request.form.get('password')
-        telefono = request.form.get('telefono')
-        id_rol = request.form.get('id_rol') 
+
+        nombre = request.form.get('nombre', '').strip()
+        apellido1 = request.form.get('apellido1', '').strip()
+        apellido2 = request.form.get('apellido2', '').strip()
+        correo = request.form.get('email', '').strip()
+        contrasena = request.form.get('password', '')
+        telefono = request.form.get('telefono', '').strip()
+        id_rol = request.form.get('id_rol', '').strip()
 
         if not correo or not correo.lower().endswith('@escuela.com'):
-            flash('Error: El correo debe pertenecer estrictamente al dominio @escuela.com', 'danger')
+
+            flash(
+                'El correo debe pertenecer al dominio @escuela.com',
+                'danger'
+            )
+
             return redirect(url_for('users'))
-        
-        registrar_usuario_por_admin(nombre, apellido1, apellido2, correo, contrasena, telefono, id_rol)
-        flash('Usuario registrado exitosamente', 'success')
+
+        if not id_rol.isdigit():
+
+            flash(
+                'Selecciona un rol válido',
+                'danger'
+            )
+
+            return redirect(url_for('users'))
+
+        exito = registrar_usuario_por_admin(
+            nombre,
+            apellido1,
+            apellido2,
+            correo,
+            contrasena,
+            telefono,
+            int(id_rol)
+        )
+
+        if exito:
+            flash(
+                'Usuario registrado exitosamente',
+                'success'
+            )
+        else:
+            flash(
+                'No fue posible registrar el usuario',
+                'danger'
+            )
+
         return redirect(url_for('users'))
-        
-    # GET: Lee las cuentas 
-    cursor.execute("""
-        SELECT u.id_usuario, u.nombre, u.apellido1, u.apellido2, u.correo, u.telefono, u.estado, r.nombre AS nombre_rol 
-        FROM usuarios u
-        INNER JOIN roles r ON u.id_rol = r.id_rol
-    """)
-    usuarios_bd = cursor.fetchall()
 
-    cursor.execute("SELECT id_rol, nombre FROM roles ORDER BY id_rol ASC")
-    roles_disponibles = cursor.fetchall()
-    
-    cursor.close()
-    db.close()
-    
-    return render_template('admin/usuarios.html', users=usuarios_bd, roles=roles_disponibles)
+    rol_seleccionado = request.args.get('rol', '').strip()
 
+    if not rol_seleccionado.isdigit():
+        rol_seleccionado = ''
+
+    connection = get_db_connection()
+
+    if not connection:
+
+        flash(
+            'No se pudo conectar a la base de datos',
+            'danger'
+        )
+
+        return render_template(
+            'admin/usuarios.html',
+            users=[],
+            roles=obtener_roles(),
+            rol_seleccionado=rol_seleccionado
+        )
+
+    cursor = None
+
+    try:
+
+        cursor = connection.cursor(dictionary=True)
+
+        query = """
+            SELECT
+                u.id_usuario,
+                u.nombre,
+                u.apellido1,
+                u.apellido2,
+                u.correo,
+                u.telefono,
+                u.estado,
+                u.id_rol,
+                r.nombre AS nombre_rol
+            FROM usuarios u
+            INNER JOIN roles r
+                ON u.id_rol = r.id_rol
+        """
+
+        parametros = ()
+
+        if rol_seleccionado:
+
+            query += """
+                WHERE u.id_rol = %s
+            """
+
+            parametros = (
+                int(rol_seleccionado),
+            )
+
+        query += """
+            ORDER BY u.id_usuario DESC
+        """
+
+        cursor.execute(
+            query,
+            parametros
+        )
+
+        usuarios_bd = cursor.fetchall()
+        roles_disponibles = obtener_roles()
+
+        return render_template(
+            'admin/usuarios.html',
+            users=usuarios_bd,
+            roles=roles_disponibles,
+            rol_seleccionado=rol_seleccionado
+        )
+
+    except Exception as e:
+
+        print(
+            f'Error al consultar usuarios: {e}'
+        )
+
+        flash(
+            'No fue posible consultar los usuarios',
+            'danger'
+        )
+
+        return render_template(
+            'admin/usuarios.html',
+            users=[],
+            roles=obtener_roles(),
+            rol_seleccionado=rol_seleccionado
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        connection.close()
+
+
+# activar o desactivar usuarios
 
 @app.route('/admin/users/toggle/<int:id_usuario>')
 @admin_required
 def toggle_user(id_usuario):
-    """activo e inactivo."""
+
     if 'id_usuario' not in session:
         return redirect(url_for('login'))
-        
+
     db = get_db_connection()
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT estado FROM usuarios WHERE id_usuario = %s", (id_usuario,))
-    usuario = cursor.fetchone()
-    
-    if usuario:
-        nuevo_estado = 'inactivo' if usuario['estado'] == 'activo' else 'activo'
-        cursor.execute("UPDATE usuarios SET estado = %s WHERE id_usuario = %s", (nuevo_estado, id_usuario))
-        db.commit()
-        
-    cursor.close()
-    db.close()
-    return redirect(url_for('users'))
+
+    if not db:
+        flash(
+            'No se pudo conectar a la base de datos',
+            'danger'
+        )
+        return redirect(url_for('users'))
+
+    cursor = None
+
+    try:
+
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT estado
+            FROM usuarios
+            WHERE id_usuario = %s
+            """,
+            (id_usuario,)
+        )
+
+        usuario = cursor.fetchone()
+
+        if usuario:
+
+            nuevo_estado = (
+                'inactivo'
+                if usuario['estado'] == 'activo'
+                else 'activo'
+            )
+
+            cursor.execute(
+                """
+                UPDATE usuarios
+                SET estado = %s
+                WHERE id_usuario = %s
+                """,
+                (
+                    nuevo_estado,
+                    id_usuario
+                )
+            )
+
+            db.commit()
+
+        return redirect(url_for('users'))
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(f"Error al cambiar estado del usuario: {e}")
+
+        flash(
+            'No fue posible cambiar el estado del usuario',
+            'danger'
+        )
+
+        return redirect(url_for('users'))
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        db.close()
 
 
-# GESTION DE ROLES
+# gestion de roles
+
 @app.route('/admin/roles', methods=['GET'])
 @admin_required
 def admin_roles():
 
     roles = obtener_roles()
-
     permisos = obtener_permisos()
-
     permisos_por_rol = obtener_permisos_por_rol()
 
     return render_template(
@@ -395,11 +595,6 @@ def admin_roles():
     )
 
 
-
-# ============================================================
-# EPF-01-04 - CREAR ROL
-# ============================================================
-
 @app.route('/admin/roles/crear', methods=['POST'])
 @admin_required
 def admin_roles_crear():
@@ -408,6 +603,7 @@ def admin_roles_crear():
     descripcion = request.form.get('descripcion', '').strip()
 
     if not nombre:
+
         return redirect(
             url_for(
                 'admin_roles',
@@ -416,6 +612,7 @@ def admin_roles_crear():
         )
 
     if len(nombre) > 100:
+
         return redirect(
             url_for(
                 'admin_roles',
@@ -429,6 +626,7 @@ def admin_roles_crear():
     )
 
     if exito:
+
         return redirect(
             url_for(
                 'admin_roles',
@@ -444,10 +642,6 @@ def admin_roles_crear():
     )
 
 
-# ============================================================
-# EPF-01-04 - EDITAR ROL
-# ============================================================
-
 @app.route('/admin/roles/editar/<int:id_rol>', methods=['POST'])
 @admin_required
 def admin_roles_editar(id_rol):
@@ -456,6 +650,7 @@ def admin_roles_editar(id_rol):
     descripcion = request.form.get('descripcion', '').strip()
 
     if not nombre:
+
         return redirect(
             url_for(
                 'admin_roles',
@@ -464,6 +659,7 @@ def admin_roles_editar(id_rol):
         )
 
     if len(nombre) > 100:
+
         return redirect(
             url_for(
                 'admin_roles',
@@ -478,6 +674,7 @@ def admin_roles_editar(id_rol):
     )
 
     if exito:
+
         return redirect(
             url_for(
                 'admin_roles',
@@ -493,10 +690,6 @@ def admin_roles_editar(id_rol):
     )
 
 
-# ============================================================
-# EPF-01-04 - ELIMINAR ROL
-# ============================================================
-
 @app.route('/admin/roles/eliminar/<int:id_rol>', methods=['POST'])
 @admin_required
 def admin_roles_eliminar(id_rol):
@@ -504,6 +697,7 @@ def admin_roles_eliminar(id_rol):
     exito, mensaje = eliminar_rol(id_rol)
 
     if exito:
+
         return redirect(
             url_for(
                 'admin_roles',
@@ -518,10 +712,6 @@ def admin_roles_eliminar(id_rol):
         )
     )
 
-
-# ============================================================
-# EPF-01-04 - GESTIONAR PERMISOS
-# ============================================================
 
 @app.route(
     '/admin/roles/permisos/<int:id_rol>',
@@ -554,10 +744,7 @@ def admin_roles_permisos(id_rol):
     )
 
 
-# ============================================================
-# EPF-02-01 - GESTION DE GRUPOS Y SECCIONES
-# ============================================================
-
+# gestion de grupos y secciones
 
 @app.route('/admin/grupos', methods=['GET'])
 @permission_required('grupos.ver')
@@ -574,12 +761,6 @@ def admin_grupos():
         puede_eliminar=True
     )
 
-    
-
-
-# ============================================================
-# EPF-02-01 - CREAR GRUPO
-# ============================================================
 
 @app.route('/admin/grupos/nuevo', methods=['GET', 'POST'])
 @permission_required('grupos.crear')
@@ -602,6 +783,7 @@ def admin_grupos_nuevo():
         )
 
         if exito:
+
             return redirect(
                 url_for(
                     'admin_grupos',
@@ -625,6 +807,7 @@ def admin_grupos_nuevo():
 @app.route('/admin/grupos/editar/<int:id_grupo>', methods=['POST'])
 @permission_required('grupos.editar')
 def admin_grupos_editar(id_grupo):
+
     nivel = request.form.get('nivel', '').strip()
     seccion = request.form.get('seccion', '').strip()
     anio_lectivo = request.form.get('anio_lectivo', '').strip()
@@ -639,32 +822,46 @@ def admin_grupos_editar(id_grupo):
     )
 
     if exito:
+
         return redirect(
-            url_for('admin_grupos', success='editado')
+            url_for(
+                'admin_grupos',
+                success='editado'
+            )
         )
 
     return redirect(
-        url_for('admin_grupos', error=mensaje)
+        url_for(
+            'admin_grupos',
+            error=mensaje
+        )
     )
 
 
 @app.route('/admin/grupos/eliminar/<int:id_grupo>', methods=['POST'])
 @permission_required('grupos.eliminar')
 def admin_grupos_eliminar(id_grupo):
+
     exito, mensaje = eliminar_grupo(id_grupo)
 
     if exito:
+
         return redirect(
-            url_for('admin_grupos', success='eliminado')
+            url_for(
+                'admin_grupos',
+                success='eliminado'
+            )
         )
 
     return redirect(
-        url_for('admin_grupos', error=mensaje)
+        url_for(
+            'admin_grupos',
+            error=mensaje
+        )
     )
 
-# ============================================================
-# EPF-02-03 / 02-04 / 02-05 - DETALLE DEL GRUPO
-# ============================================================
+
+# detalle del grupo
 
 @app.route('/admin/grupos/<int:id_grupo>', methods=['GET'])
 @permission_required('grupos.ver')
@@ -673,13 +870,19 @@ def admin_grupos_detalle(id_grupo):
     grupo, estudiantes, docentes = obtener_detalle_grupo(id_grupo)
 
     if grupo is None:
-        return redirect(url_for('admin_grupos', error='El grupo no existe.'))
+        return redirect(
+            url_for(
+                'admin_grupos',
+                error='El grupo no existe.'
+            )
+        )
 
     disponibles = obtener_estudiantes_disponibles(id_grupo)
 
     otros_grupos = [
         g for g in obtener_grupos()
-        if g['id_grupo'] != id_grupo and g['anio_lectivo'] == grupo['anio_lectivo']
+        if g['id_grupo'] != id_grupo
+        and g['anio_lectivo'] == grupo['anio_lectivo']
     ]
 
     return render_template(
@@ -695,24 +898,41 @@ def admin_grupos_detalle(id_grupo):
     )
 
 
-# ============================================================
-# EPF-02-04 - ASIGNAR / MOVER ESTUDIANTES
-# ============================================================
+# asignar y mover estudiantes entre grupos
 
-@app.route('/admin/grupos/<int:id_grupo>/estudiantes/asignar', methods=['POST'])
+@app.route(
+    '/admin/grupos/<int:id_grupo>/estudiantes/asignar',
+    methods=['POST']
+)
 @permission_required('grupos.editar')
 def admin_grupos_asignar_estudiante(id_grupo):
 
     id_estudiante = request.form.get('id_estudiante', '').strip()
 
     if not id_estudiante:
-        return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo,
-                                error='Selecciona un estudiante.'))
 
-    exito, mensaje = asignar_estudiante_a_grupo(id_estudiante, id_grupo)
+        return redirect(
+            url_for(
+                'admin_grupos_detalle',
+                id_grupo=id_grupo,
+                error='Selecciona un estudiante.'
+            )
+        )
+
+    exito, mensaje = asignar_estudiante_a_grupo(
+        id_estudiante,
+        id_grupo
+    )
+
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
+    return redirect(
+        url_for(
+            'admin_grupos_detalle',
+            id_grupo=id_grupo,
+            **{clave: mensaje}
+        )
+    )
 
 
 @app.route('/admin/estudiantes/<int:id_estudiante>/mover', methods=['POST'])
@@ -723,20 +943,37 @@ def admin_estudiante_mover(id_estudiante):
     id_destino = request.form.get('id_grupo_destino', '').strip()
 
     if not id_destino:
-        return redirect(url_for('admin_grupos_detalle', id_grupo=id_origen,
-                                error='Selecciona el grupo de destino.'))
 
-    exito, mensaje = asignar_estudiante_a_grupo(id_estudiante, id_destino)
+        return redirect(
+            url_for(
+                'admin_grupos_detalle',
+                id_grupo=id_origen,
+                error='Selecciona el grupo de destino.'
+            )
+        )
+
+    exito, mensaje = asignar_estudiante_a_grupo(
+        id_estudiante,
+        id_destino
+    )
+
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_grupos_detalle', id_grupo=id_origen, **{clave: mensaje}))
+    return redirect(
+        url_for(
+            'admin_grupos_detalle',
+            id_grupo=id_origen,
+            **{clave: mensaje}
+        )
+    )
 
 
-# ============================================================
-# EPF-02-05 - ASIGNAR / QUITAR DOCENTES
-# ============================================================
+# asignar y quitar docentes de grupos
 
-@app.route('/admin/grupos/<int:id_grupo>/docentes/asignar', methods=['POST'])
+@app.route(
+    '/admin/grupos/<int:id_grupo>/docentes/asignar',
+    methods=['POST']
+)
 @permission_required('grupos.editar')
 def admin_grupos_asignar_docente(id_grupo):
 
@@ -744,29 +981,59 @@ def admin_grupos_asignar_docente(id_grupo):
     id_materia = request.form.get('id_materia', '').strip()
 
     if not id_docente or not id_materia:
-        return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo,
-                                error='Selecciona un docente y una materia.'))
 
-    exito, mensaje = asignar_docente_a_grupo(id_docente, id_materia, id_grupo)
+        return redirect(
+            url_for(
+                'admin_grupos_detalle',
+                id_grupo=id_grupo,
+                error='Selecciona un docente y una materia.'
+            )
+        )
+
+    exito, mensaje = asignar_docente_a_grupo(
+        id_docente,
+        id_materia,
+        id_grupo
+    )
+
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
+    return redirect(
+        url_for(
+            'admin_grupos_detalle',
+            id_grupo=id_grupo,
+            **{clave: mensaje}
+        )
+    )
 
 
-@app.route('/admin/grupos/<int:id_grupo>/docentes/quitar/<int:id_asignacion>', methods=['POST'])
+@app.route(
+    '/admin/grupos/<int:id_grupo>/docentes/quitar/<int:id_asignacion>',
+    methods=['POST']
+)
 @permission_required('grupos.editar')
 def admin_grupos_quitar_docente(id_grupo, id_asignacion):
 
-    exito, mensaje = quitar_docente_de_grupo(id_asignacion, id_grupo)
+    exito, mensaje = quitar_docente_de_grupo(
+        id_asignacion,
+        id_grupo
+    )
+
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_grupos_detalle', id_grupo=id_grupo, **{clave: mensaje}))
+    return redirect(
+        url_for(
+            'admin_grupos_detalle',
+            id_grupo=id_grupo,
+            **{clave: mensaje}
+        )
+    )
 
-# ============================================================
-# EPF-02-06 - GENERAR REPORTES
-# ============================================================
+
+# generar reportes
 
 def _filtros_reporte():
+
     return {
         "tipo": request.args.get("tipo", "asistencia"),
         "id_grupo": request.args.get("grupo") or None,
@@ -783,7 +1050,11 @@ def admin_reportes():
     f = _filtros_reporte()
 
     titulo, columnas, filas = generar_reporte(
-        f["tipo"], f["id_grupo"], f["id_periodo"], f["desde"], f["hasta"]
+        f["tipo"],
+        f["id_grupo"],
+        f["id_periodo"],
+        f["desde"],
+        f["hasta"]
     )
 
     return render_template(
@@ -798,9 +1069,7 @@ def admin_reportes():
     )
 
 
-# ============================================================
-# EPF-02-07 - EXPORTAR REPORTES (CSV)
-# ============================================================
+# exportar reportes
 
 @app.route('/admin/reportes/exportar/<formato>', methods=['GET'])
 @admin_required
@@ -809,15 +1078,26 @@ def admin_reportes_exportar(formato):
     f = _filtros_reporte()
 
     titulo, columnas, filas = generar_reporte(
-        f["tipo"], f["id_grupo"], f["id_periodo"], f["desde"], f["hasta"]
+        f["tipo"],
+        f["id_grupo"],
+        f["id_periodo"],
+        f["desde"],
+        f["hasta"]
     )
 
     if not filas:
-        return redirect(url_for('admin_reportes', error='No hay datos para exportar.'))
+
+        return redirect(
+            url_for(
+                'admin_reportes',
+                error='No hay datos para exportar.'
+            )
+        )
 
     nombre = f"{f['tipo']}_{datetime.now():%Y%m%d_%H%M}"
 
     if formato == 'csv':
+
         return send_file(
             exportar_csv(titulo, columnas, filas),
             as_attachment=True,
@@ -825,10 +1105,15 @@ def admin_reportes_exportar(formato):
             mimetype="text/csv"
         )
 
-    return redirect(url_for('admin_reportes', error='Formato de exportación no válido.'))
-# ============================================================
-# EPF-05-03 - LISTA DE ESTUDIANTES DE UN GRUPO
-# ============================================================
+    return redirect(
+        url_for(
+            'admin_reportes',
+            error='Formato de exportación no válido.'
+        )
+    )
+
+
+# lista de estudiantes por grupo
 
 @app.route('/admin/estudiantes-grupo', methods=['GET'])
 @admin_required
@@ -842,12 +1127,19 @@ def admin_estudiantes_grupo():
     estudiantes = []
 
     if id_grupo.isdigit():
+
         grupo_sel = next(
-            (g for g in grupos if g['id_grupo'] == int(id_grupo)),
+            (
+                g for g in grupos
+                if g['id_grupo'] == int(id_grupo)
+            ),
             None
         )
+
         if grupo_sel:
-            estudiantes = obtener_estudiantes_por_grupo(int(id_grupo))
+            estudiantes = obtener_estudiantes_por_grupo(
+                int(id_grupo)
+            )
 
     return render_template(
         'admin/estudiantes_grupo.html',
@@ -855,9 +1147,9 @@ def admin_estudiantes_grupo():
         grupo_sel=grupo_sel,
         estudiantes=estudiantes
     )
-# ============================================================
-# EPF-05-02 - CONSULTAR Y ACTUALIZAR DOCENTES
-# ============================================================
+
+
+# consultar y actualizar docentes
 
 @app.route('/admin/docentes', methods=['GET'])
 @admin_required
@@ -889,7 +1181,12 @@ def admin_docentes_nuevo():
 
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_docentes', **{clave: mensaje}))
+    return redirect(
+        url_for(
+            'admin_docentes',
+            **{clave: mensaje}
+        )
+    )
 
 
 @app.route('/admin/docentes/editar/<int:id_docente>', methods=['POST'])
@@ -907,10 +1204,78 @@ def admin_docentes_editar(id_docente):
 
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_docentes', **{clave: mensaje}))
-# ============================================================
-# EPF-04-03 - VINCULAR PADRES CON ESTUDIANTES
-# ============================================================
+    return redirect(
+        url_for(
+            'admin_docentes',
+            **{clave: mensaje}
+        )
+    )
+
+
+# epf-04-01 epf-04-02 registro y consulta de estudiantes
+
+@app.route('/admin/estudiantes/registro', methods=['GET', 'POST'])
+@admin_required
+def admin_estudiantes_registro():
+
+    if request.method == 'POST':
+
+        exito, mensaje = registrar_estudiante(
+            request.form.get('nombre'),
+            request.form.get('apellido1'),
+            request.form.get('apellido2'),
+            request.form.get('correo'),
+            request.form.get('telefono'),
+            request.form.get('contrasena'),
+            request.form.get('fecha_nacimiento'),
+            request.form.get('id_grupo')
+        )
+
+        flash(
+            mensaje,
+            'success' if exito else 'danger'
+        )
+
+        return redirect(
+            url_for('admin_estudiantes_registro')
+        )
+
+    return render_template(
+        'admin/estudiantes.html',
+        estudiantes=obtener_estudiantes_registrados(),
+        grupos=obtener_grupos_para_estudiantes(),
+        hoy=datetime.now().date().isoformat()
+    )
+
+
+@app.route(
+    '/admin/estudiantes/<int:id_estudiante>/actualizar',
+    methods=['POST']
+)
+@admin_required
+def admin_estudiante_actualizar(id_estudiante):
+
+    exito, mensaje = actualizar_estudiante(
+        id_estudiante,
+        request.form.get('nombre'),
+        request.form.get('apellido1'),
+        request.form.get('apellido2'),
+        request.form.get('correo'),
+        request.form.get('telefono'),
+        request.form.get('fecha_nacimiento')
+    )
+
+    flash(
+        mensaje,
+        'success' if exito else 'danger'
+    )
+
+    return redirect(
+        url_for('admin_estudiantes_registro')
+    )
+
+
+# vincular padres con estudiantes
 
 @app.route('/admin/vinculos', methods=['GET'])
 @admin_required
@@ -922,6 +1287,29 @@ def admin_vinculos():
         estudiantes=obtener_estudiantes_activos(),
         vinculos=obtener_vinculos(),
         parentescos=PARENTESCOS
+    )
+
+
+@app.route('/admin/padres/nuevo', methods=['POST'])
+@admin_required
+def admin_padres_nuevo():
+
+    exito, mensaje = registrar_padre_familia(
+        request.form.get('nombre'),
+        request.form.get('apellido1'),
+        request.form.get('apellido2'),
+        request.form.get('correo'),
+        request.form.get('telefono'),
+        request.form.get('contrasena')
+    )
+
+    clave = 'success' if exito else 'error'
+
+    return redirect(
+        url_for(
+            'admin_vinculos',
+            **{clave: mensaje}
+        )
     )
 
 
@@ -937,7 +1325,12 @@ def admin_vinculos_nuevo():
 
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_vinculos', **{clave: mensaje}))
+    return redirect(
+        url_for(
+            'admin_vinculos',
+            **{clave: mensaje}
+        )
+    )
 
 
 @app.route('/admin/vinculos/eliminar/<int:id_vinculo>', methods=['POST'])
@@ -948,11 +1341,13 @@ def admin_vinculos_eliminar(id_vinculo):
 
     clave = 'success' if exito else 'error'
 
-    return redirect(url_for('admin_vinculos', **{clave: mensaje}))
-# ============================================================
-# ARRANQUE (siempre al final del archivo)
-# ============================================================
+    return redirect(
+        url_for(
+            'admin_vinculos',
+            **{clave: mensaje}
+        )
+    )
+
 
 if __name__ == '__main__':
     app.run(debug=True)
-
