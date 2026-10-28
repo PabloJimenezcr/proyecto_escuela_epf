@@ -24,7 +24,8 @@ from controllers.role_controller import (
     eliminar_rol,
     obtener_permisos,
     obtener_permisos_por_rol,
-    guardar_permisos_rol
+    guardar_permisos_rol,
+    usuario_tiene_permiso
 )
 
 from controllers.group_controller import (
@@ -73,6 +74,18 @@ from controllers.student_controller import (
     actualizar_estudiante
 )
 
+from controllers.attendance_controller import (
+    ESTADOS_ASISTENCIA,
+    obtener_grupos_asistencia,
+    obtener_estudiantes_grupo,
+    guardar_asistencia_diaria,
+    obtener_estudiantes_para_historial,
+    obtener_historial_asistencia_estudiante,
+    obtener_asistencia_por_id,
+    actualizar_registro_asistencia,
+    obtener_estudiante_por_usuario,
+    consultar_reporte_asistencia
+)
 
 app = Flask(__name__)
 # llave de cifrado para proteger la sesion del usuario
@@ -1346,6 +1359,312 @@ def admin_vinculos_eliminar(id_vinculo):
             'admin_vinculos',
             **{clave: mensaje}
         )
+    )
+
+
+@app.route('/admin/asistencia', methods=['GET', 'POST'])
+@permission_required('asistencia.registrar')
+def admin_asistencia():
+
+    if request.method == 'POST':
+        id_grupo = request.form.get('id_grupo', '')
+        fecha = request.form.get('fecha', '')
+
+        exito, mensaje = guardar_asistencia_diaria(
+            id_grupo,
+            fecha,
+            session.get('id_usuario'),
+            request.form
+        )
+
+        flash(
+            mensaje,
+            'success' if exito else 'danger'
+        )
+
+        return redirect(
+            url_for(
+                'admin_asistencia',
+                grupo=id_grupo,
+                fecha=fecha
+            )
+        )
+
+    fecha = (
+        request.args.get('fecha')
+        or datetime.now().date().isoformat()
+    )
+
+    try:
+        datetime.strptime(fecha, '%Y-%m-%d')
+    except ValueError:
+        fecha = datetime.now().date().isoformat()
+
+    id_grupo = request.args.get('grupo', type=int)
+
+    estudiantes = []
+
+    if id_grupo:
+        estudiantes = obtener_estudiantes_grupo(
+            id_grupo,
+            fecha
+        )
+
+    return render_template(
+        'admin/asistencia.html',
+        grupos=obtener_grupos_asistencia(),
+        id_grupo=id_grupo,
+        fecha_seleccionada=fecha,
+        hoy=datetime.now().date().isoformat(),
+        estudiantes=estudiantes,
+        estados=ESTADOS_ASISTENCIA
+    )
+
+@app.route('/admin/asistencia/historial', methods=['GET'])
+@permission_required('asistencia.consultar')
+def admin_asistencia_historial():
+
+    estudiantes = obtener_estudiantes_para_historial()
+
+    id_estudiante_param = request.args.get(
+        'estudiante',
+        ''
+    ).strip()
+
+    estudiante_seleccionado = None
+    historial = []
+
+    if id_estudiante_param:
+
+        if id_estudiante_param.isdigit():
+
+            id_estudiante = int(id_estudiante_param)
+
+            estudiante_seleccionado = next(
+                (
+                    estudiante
+                    for estudiante in estudiantes
+                    if estudiante['id_estudiante'] == id_estudiante
+                ),
+                None
+            )
+
+            if estudiante_seleccionado:
+                historial = obtener_historial_asistencia_estudiante(
+                    id_estudiante
+                )
+            else:
+                flash(
+                    'El estudiante seleccionado no existe.',
+                    'danger'
+                )
+
+        else:
+            flash(
+                'Selecciona un estudiante válido.',
+                'danger'
+            )
+
+    return render_template(
+        'admin/asistencia_historial.html',
+        estudiantes=estudiantes,
+        id_estudiante_seleccionado=id_estudiante_param,
+        estudiante_seleccionado=estudiante_seleccionado,
+        historial=historial,
+        puede_editar_asistencia=usuario_tiene_permiso(
+            session.get('id_usuario'),
+            'asistencia.editar'
+        )
+    )
+
+@app.route(
+    '/admin/asistencia/editar/<int:id_asistencia>',
+    methods=['GET', 'POST']
+)
+@permission_required('asistencia.editar')
+def admin_asistencia_editar(id_asistencia):
+
+    registro = obtener_asistencia_por_id(id_asistencia)
+
+    if not registro:
+        flash(
+            'El registro de asistencia no existe.',
+            'danger'
+        )
+
+        return redirect(
+            url_for('admin_asistencia_historial')
+        )
+
+    fecha_formulario = None
+    estado_formulario = None
+    observacion_formulario = None
+
+    if request.method == 'POST':
+
+        fecha_formulario = request.form.get('fecha', '')
+        estado_formulario = request.form.get('estado', '')
+        observacion_formulario = request.form.get(
+            'observacion',
+            ''
+        )
+
+        exito, mensaje = actualizar_registro_asistencia(
+            id_asistencia,
+            fecha_formulario,
+            estado_formulario,
+            observacion_formulario
+        )
+
+        if exito:
+            flash(mensaje, 'success')
+
+            return redirect(
+                url_for(
+                    'admin_asistencia_historial',
+                    estudiante=registro['id_estudiante']
+                )
+            )
+
+        flash(mensaje, 'danger')
+
+    return render_template(
+        'admin/asistencia_editar.html',
+        registro=registro,
+        estados=ESTADOS_ASISTENCIA,
+        hoy=datetime.now().date().isoformat(),
+        fecha_formulario=fecha_formulario,
+        estado_formulario=estado_formulario,
+        observacion_formulario=observacion_formulario
+    )
+
+@app.route('/mi-asistencia', methods=['GET'])
+def estudiante_mi_asistencia():
+
+    if 'id_usuario' not in session:
+        return redirect(url_for('login'))
+
+    if session.get('rol_usuario') != 'Estudiante':
+        flash(
+            'Esta pantalla está disponible para estudiantes.',
+            'danger'
+        )
+        return redirect(url_for('dashboard'))
+
+    estudiante = obtener_estudiante_por_usuario(
+        session.get('id_usuario')
+    )
+
+    if not estudiante:
+        flash(
+            'No se encontró un expediente de estudiante activo.',
+            'danger'
+        )
+
+        return render_template(
+            'admin/mi_asistencia.html',
+            estudiante=None,
+            historial=[],
+            resumen={
+                'total': 0,
+                'presente': 0,
+                'ausente': 0,
+                'tardanza': 0,
+                'justificado': 0
+            }
+        )
+
+    historial = obtener_historial_asistencia_estudiante(
+        estudiante['id_estudiante']
+    )
+
+    resumen = {
+        'total': len(historial),
+        'presente': sum(
+            1 for registro in historial
+            if registro['estado'] == 'presente'
+        ),
+        'ausente': sum(
+            1 for registro in historial
+            if registro['estado'] == 'ausente'
+        ),
+        'tardanza': sum(
+            1 for registro in historial
+            if registro['estado'] == 'tardanza'
+        ),
+        'justificado': sum(
+            1 for registro in historial
+            if registro['estado'] == 'justificado'
+        )
+    }
+
+    return render_template(
+        'admin/mi_asistencia.html',
+        estudiante=estudiante,
+        historial=historial,
+        resumen=resumen
+    )
+
+@app.route('/admin/asistencia/reportes', methods=['GET'])
+@admin_required
+def admin_asistencia_reportes():
+
+    tipo = request.args.get('tipo', 'grupo').strip()
+    id_grupo = request.args.get('grupo', '').strip()
+    id_estudiante = request.args.get('estudiante', '').strip()
+    desde = request.args.get('desde', '').strip()
+    hasta = request.args.get('hasta', '').strip()
+
+    filtros = {
+        'tipo': tipo,
+        'grupo': id_grupo,
+        'estudiante': id_estudiante,
+        'desde': desde,
+        'hasta': hasta
+    }
+
+    filas = []
+    resumen = {
+        'total': 0,
+        'presente': 0,
+        'ausente': 0,
+        'tardanza': 0,
+        'justificado': 0,
+        'porcentaje': 0
+    }
+
+    error_reporte = None
+    consulta_realizada = False
+
+    hay_seleccion = (
+        (tipo == 'grupo' and id_grupo)
+        or (tipo == 'estudiante' and id_estudiante)
+    )
+
+    if hay_seleccion:
+
+        consulta_realizada = True
+
+        exito, mensaje, filas, resumen = consultar_reporte_asistencia(
+            tipo,
+            id_grupo,
+            id_estudiante,
+            desde,
+            hasta
+        )
+
+        if not exito:
+            error_reporte = mensaje
+
+    return render_template(
+        'admin/asistencia_reportes.html',
+        grupos=obtener_grupos_asistencia(),
+        estudiantes=obtener_estudiantes_para_historial(),
+        filtros=filtros,
+        filas=filas,
+        resumen=resumen,
+        error_reporte=error_reporte,
+        consulta_realizada=consulta_realizada
     )
 
 

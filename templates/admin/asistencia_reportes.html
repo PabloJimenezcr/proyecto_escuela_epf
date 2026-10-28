@@ -1,0 +1,574 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Reportes de asistencia | Escuela EPF{% endblock %}
+
+{% block styles %}
+<style>
+    .reporte-page {
+        padding-bottom: 35px;
+        color: #17202a;
+        font-family: "DM Sans", sans-serif;
+    }
+
+    .reporte-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 24px;
+    }
+
+    .reporte-icon {
+        display: flex;
+        width: 55px;
+        height: 55px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: #eaf2f8;
+        color: #20639b;
+        font-size: 1.65rem;
+    }
+
+    .reporte-kicker {
+        color: #20639b;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+    }
+
+    .reporte-heading h1 {
+        margin: 4px 0;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-weight: 800;
+    }
+
+    .reporte-heading p {
+        margin: 0;
+        color: #667085;
+        font-size: .88rem;
+    }
+
+    .reporte-panel {
+        margin-bottom: 22px;
+        padding: 23px;
+        border: 1px solid #e4e7ec;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(23, 63, 95, .045);
+    }
+
+    .reporte-panel h2 {
+        margin: 0;
+        color: #173f5f;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .reporte-description {
+        margin: 7px 0 19px;
+        color: #667085;
+        font-size: .82rem;
+    }
+
+    .reporte-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 15px;
+    }
+
+    .reporte-field {
+        min-width: 0;
+    }
+
+    .reporte-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #344054;
+        font-size: .78rem;
+        font-weight: 800;
+    }
+
+    .reporte-input {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #17202a;
+        font: inherit;
+        font-size: .83rem;
+    }
+
+    .reporte-input:focus {
+        border-color: #20639b;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(32, 99, 155, .1);
+    }
+
+    .reporte-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .reporte-button {
+        display: inline-flex;
+        min-height: 43px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: 1px solid #173f5f;
+        border-radius: 10px;
+        background: #173f5f;
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .reporte-button:hover {
+        background: #20639b;
+        color: #fff;
+    }
+
+    .reporte-button-secondary {
+        border-color: #d0d5dd;
+        background: #fff;
+        color: #344054;
+    }
+
+    .reporte-button-secondary:hover {
+        background: #f8fafc;
+        color: #173f5f;
+    }
+
+    .reporte-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .reporte-stat {
+        padding: 18px;
+        border: 1px solid #e4e7ec;
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .reporte-stat span {
+        display: block;
+        color: #667085;
+        font-size: .76rem;
+        font-weight: 700;
+    }
+
+    .reporte-stat strong {
+        display: block;
+        margin-top: 8px;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+    }
+
+    .reporte-stat.presente strong {
+        color: #167347;
+    }
+
+    .reporte-stat.ausente strong {
+        color: #b42318;
+    }
+
+    .reporte-stat.tardanza strong {
+        color: #975900;
+    }
+
+    .reporte-stat.justificado strong {
+        color: #2458a6;
+    }
+
+    .reporte-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #e4e7ec;
+        border-radius: 12px;
+    }
+
+    .reporte-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+    }
+
+    .reporte-table thead {
+        background: #f8fafc;
+    }
+
+    .reporte-table th {
+        padding: 13px;
+        border-bottom: 1px solid #e4e7ec;
+        color: #667085;
+        font-size: .68rem;
+        font-weight: 800;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .reporte-table td {
+        padding: 13px;
+        border-bottom: 1px solid #eef2f6;
+        color: #344054;
+        font-size: .82rem;
+        vertical-align: top;
+    }
+
+    .reporte-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .reporte-status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: #f2f4f7;
+        color: #344054;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .reporte-status.presente {
+        background: #e8f7ee;
+        color: #167347;
+    }
+
+    .reporte-status.ausente {
+        background: #fff0ef;
+        color: #b42318;
+    }
+
+    .reporte-status.tardanza {
+        background: #fff5df;
+        color: #975900;
+    }
+
+    .reporte-status.justificado {
+        background: #eaf2ff;
+        color: #2458a6;
+    }
+
+    .reporte-alert {
+        margin-bottom: 16px;
+        padding: 12px 15px;
+        border: 1px solid #f1c4c4;
+        border-radius: 10px;
+        background: #fff1f1;
+        color: #b42318;
+        font-size: .85rem;
+    }
+
+    .reporte-empty {
+        padding: 28px 15px;
+        color: #667085;
+        text-align: center;
+    }
+
+    .reporte-empty i {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 2rem;
+    }
+
+    @media (max-width: 800px) {
+        .reporte-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .reporte-panel {
+            padding: 16px;
+        }
+
+        .reporte-grid,
+        .reporte-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .reporte-actions .reporte-button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="reporte-page">
+
+    <header class="reporte-heading">
+        <div class="reporte-icon">
+            <i class="ri-bar-chart-box-line"></i>
+        </div>
+
+        <div>
+            <span class="reporte-kicker">EPF-06-05</span>
+            <h1>Reporte de asistencia</h1>
+            <p>
+                Consulte el control de asistencia por grupo o estudiante.
+            </p>
+        </div>
+    </header>
+
+    {% if error_reporte %}
+    <div class="reporte-alert">
+        {{ error_reporte }}
+    </div>
+    {% endif %}
+
+    <section class="reporte-panel">
+        <h2>Configurar reporte</h2>
+
+        <p class="reporte-description">
+            Seleccione el tipo de reporte y los filtros necesarios.
+        </p>
+
+        <form method="get" action="{{ url_for('admin_asistencia_reportes') }}" id="form-reporte">
+            <div class="reporte-grid">
+
+                <div class="reporte-field">
+                    <label class="reporte-label" for="tipo">
+                        Tipo de reporte
+                    </label>
+
+                    <select class="reporte-input" name="tipo" id="tipo" required>
+                        <option value="grupo" {% if filtros.tipo=='grupo' %}selected{% endif %}>
+                            Por grupo
+                        </option>
+
+                        <option value="estudiante" {% if filtros.tipo=='estudiante' %}selected{% endif %}>
+                            Por estudiante
+                        </option>
+                    </select>
+                </div>
+
+                <div class="reporte-field" id="campo-grupo">
+                    <label class="reporte-label" for="grupo">
+                        Grupo
+                    </label>
+
+                    <select class="reporte-input" name="grupo" id="grupo">
+                        <option value="">Seleccione un grupo</option>
+
+                        {% for grupo in grupos %}
+                        <option value="{{ grupo.id_grupo }}" {% if filtros.grupo|string==grupo.id_grupo|string
+                            %}selected{% endif %}>
+                            {{ grupo.nombre }} ·
+                            {{ grupo.nivel }}
+                            {{ grupo.seccion }} ·
+                            {{ grupo.anio_lectivo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="reporte-field" id="campo-estudiante">
+                    <label class="reporte-label" for="estudiante">
+                        Estudiante
+                    </label>
+
+                    <select class="reporte-input" name="estudiante" id="estudiante">
+                        <option value="">Seleccione un estudiante</option>
+
+                        {% for estudiante in estudiantes %}
+                        <option value="{{ estudiante.id_estudiante }}" {% if
+                            filtros.estudiante|string==estudiante.id_estudiante|string %}selected{% endif %}>
+                            {{ estudiante.apellido1 }}
+                            {% if estudiante.apellido2 %}
+                            {{ estudiante.apellido2 }}
+                            {% endif %},
+                            {{ estudiante.nombre }}
+                            — {{ estudiante.nombre_grupo }}
+                            {{ estudiante.seccion }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="reporte-field">
+                    <label class="reporte-label" for="desde">
+                        Fecha inicial
+                    </label>
+
+                    <input class="reporte-input" type="date" name="desde" id="desde" value="{{ filtros.desde }}">
+                </div>
+
+                <div class="reporte-field">
+                    <label class="reporte-label" for="hasta">
+                        Fecha final
+                    </label>
+
+                    <input class="reporte-input" type="date" name="hasta" id="hasta" value="{{ filtros.hasta }}">
+                </div>
+
+            </div>
+
+            <div class="reporte-actions">
+                <button class="reporte-button" type="submit">
+                    <i class="ri-search-line"></i>
+                    Generar reporte
+                </button>
+
+                <a class="reporte-button reporte-button-secondary" href="{{ url_for('admin_asistencia_reportes') }}">
+                    <i class="ri-refresh-line"></i>
+                    Limpiar filtros
+                </a>
+            </div>
+        </form>
+    </section>
+
+    {% if consulta_realizada and not error_reporte %}
+
+    <div class="reporte-stats">
+
+        <div class="reporte-stat">
+            <span>Total de registros</span>
+            <strong>{{ resumen.total }}</strong>
+        </div>
+
+        <div class="reporte-stat presente">
+            <span>Presentes</span>
+            <strong>{{ resumen.presente }}</strong>
+        </div>
+
+        <div class="reporte-stat ausente">
+            <span>Ausencias</span>
+            <strong>{{ resumen.ausente }}</strong>
+        </div>
+
+        <div class="reporte-stat tardanza">
+            <span>Tardanzas</span>
+            <strong>{{ resumen.tardanza }}</strong>
+        </div>
+
+        <div class="reporte-stat justificado">
+            <span>Justificados</span>
+            <strong>{{ resumen.justificado }}</strong>
+        </div>
+
+        <div class="reporte-stat">
+            <span>Asistencia efectiva</span>
+            <strong>{{ resumen.porcentaje }}%</strong>
+        </div>
+
+    </div>
+
+    <section class="reporte-panel">
+        <h2>Detalle del reporte</h2>
+
+        <p class="reporte-description">
+            Registros ordenados por fecha, empezando por la más reciente.
+        </p>
+
+        {% if filas %}
+        <div class="reporte-table-wrap">
+            <table class="reporte-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Estudiante</th>
+                        <th>Grupo</th>
+                        <th>Estado</th>
+                        <th>Observación</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for registro in filas %}
+                    <tr>
+                        <td>
+                            {{ registro.fecha.strftime('%d/%m/%Y') }}
+                        </td>
+
+                        <td>
+                            {{ registro.estudiante }}
+                        </td>
+
+                        <td>
+                            {{ registro.nombre_grupo }}
+                            · {{ registro.nivel }}
+                            {{ registro.seccion }}
+                        </td>
+
+                        <td>
+                            <span class="reporte-status {{ registro.estado }}">
+                                {{ registro.estado|capitalize }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ registro.observacion or 'Sin observaciones' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="reporte-empty">
+            <i class="ri-file-search-line"></i>
+            <strong>No hay registros para los filtros seleccionados</strong>
+            <p>
+                Pruebe con otro grupo, estudiante o rango de fechas.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    {% else %}
+    <section class="reporte-panel">
+        <div class="reporte-empty">
+            <i class="ri-file-chart-line"></i>
+            <strong>El reporte está listo para generarse</strong>
+            <p>
+                Seleccione un grupo o estudiante y pulse
+                “Generar reporte” para consultar los resultados.
+            </p>
+        </div>
+    </section>
+    {% endif %}
+
+</section>
+
+<script>
+    (function () {
+        const tipo = document.getElementById('tipo');
+        const campoGrupo = document.getElementById('campo-grupo');
+        const campoEstudiante = document.getElementById('campo-estudiante');
+        const grupo = document.getElementById('grupo');
+        const estudiante = document.getElementById('estudiante');
+
+        function actualizarFiltros() {
+            const esGrupo = tipo.value === 'grupo';
+
+            campoGrupo.style.display = esGrupo ? '' : 'none';
+            campoEstudiante.style.display = esGrupo ? 'none' : '';
+
+            grupo.disabled = !esGrupo;
+            grupo.required = esGrupo;
+
+            estudiante.disabled = esGrupo;
+            estudiante.required = !esGrupo;
+        }
+
+        tipo.addEventListener('change', actualizarFiltros);
+
+        actualizarFiltros();
+    })();
+</script>
+{% endblock %}

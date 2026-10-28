@@ -65,12 +65,43 @@
                         <i class="ri-megaphone-line"></i><span>Comunicados</span>
                     </a>
 
-          
+
+                    <a href="{{ url_for('admin_asistencia') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_asistencia' %}active{% endif %}">
+                        <i class="ri-calendar-check-line"></i>
+                        <span>Asistencia diaria</span>
+                    </a>
+
+                    <a href="{{ url_for('admin_asistencia_historial') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_asistencia_historial' %}active{% endif %}">
+                        <i class="ri-history-line"></i>
+                        <span>Historial individual</span>
+                    </a>
+
+                    {% if session.get('rol_usuario') == 'Estudiante' %}
+                    <a href="{{ url_for('estudiante_mi_asistencia') }}"
+                        class="sidebar-link {% if request.endpoint == 'estudiante_mi_asistencia' %}active{% endif %}">
+                        <i class="ri-calendar-check-line"></i>
+                        <span>Mi asistencia</span>
+                    </a>
+                    {% endif %}
+
 
                     <a href="{{ url_for('admin_reportes') }}"
                         class="sidebar-link {% if request.endpoint in ['admin_reportes', 'admin_reportes_exportar'] %}active{% endif %}">
                         <i class="ri-bar-chart-box-line"></i><span>Reportes</span>
                     </a>
+
+
+                    {% if session.get('rol_usuario') == 'Administrador' %}
+                    <a href="{{ url_for('admin_asistencia_reportes') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_asistencia_reportes' %}active{% endif %}">
+                        <i class="ri-bar-chart-box-line"></i>
+                        <span>Reporte de asistencia</span>
+                    </a>
+                    {% endif %}
+
+
                     <a href="{{ url_for('admin_estudiantes_registro') }}"
                         class="sidebar-link {% if request.endpoint == 'admin_estudiantes_registro' %}active{% endif %}">
                         <i class="ri-graduation-cap-line"></i><span>Registro de estudiantes</span>

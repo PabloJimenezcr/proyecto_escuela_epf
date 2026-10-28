@@ -1,0 +1,427 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Historial de asistencia | Escuela EPF{% endblock %}
+
+{% block styles %}
+<style>
+    .historial-page {
+        padding-bottom: 32px;
+        color: #17202a;
+        font-family: "DM Sans", sans-serif;
+    }
+
+    .historial-heading {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .historial-icon {
+        display: flex;
+        width: 54px;
+        height: 54px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        background: #eaf2f8;
+        color: #20639b;
+        font-size: 1.6rem;
+    }
+
+    .historial-kicker {
+        color: #20639b;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+    }
+
+    .historial-heading h1 {
+        margin: 4px 0;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-weight: 800;
+    }
+
+    .historial-heading p {
+        margin: 0;
+        color: #667085;
+        font-size: .88rem;
+    }
+
+    .historial-panel {
+        margin-bottom: 22px;
+        padding: 23px;
+        border: 1px solid #e4e7ec;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(23, 63, 95, .045);
+    }
+
+    .historial-panel h2 {
+        margin: 0;
+        color: #173f5f;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .historial-description {
+        margin: 7px 0 18px;
+        color: #667085;
+        font-size: .82rem;
+    }
+
+    .historial-form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 12px;
+    }
+
+    .historial-field {
+        flex: 1;
+        min-width: 240px;
+    }
+
+    .historial-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #344054;
+        font-size: .78rem;
+        font-weight: 800;
+    }
+
+    .historial-input {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #17202a;
+        font: inherit;
+        font-size: .83rem;
+    }
+
+    .historial-button {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: 1px solid #173f5f;
+        border-radius: 10px;
+        background: #173f5f;
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .historial-button:hover {
+        background: #20639b;
+        color: #fff;
+    }
+
+    .historial-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #e4e7ec;
+        border-radius: 12px;
+    }
+
+    .historial-table {
+        width: 100%;
+        min-width: 700px;
+        border-collapse: collapse;
+    }
+
+    .historial-table thead {
+        background: #f8fafc;
+    }
+
+    .historial-table th {
+        padding: 13px;
+        border-bottom: 1px solid #e4e7ec;
+        color: #667085;
+        font-size: .68rem;
+        font-weight: 800;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .historial-table td {
+        padding: 13px;
+        border-bottom: 1px solid #eef2f6;
+        color: #344054;
+        font-size: .82rem;
+        vertical-align: top;
+    }
+
+    .historial-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .historial-status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: #f2f4f7;
+        color: #344054;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .historial-status.presente {
+        background: #e8f7ee;
+        color: #167347;
+    }
+
+    .historial-status.ausente {
+        background: #fff0ef;
+        color: #b42318;
+    }
+
+    .historial-status.tardanza {
+        background: #fff5df;
+        color: #975900;
+    }
+
+    .historial-status.justificado {
+        background: #eaf2ff;
+        color: #2458a6;
+    }
+
+    .historial-alert {
+        margin-bottom: 16px;
+        padding: 12px 15px;
+        border-radius: 10px;
+        background: #fff1f1;
+        color: #b42318;
+        font-size: .85rem;
+    }
+
+    .historial-alert-success {
+        border: 1px solid #b7e4ce;
+        background: #edf9f2;
+        color: #167347;
+    }
+
+    .historial-student {
+        margin-bottom: 18px;
+        padding: 15px;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .historial-student strong {
+        display: block;
+        color: #173f5f;
+        font-size: .95rem;
+    }
+
+    .historial-student span {
+        display: block;
+        margin-top: 5px;
+        color: #667085;
+        font-size: .8rem;
+    }
+
+    .historial-empty {
+        padding: 30px 15px;
+        color: #667085;
+        text-align: center;
+    }
+
+    .historial-empty i {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 2rem;
+    }
+
+    @media (max-width: 640px) {
+        .historial-panel {
+            padding: 16px;
+        }
+
+        .historial-form,
+        .historial-field {
+            width: 100%;
+        }
+
+        .historial-button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="historial-page">
+
+    <header class="historial-heading">
+        <div class="historial-icon">
+            <i class="ri-history-line"></i>
+        </div>
+
+        <div>
+            <span class="historial-kicker">EPF-06-02</span>
+            <h1>Historial individual de asistencia</h1>
+            <p>
+                Consulte los registros de asistencia de un estudiante.
+            </p>
+        </div>
+    </header>
+
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+    <div class="historial-alert {% if categoria == 'success' %}historial-alert-success{% endif %}">
+        {{ mensaje }}
+    </div>
+    {% endfor %}
+
+    <section class="historial-panel">
+        <h2>Buscar estudiante</h2>
+
+        <p class="historial-description">
+            Seleccione un estudiante para consultar sus registros
+            de asistencia anteriores.
+        </p>
+
+        <form method="get" action="{{ url_for('admin_asistencia_historial') }}" class="historial-form">
+            <div class="historial-field">
+                <label class="historial-label" for="estudiante">
+                    Estudiante
+                </label>
+
+                <select class="historial-input" name="estudiante" id="estudiante" required>
+                    <option value="">Seleccione un estudiante</option>
+
+                    {% for estudiante in estudiantes %}
+                    <option value="{{ estudiante.id_estudiante }}" {% if
+                        id_estudiante_seleccionado|string==estudiante.id_estudiante|string %}selected{% endif %}>
+                        {{ estudiante.apellido1 }}
+                        {% if estudiante.apellido2 %}
+                        {{ estudiante.apellido2 }}
+                        {% endif %},
+                        {{ estudiante.nombre }}
+                        — {{ estudiante.nombre_grupo }}
+                        {{ estudiante.seccion }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="historial-button" type="submit">
+                <i class="ri-search-line"></i>
+                Consultar historial
+            </button>
+        </form>
+    </section>
+
+    {% if estudiante_seleccionado %}
+    <section class="historial-panel">
+
+        <h2>Registros de asistencia</h2>
+
+        <p class="historial-description">
+            Historial completo del estudiante seleccionado.
+        </p>
+
+        <div class="historial-student">
+            <strong>
+                {{ estudiante_seleccionado.nombre }}
+                {{ estudiante_seleccionado.apellido1 }}
+                {% if estudiante_seleccionado.apellido2 %}
+                {{ estudiante_seleccionado.apellido2 }}
+                {% endif %}
+            </strong>
+
+            <span>
+                Grupo:
+                {{ estudiante_seleccionado.nombre_grupo }}
+                · {{ estudiante_seleccionado.nivel }}
+                {{ estudiante_seleccionado.seccion }}
+                · Año lectivo:
+                {{ estudiante_seleccionado.anio_lectivo }}
+            </span>
+
+            <span>
+                Total de registros: {{ historial|length }}
+            </span>
+        </div>
+
+        {% if historial %}
+        <div class="historial-table-wrap">
+            <table class="historial-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                        <th>Observación</th>
+                        <th>Registrado por</th>
+                        <th>Fecha de registro</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for registro in historial %}
+                    <tr>
+                        <td>
+                            {{ registro.fecha.strftime('%d/%m/%Y') }}
+                        </td>
+
+                        <td>
+                            <span class="historial-status {{ registro.estado }}">
+                                {{ registro.estado|capitalize }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ registro.observacion or 'Sin observaciones' }}
+                        </td>
+
+                        <td>
+                            {{ registro.registrado_por_nombre or 'Usuario no disponible' }}
+                        </td>
+
+                        <td>
+                            {% if registro.fecha_registro %}
+                            {{ registro.fecha_registro.strftime('%d/%m/%Y %H:%M') }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if puede_editar_asistencia %}
+                            <a class="historial-button"
+                                href="{{ url_for('admin_asistencia_editar', id_asistencia=registro.id_asistencia) }}">
+                                <i class="ri-edit-2-line"></i>
+                                Editar
+                            </a>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="historial-empty">
+            <i class="ri-calendar-close-line"></i>
+            <strong>No hay registros de asistencia</strong>
+            <p>
+                Este estudiante aún no tiene asistencias registradas.
+            </p>
+        </div>
+        {% endif %}
+
+    </section>
+    {% endif %}
+
+</section>
+{% endblock %}
