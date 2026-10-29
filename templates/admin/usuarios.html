@@ -508,6 +508,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
+
         .users-card,
         .btn-users-primary,
         .btn-users-filter {
@@ -532,17 +533,19 @@
     </header>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="mb-4">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show users-alert" role="alert">
-                        <i class="{{ 'ri-error-warning-line' if category in ['danger', 'error'] else 'ri-checkbox-circle-line' }}"></i>
-                        <span>{{ message }}</span>
-                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+    {% if messages %}
+    <div class="mb-4">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show users-alert"
+            role="alert">
+            <i
+                class="{{ 'ri-error-warning-line' if category in ['danger', 'error'] else 'ri-checkbox-circle-line' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endwith %}
 
     <div class="row g-4">
@@ -564,90 +567,50 @@
 
                     <div class="mb-3">
                         <label class="users-label" for="nombre">Nombre</label>
-                        <input
-                            type="text"
-                            id="nombre"
-                            name="nombre"
-                            class="users-input"
-                            required
-                            maxlength="100"
+                        <input type="text" id="nombre" name="nombre" class="users-input" required maxlength="100"
                             placeholder="Nombre del usuario">
                     </div>
 
                     <div class="row g-3">
                         <div class="col-12 col-sm-6">
                             <label class="users-label" for="apellido1">Primer apellido</label>
-                            <input
-                                type="text"
-                                id="apellido1"
-                                name="apellido1"
-                                class="users-input"
-                                required
-                                maxlength="100"
-                                placeholder="Primer apellido">
+                            <input type="text" id="apellido1" name="apellido1" class="users-input" required
+                                maxlength="100" placeholder="Primer apellido">
                         </div>
 
                         <div class="col-12 col-sm-6">
                             <label class="users-label" for="apellido2">Segundo apellido</label>
-                            <input
-                                type="text"
-                                id="apellido2"
-                                name="apellido2"
-                                class="users-input"
-                                maxlength="100"
+                            <input type="text" id="apellido2" name="apellido2" class="users-input" maxlength="100"
                                 placeholder="Segundo apellido">
                         </div>
                     </div>
 
                     <div class="mt-3 mb-3">
                         <label class="users-label" for="email">Correo institucional</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            class="users-input"
-                            required
-                            maxlength="150"
-                            placeholder="usuario@escuela.com"
-                            pattern="[a-zA-Z0-9._%+-]+@escuela\.com$"
+                        <input type="email" id="email" name="email" class="users-input" required maxlength="150"
+                            placeholder="usuario@escuela.com" pattern="[a-zA-Z0-9._%+-]+@escuela\.com$"
                             title="El correo debe pertenecer al dominio @escuela.com">
                         <small class="users-help">Se permiten correos con dominio @escuela.com</small>
                     </div>
 
                     <div class="mb-3">
                         <label class="users-label" for="password">Contraseña inicial</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            class="users-input"
-                            required
-                            minlength="5"
-                            autocomplete="new-password"
-                            placeholder="Asigna una contraseña">
+                        <input type="password" id="password" name="password" class="users-input" required minlength="5"
+                            autocomplete="new-password" placeholder="Asigna una contraseña">
                     </div>
 
                     <div class="mb-3">
                         <label class="users-label" for="telefono">Teléfono</label>
-                        <input
-                            type="tel"
-                            id="telefono"
-                            name="telefono"
-                            class="users-input"
-                            maxlength="20"
+                        <input type="tel" id="telefono" name="telefono" class="users-input" maxlength="20"
                             placeholder="Número de contacto">
                     </div>
 
                     <div class="mb-4">
                         <label class="users-label" for="id_rol">Rol del usuario</label>
-                        <select
-                            id="id_rol"
-                            name="id_rol"
-                            class="users-input"
-                            required>
+                        <select id="id_rol" name="id_rol" class="users-input" required>
                             <option value="" disabled selected>Selecciona un rol</option>
                             {% for r in roles %}
-                                <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
+                            <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -687,11 +650,10 @@
                             <select id="rol" name="rol" class="users-input">
                                 <option value="">Todos los roles</option>
                                 {% for r in roles %}
-                                    <option
-                                        value="{{ r.id_rol }}"
-                                        {% if rol_seleccionado and rol_seleccionado|int == r.id_rol %}selected{% endif %}>
-                                        {{ r.nombre }}
-                                    </option>
+                                <option value="{{ r.id_rol }}" {% if rol_seleccionado and rol_seleccionado|int==r.id_rol
+                                    %}selected{% endif %}>
+                                    {{ r.nombre }}
+                                </option>
                                 {% endfor %}
                             </select>
 
@@ -701,20 +663,17 @@
                             </button>
 
                             {% if rol_seleccionado %}
-                                <a href="{{ url_for('users') }}" class="btn-users-reset" title="Mostrar todos los usuarios">
-                                    <i class="ri-refresh-line"></i>
-                                    Limpiar
-                                </a>
+                            <a href="{{ url_for('users') }}" class="btn-users-reset" title="Mostrar todos los usuarios">
+                                <i class="ri-refresh-line"></i>
+                                Limpiar
+                            </a>
                             {% endif %}
                         </div>
                     </form>
 
                     <div>
                         <label class="users-label" for="buscadorUsuarios">Buscar en los resultados</label>
-                        <input
-                            type="search"
-                            id="buscadorUsuarios"
-                            class="users-input"
+                        <input type="search" id="buscadorUsuarios" class="users-input"
                             placeholder="Nombre correo o rol">
                         <small class="users-help">La búsqueda se aplica al listado visible</small>
                     </div>
@@ -735,87 +694,96 @@
 
                         <tbody id="usersTableBody">
                             {% for u in users %}
-                                <tr
-                                    class="usuario-fila"
-                                    data-search="{{ (u.nombre ~ ' ' ~ (u.apellido1 or '') ~ ' ' ~ (u.apellido2 or '') ~ ' ' ~ u.correo ~ ' ' ~ (u.nombre_rol or '') ~ ' ' ~ (u.telefono or '') ~ ' ' ~ u.estado)|lower }}">
+                            <tr class="usuario-fila"
+                                data-search="{{ (u.nombre ~ ' ' ~ (u.apellido1 or '') ~ ' ' ~ (u.apellido2 or '') ~ ' ' ~ u.correo ~ ' ' ~ (u.nombre_rol or '') ~ ' ' ~ (u.telefono or '') ~ ' ' ~ u.estado)|lower }}">
 
-                                    <td>
-                                        <div class="users-member">
-                                            <div class="users-member-avatar">
-                                                <i class="ri-user-3-line"></i>
-                                            </div>
-
-                                            <div>
-                                                <span class="users-member-name">
-                                                    {{ u.nombre }}
-                                                    {{ u.apellido1 or '' }}
-                                                    {{ u.apellido2 or '' }}
-                                                </span>
-
-                                                <span class="users-member-id">
-                                                    ID #{{ u.id_usuario }}
-                                                </span>
-                                            </div>
+                                <td>
+                                    <div class="users-member">
+                                        <div class="users-member-avatar">
+                                            <i class="ri-user-3-line"></i>
                                         </div>
-                                    </td>
 
-                                    <td>
-                                        <span class="users-email">{{ u.correo }}</span>
-                                        <span class="users-phone">
-                                            <i class="ri-phone-line"></i>
-                                            {{ u.telefono if u.telefono else 'Sin teléfono' }}
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <span class="users-role-badge">
-                                            <i class="ri-shield-user-line"></i>
-                                            {{ u.nombre_rol }}
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        {% if u.estado == 'activo' %}
-                                            <span class="users-status users-status-active">
-                                                <i class="ri-checkbox-blank-circle-fill"></i>
-                                                Activo
+                                        <div>
+                                            <span class="users-member-name">
+                                                {{ u.nombre }}
+                                                {{ u.apellido1 or '' }}
+                                                {{ u.apellido2 or '' }}
                                             </span>
-                                        {% else %}
-                                            <span class="users-status users-status-inactive">
-                                                <i class="ri-checkbox-blank-circle-fill"></i>
-                                                Inactivo
-                                            </span>
-                                        {% endif %}
-                                    </td>
 
-                                    <td class="text-center">
-                                        {% if u.estado == 'activo' %}
-                                            <a
-                                                href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}"
-                                                class="btn-users-toggle btn-users-deactivate"
-                                                onclick="return confirm('¿Deseas desactivar esta cuenta?')">
-                                                <i class="ri-user-unfollow-line"></i>
-                                                Desactivar
-                                            </a>
-                                        {% else %}
-                                            <a
-                                                href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}"
-                                                class="btn-users-toggle btn-users-activate"
-                                                onclick="return confirm('¿Deseas activar esta cuenta?')">
-                                                <i class="ri-user-follow-line"></i>
-                                                Activar
-                                            </a>
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                                            <span class="users-member-id">
+                                                ID #{{ u.id_usuario }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="users-email">{{ u.correo }}</span>
+                                    <span class="users-phone">
+                                        <i class="ri-phone-line"></i>
+                                        {{ u.telefono if u.telefono else 'Sin teléfono' }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="users-role-badge">
+                                        <i class="ri-shield-user-line"></i>
+                                        {{ u.nombre_rol }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if u.estado == 'activo' %}
+                                    <span class="users-status users-status-active">
+                                        <i class="ri-checkbox-blank-circle-fill"></i>
+                                        Activo
+                                    </span>
+                                    {% else %}
+                                    <span class="users-status users-status-inactive">
+                                        <i class="ri-checkbox-blank-circle-fill"></i>
+                                        Inactivo
+                                    </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-center">
+
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-editar-usuario"
+                                        style="border-radius: 6px; padding: 5px 10px; display: inline-flex; align-items: center; vertical-align: middle; height: 32px;"
+                                        data-bs-toggle="modal" data-bs-target="#modalEditarUsuario"
+                                        data-id="{{ u.id_usuario }}" data-nombre="{{ u.nombre }}"
+                                        data-ap1="{{ u.apellido1 }}" data-ap2="{{ u.apellido2 or '' }}"
+                                        data-correo="{{ u.correo }}" data-tel="{{ u.telefono or '' }}"
+                                        data-rol="{{ u.id_rol }}">
+                                        <i class="ri-edit-line"></i>
+                                    </button>
+                                    
+                                    <!--botones de desactivar/activar-->
+                                    {% if u.estado == 'activo' %}
+                                    <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}"
+                                        class="btn-users-toggle btn-users-deactivate"
+                                        onclick="return confirm('¿Deseas desactivar esta cuenta?')">
+                                        <i class="ri-user-unfollow-line"></i>
+                                        Desactivar
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}"
+                                        class="btn-users-toggle btn-users-activate"
+                                        onclick="return confirm('¿Deseas activar esta cuenta?')">
+                                        <i class="ri-user-follow-line"></i>
+                                        Activar
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
                             {% else %}
-                                <tr>
-                                    <td colspan="5" class="users-empty-state">
-                                        <i class="ri-user-search-line"></i>
-                                        <strong>No hay usuarios para mostrar</strong>
-                                        <span>No se encontraron cuentas con el filtro seleccionado</span>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td colspan="5" class="users-empty-state">
+                                    <i class="ri-user-search-line"></i>
+                                    <strong>No hay usuarios para mostrar</strong>
+                                    <span>No se encontraron cuentas con el filtro seleccionado</span>
+                                </td>
+                            </tr>
                             {% endfor %}
 
                             <tr id="noSearchResults" style="display: none;">
@@ -835,9 +803,9 @@
                     </span>
 
                     {% if rol_seleccionado %}
-                        <span>Filtro por rol activo</span>
+                    <span>Filtro por rol activo</span>
                     {% else %}
-                        <span>Todos los roles</span>
+                    <span>Todos los roles</span>
                     {% endif %}
                 </div>
 
@@ -846,43 +814,121 @@
 
     </div>
 
+    <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #fff;">
+                <div class="modal-header"
+                    style="border-bottom: 1px solid #e2e8f0; background: #f8fafc; padding: 15px 20px;">
+                    <h5 class="modal-title" style="color: #1a365d; font-weight: 700;"><i
+                            class="ri-edit-box-line me-2"></i>Editar Información</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('edit_user') }}" method="POST">
+                    <div class="modal-body p-4">
+                        <!-- ID del usuario -->
+                        <input type="hidden" name="id_usuario" id="edit_id_usuario">
+
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Nombre
+                                Propio</label>
+                            <input type="text" name="nombre" id="edit_nombre" class="form-control animated-input"
+                                required style="width: 100%;">
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label"
+                                    style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">1°
+                                    Apellido</label>
+                                <input type="text" name="apellido1" id="edit_apellido1"
+                                    class="form-control animated-input" required style="width: 100%;">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label"
+                                    style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">2°
+                                    Apellido</label>
+                                <input type="text" name="apellido2" id="edit_apellido2"
+                                    class="form-control animated-input" style="width: 100%;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Correo
+                                Institucional</label>
+                            <input type="email" name="email" id="edit_correo" class="form-control animated-input"
+                                required pattern="[a-zA-Z0-9._%+-]+@escuela\.com$"
+                                title="Debe usar el dominio @escuela.com" style="width: 100%;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Teléfono</label>
+                            <input type="text" name="telefono" id="edit_telefono" class="form-control animated-input"
+                                style="width: 100%;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #1a365d; font-weight: 700; text-transform: uppercase;">Asignar
+                                Rango / Rol</label>
+                            <select name="id_rol" id="edit_id_rol" class="form-select animated-input" required
+                                style="width: 100%; cursor: pointer;">
+                                {% for r in roles %}
+                                <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #e2e8f0; background: #f8fafc;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            style="border-radius: 8px;">Cancelar</button>
+                        <button type="submit" class="btn btn-school"
+                            style="background: #1a365d; color: #fff; border-radius: 8px; padding: 8px 16px; border: none; font-weight: 600;">Guardar
+                            Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/usuarios.js') }}"></script>
+
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.getElementById('buscadorUsuarios');
-    const rows = Array.from(document.querySelectorAll('.usuario-fila'));
-    const emptySearchRow = document.getElementById('noSearchResults');
-    const countElement = document.getElementById('usersCount');
-    const resultsText = document.getElementById('usersResultsText');
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('buscadorUsuarios');
+        const rows = Array.from(document.querySelectorAll('.usuario-fila'));
+        const emptySearchRow = document.getElementById('noSearchResults');
+        const countElement = document.getElementById('usersCount');
+        const resultsText = document.getElementById('usersResultsText');
 
-    function filterUsers() {
-        const query = searchInput.value.trim().toLowerCase();
-        let visibleCount = 0;
+        function filterUsers() {
+            const query = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
 
-        rows.forEach(function (row) {
-            const content = row.dataset.search || '';
-            const matches = content.includes(query);
+            rows.forEach(function (row) {
+                const content = row.dataset.search || '';
+                const matches = content.includes(query);
 
-            row.style.display = matches ? '' : 'none';
+                row.style.display = matches ? '' : 'none';
 
-            if (matches) {
-                visibleCount++;
-            }
-        });
+                if (matches) {
+                    visibleCount++;
+                }
+            });
 
-        countElement.textContent = visibleCount;
-        resultsText.textContent = 'Mostrando ' + visibleCount + ' usuario(s)';
+            countElement.textContent = visibleCount;
+            resultsText.textContent = 'Mostrando ' + visibleCount + ' usuario(s)';
 
-        emptySearchRow.style.display =
-            rows.length > 0 && visibleCount === 0 ? '' : 'none';
-    }
+            emptySearchRow.style.display =
+                rows.length > 0 && visibleCount === 0 ? '' : 'none';
+        }
 
-    if (searchInput) {
-        searchInput.addEventListener('input', filterUsers);
-    }
-});
+        if (searchInput) {
+            searchInput.addEventListener('input', filterUsers);
+        }
+    });
 </script>
 {% endblock %}
