@@ -589,6 +589,46 @@ def toggle_user(id_usuario):
 
         db.close()
 
+#editar usuario
+
+@app.route('/admin/users/edit', methods=['POST'])
+@admin_required
+def edit_user():
+    if 'id_usuario' not in session:
+        return redirect(url_for('login'))
+        
+    id_usuario = request.form.get('id_usuario')
+    nombre = request.form.get('nombre')
+    apellido1 = request.form.get('apellido1')
+    apellido2 = request.form.get('apellido2')
+    correo = request.form.get('email')
+    telefono = request.form.get('telefono')
+    id_rol = request.form.get('id_rol')
+    
+    if not correo or not correo.lower().endswith('@escuela.com'):
+        flash('Error: El correo editado debe pertenecer estrictamente al dominio @escuela.com', 'danger')
+        return redirect(url_for('users'))
+        
+    db = get_db_connection()
+    cursor = db.cursor()
+    
+    try:
+        # Se realiza el UPDATE en la bd
+        cursor.execute("""
+            UPDATE usuarios 
+            SET nombre = %s, apellido1 = %s, apellido2 = %s, correo = %s, telefono = %s, id_rol = %s 
+            WHERE id_usuario = %s
+        """, (nombre, apellido1, apellido2, correo, telefono, id_rol, id_usuario))
+        db.commit()
+        flash('Usuario actualizado correctamente', 'success')
+    except Exception as e:
+        flash('Hubo un error al actualizar el usuario en la base de datos', 'danger')
+    finally:
+        cursor.close()
+        db.close()
+        
+    return redirect(url_for('users'))
+
 
 # gestion de roles
 
