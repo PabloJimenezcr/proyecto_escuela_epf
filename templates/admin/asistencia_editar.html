@@ -1,0 +1,323 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Editar asistencia | Escuela EPF{% endblock %}
+
+{% block styles %}
+<style>
+    .edicion-page {
+        padding-bottom: 32px;
+        color: #17202a;
+        font-family: "DM Sans", sans-serif;
+    }
+
+    .edicion-heading {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .edicion-icon {
+        display: flex;
+        width: 54px;
+        height: 54px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        background: #eaf2f8;
+        color: #20639b;
+        font-size: 1.6rem;
+    }
+
+    .edicion-kicker {
+        color: #20639b;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+    }
+
+    .edicion-heading h1 {
+        margin: 4px 0;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-weight: 800;
+    }
+
+    .edicion-heading p {
+        margin: 0;
+        color: #667085;
+        font-size: .88rem;
+    }
+
+    .edicion-panel {
+        max-width: 850px;
+        padding: 24px;
+        border: 1px solid #e4e7ec;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(23, 63, 95, .045);
+    }
+
+    .edicion-panel h2 {
+        margin: 0;
+        color: #173f5f;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .edicion-description {
+        margin: 7px 0 22px;
+        color: #667085;
+        font-size: .82rem;
+    }
+
+    .edicion-student {
+        margin-bottom: 22px;
+        padding: 16px;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .edicion-student strong {
+        display: block;
+        color: #173f5f;
+        font-size: .95rem;
+    }
+
+    .edicion-student span {
+        display: block;
+        margin-top: 5px;
+        color: #667085;
+        font-size: .8rem;
+    }
+
+    .edicion-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .edicion-field-full {
+        grid-column: 1 / -1;
+    }
+
+    .edicion-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #344054;
+        font-size: .78rem;
+        font-weight: 800;
+    }
+
+    .edicion-input {
+        width: 100%;
+        min-height: 45px;
+        padding: 10px 12px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #17202a;
+        font: inherit;
+        font-size: .84rem;
+    }
+
+    .edicion-input:focus {
+        border-color: #20639b;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(32, 99, 155, .1);
+    }
+
+    textarea.edicion-input {
+        min-height: 110px;
+        resize: vertical;
+    }
+
+    .edicion-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 23px;
+    }
+
+    .edicion-button {
+        display: inline-flex;
+        min-height: 43px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: 1px solid #173f5f;
+        border-radius: 10px;
+        background: #173f5f;
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .edicion-button:hover {
+        background: #20639b;
+        color: #fff;
+    }
+
+    .edicion-button-secondary {
+        border-color: #d0d5dd;
+        background: #fff;
+        color: #344054;
+    }
+
+    .edicion-button-secondary:hover {
+        background: #f8fafc;
+        color: #173f5f;
+    }
+
+    .edicion-alert {
+        margin-bottom: 16px;
+        padding: 12px 15px;
+        border: 1px solid #f1c4c4;
+        border-radius: 10px;
+        background: #fff1f1;
+        color: #b42318;
+        font-size: .85rem;
+    }
+
+    .edicion-alert-success {
+        border-color: #b7e4ce;
+        background: #edf9f2;
+        color: #167347;
+    }
+
+    @media (max-width: 640px) {
+        .edicion-panel {
+            padding: 16px;
+        }
+
+        .edicion-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .edicion-field-full {
+            grid-column: auto;
+        }
+
+        .edicion-actions .edicion-button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="edicion-page">
+
+    <header class="edicion-heading">
+        <div class="edicion-icon">
+            <i class="ri-edit-2-line"></i>
+        </div>
+
+        <div>
+            <span class="edicion-kicker">EPF-06-03</span>
+            <h1>Modificar asistencia</h1>
+            <p>
+                Corrija los datos de un registro de asistencia existente.
+            </p>
+        </div>
+    </header>
+
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+    <div class="edicion-alert {% if categoria == 'success' %}edicion-alert-success{% endif %}">
+        {{ mensaje }}
+    </div>
+    {% endfor %}
+
+    <section class="edicion-panel">
+
+        <h2>Datos del registro</h2>
+
+        <p class="edicion-description">
+            Modifique los datos necesarios y guarde los cambios.
+        </p>
+
+        <div class="edicion-student">
+            <strong>
+                {{ registro.nombre }}
+                {{ registro.apellido1 }}
+                {% if registro.apellido2 %}
+                {{ registro.apellido2 }}
+                {% endif %}
+            </strong>
+
+            <span>
+                Grupo:
+                {{ registro.nombre_grupo }}
+                · {{ registro.nivel }}
+                {{ registro.seccion }}
+                · Año lectivo:
+                {{ registro.anio_lectivo }}
+            </span>
+
+            <span>
+                Registro número: {{ registro.id_asistencia }}
+            </span>
+        </div>
+
+        <form method="post" action="{{ url_for('admin_asistencia_editar', id_asistencia=registro.id_asistencia) }}">
+            <div class="edicion-grid">
+
+                <div>
+                    <label class="edicion-label" for="fecha">
+                        Fecha de asistencia
+                    </label>
+
+                    <input class="edicion-input" type="date" name="fecha" id="fecha"
+                        value="{{ fecha_formulario if fecha_formulario is not none else registro.fecha.strftime('%Y-%m-%d') }}"
+                        max="{{ hoy }}" required>
+                </div>
+
+                <div>
+                    <label class="edicion-label" for="estado">
+                        Estado de asistencia
+                    </label>
+
+                    <select class="edicion-input" name="estado" id="estado" required>
+                        {% set estado_actual = estado_formulario if estado_formulario is not none else registro.estado
+                        %}
+
+                        {% for clave, etiqueta in estados.items() %}
+                        <option value="{{ clave }}" {% if estado_actual==clave %}selected{% endif %}>
+                            {{ etiqueta }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="edicion-field-full">
+                    <label class="edicion-label" for="observacion">
+                        Observaciones
+                    </label>
+
+                    <textarea class="edicion-input" name="observacion" id="observacion" maxlength="500"
+                        placeholder="Agregue una observación si corresponde">{{ observacion_formulario if observacion_formulario is not none else (registro.observacion or '') }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="edicion-actions">
+                <button class="edicion-button" type="submit">
+                    <i class="ri-save-3-line"></i>
+                    Guardar cambios
+                </button>
+
+                <a class="edicion-button edicion-button-secondary"
+                    href="{{ url_for('admin_asistencia_historial', estudiante=registro.id_estudiante) }}">
+                    <i class="ri-arrow-left-line"></i>
+                    Volver al historial
+                </a>
+            </div>
+        </form>
+    </section>
+
+</section>
+{% endblock %}

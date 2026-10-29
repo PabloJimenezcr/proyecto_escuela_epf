@@ -1,266 +1,934 @@
 {% extends 'admin/layout.html' %}
 
-{% block content %}
+{% block title %}Control de usuarios | Escuela EPF{% endblock %}
 
+{% block styles %}
 <style>
-    .fade-in-up {
-        animation: fadeInUp 0.4s ease-out forwards;
-    }
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .interactive-card {
-        background: #ffffff !important; 
-        border: 1px solid #e2e8f0 !important; 
-        border-radius: 16px !important; 
-        padding: 28px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
-        transition: all 0.3s ease;
-    }
-    .interactive-card:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 24px rgba(26, 54, 93, 0.06) !important;
+    .users-page {
+        width: 100%;
+        color: #17202a;
+        font-family: 'DM Sans', sans-serif;
+        padding-bottom: 40px;
     }
 
-    .animated-input {
-        background: #ffffff !important; 
-        border: 1px solid #cbd5e1 !important;
-        color: #1e293b !important; 
-        padding: 10px 14px !important;
-        border-radius: 8px !important;
-        font-size: 0.95rem !important;
-        transition: all 0.2s ease !important;
-    }
-    .animated-input::placeholder {
-        color: #94a3b8 !important;
-        opacity: 1 !important;
-    }
-    .animated-input:focus {
-        border-color: #1a365d !important;
-        box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.15) !important;
-        color: #1e293b !important;
+    .users-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 27px;
     }
 
-    .table-school {
-        color: #1e293b !important;
-    }
-    .table-school th {
-        color: #475569 !important;
-        font-weight: 700 !important;
-        border-bottom: 2px solid #e2e8f0 !important;
-    }
-    .hover-row {
-        transition: background-color 0.2s ease !important;
-        color: #334155 !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-    }
-    .hover-row:hover {
-        background-color: #f8fafc !important;
+    .users-heading-icon {
+        width: 54px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 16px;
+        background: rgba(32, 99, 155, 0.09);
+        color: #20639b;
+        font-size: 1.5rem;
     }
 
-    .btn-school {
-        background: #1a365d !important;
-        color: #ffffff !important;
-        font-weight: 600 !important;
-        border-radius: 8px !important;
-        padding: 11px 20px !important;
-        border: none !important;
-        transition: all 0.2s ease !important;
+    .users-heading h1 {
+        margin: 0;
+        color: #0b253a;
+        font-family: 'Montserrat', sans-serif;
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+        font-weight: 800;
     }
-    .btn-school:hover {
-        background: #2a4a7d !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2) !important;
+
+    .users-heading p {
+        margin: 6px 0 0;
+        color: #667085;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .users-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 12px;
+    }
+
+    .users-card {
+        height: 100%;
+        padding: 25px;
+        background: #fff;
+        border: 1px solid #e4e7ec;
+        border-radius: 18px;
+        box-shadow: 0 4px 15px rgba(23, 63, 95, 0.04);
+        transition: box-shadow 0.25s ease;
+    }
+
+    .users-card:hover {
+        box-shadow: 0 8px 25px rgba(23, 63, 95, 0.07);
+    }
+
+    .users-card-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 23px;
+    }
+
+    .users-card-icon {
+        width: 43px;
+        height: 43px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: rgba(32, 99, 155, 0.08);
+        color: #20639b;
+        font-size: 1.25rem;
+    }
+
+    .users-card-heading h2 {
+        margin: 0;
+        color: #173f5f;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .users-card-heading p {
+        margin: 4px 0 0;
+        color: #667085;
+        font-size: 0.77rem;
+    }
+
+    .users-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.035em;
+        text-transform: uppercase;
+    }
+
+    .users-input {
+        width: 100%;
+        min-height: 46px;
+        padding: 10px 13px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #17202a;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.88rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .users-input:focus {
+        border-color: #20639b;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(32, 99, 155, 0.1);
+    }
+
+    .users-help {
+        display: block;
+        margin-top: 6px;
+        color: #98a2b3;
+        font-size: 0.72rem;
+        line-height: 1.5;
+    }
+
+    .btn-users-primary {
+        min-height: 45px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 10px 17px;
+        border: 0;
+        border-radius: 10px;
+        background: #173f5f;
+        color: #fff;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-users-primary:hover {
+        background: #20639b;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .users-table-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .users-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 31px;
+        height: 29px;
+        padding: 0 9px;
+        border-radius: 9px;
+        background: rgba(32, 99, 155, 0.09);
+        color: #20639b;
+        font-size: 0.8rem;
+        font-weight: 800;
+    }
+
+    .users-filter-panel {
+        display: grid;
+        grid-template-columns: minmax(190px, 0.8fr) minmax(230px, 1.2fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 17px;
+        border: 1px solid #e4e7ec;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .users-filter-form {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .users-filter-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .users-filter-controls select {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .btn-users-filter {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 13px;
+        border: 1px solid #173f5f;
+        border-radius: 10px;
+        background: #173f5f;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .btn-users-filter:hover {
+        background: #20639b;
+    }
+
+    .btn-users-reset {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 9px 12px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #475569;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .btn-users-reset:hover {
+        background: #eef3f7;
+        color: #173f5f;
+    }
+
+    .users-table-container {
+        max-height: 520px;
+        overflow: auto;
+        border: 1px solid #e4e7ec;
+        border-radius: 13px;
+    }
+
+    .users-table {
+        width: 100%;
+        min-width: 760px;
+        margin: 0;
+        color: #17202a;
+        vertical-align: middle;
+    }
+
+    .users-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f8fafc;
+    }
+
+    .users-table thead th {
+        padding: 15px 13px;
+        border-bottom: 1px solid #e4e7ec;
+        color: #667085;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .users-table tbody td {
+        padding: 14px 13px;
+        border-bottom: 1px solid #eef2f6;
+        font-size: 0.82rem;
+    }
+
+    .users-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .users-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .users-member {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 180px;
+    }
+
+    .users-member-avatar {
+        width: 39px;
+        height: 39px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border: 1px solid #e4e7ec;
+        border-radius: 12px;
+        background: #eef3f7;
+        color: #20639b;
+        font-size: 1rem;
+    }
+
+    .users-member-name {
+        display: block;
+        color: #173f5f;
+        font-size: 0.83rem;
+        font-weight: 700;
+    }
+
+    .users-member-id {
+        display: block;
+        margin-top: 3px;
+        color: #98a2b3;
+        font-size: 0.7rem;
+    }
+
+    .users-email {
+        display: block;
+        color: #344054;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .users-phone {
+        display: block;
+        margin-top: 5px;
+        color: #98a2b3;
+        font-size: 0.72rem;
+    }
+
+    .users-role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 10px;
+        border: 1px solid rgba(32, 99, 155, 0.13);
+        border-radius: 8px;
+        background: rgba(32, 99, 155, 0.07);
+        color: #173f5f;
+        font-size: 0.73rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .users-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 9px;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .users-status i {
+        font-size: 0.48rem;
+    }
+
+    .users-status-active {
+        background: rgba(34, 160, 107, 0.1);
+        color: #168153;
+    }
+
+    .users-status-inactive {
+        background: rgba(214, 69, 69, 0.09);
+        color: #c13737;
+    }
+
+    .btn-users-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 7px 10px;
+        border: 1px solid;
+        border-radius: 9px;
+        background: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background 0.2s ease;
+    }
+
+    .btn-users-deactivate {
+        border-color: rgba(214, 69, 69, 0.35);
+        color: #c13737;
+    }
+
+    .btn-users-deactivate:hover {
+        background: rgba(214, 69, 69, 0.07);
+        color: #b42318;
+    }
+
+    .btn-users-activate {
+        border-color: rgba(34, 160, 107, 0.35);
+        color: #168153;
+    }
+
+    .btn-users-activate:hover {
+        background: rgba(34, 160, 107, 0.07);
+        color: #11734a;
+    }
+
+    .users-empty-state {
+        padding: 35px 18px !important;
+        color: #667085 !important;
+        text-align: center;
+    }
+
+    .users-empty-state i {
+        display: block;
+        margin-bottom: 10px;
+        color: #98a2b3;
+        font-size: 2rem;
+    }
+
+    .users-empty-state strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #173f5f;
+        font-size: 0.9rem;
+    }
+
+    .users-empty-state span {
+        font-size: 0.78rem;
+    }
+
+    .users-results-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 13px;
+        color: #98a2b3;
+        font-size: 0.74rem;
+    }
+
+    @media (max-width: 991.98px) {
+        .users-filter-panel {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .users-card {
+            padding: 17px;
+            border-radius: 15px;
+        }
+
+        .users-heading {
+            align-items: flex-start;
+        }
+
+        .users-heading-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 13px;
+            font-size: 1.25rem;
+        }
+
+        .users-heading p {
+            font-size: 0.82rem;
+        }
+
+        .users-filter-panel {
+            padding: 12px;
+        }
+
+        .users-filter-controls {
+            flex-wrap: wrap;
+        }
+
+        .users-filter-controls select {
+            flex-basis: 100%;
+        }
+
+        .users-filter-controls button,
+        .users-filter-controls a {
+            flex: 1;
+        }
+
+        .users-results-footer {
+            flex-direction: column;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .users-card,
+        .btn-users-primary,
+        .btn-users-filter {
+            transition: none;
+        }
     }
 </style>
+{% endblock %}
 
-<div class="container-fluid pt-4 fade-in-up" style="color: #1e293b; font-family: 'DM Sans', sans-serif; padding-bottom: 40px;">
-    
-    <!-- ENCABEZADO DE LA SECCIÓN-->
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <div>
-                <h2 style="color: #1a365d; font-weight: 800; margin: 0; letter-spacing: -0.5px; font-size: 1.8rem;">
-                    <i class="ri-user-settings-fill me-2" style="vertical-align: middle;"></i>Control de Usuarios
-                </h2>
-                <p style="color: #475569; margin: 5px 0 0 0; font-size: 0.95rem; font-weight: 500;">Módulo de alta seguridad para la gestión de identidades y accesos del campus virtual.</p>
-            </div>
+{% block content %}
+<section class="users-page">
+
+    <header class="users-heading">
+        <div class="users-heading-icon">
+            <i class="ri-user-settings-line"></i>
         </div>
-    </div>
 
-    <!-- Bloque para mostrar mensajes de Flask (Errores o éxitos) -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="container-fluid mt-3">
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
-          <strong>{{ '¡Atención!' if category == 'danger' else '¡Éxito!' }}</strong> {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div>
+            <h1>Control de usuarios</h1>
+            <p>Consulta los miembros de la comunidad escolar y organiza sus perfiles de acceso</p>
         </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
+    </header>
 
-    <div class="row g-4 justify-content-center">
-        <!-- FORMULARIO DE MATRÍCULA INTERNA -->
-        <div class="col-12 col-lg-4 col-xl-5">
-            <div class="interactive-card">
-                <div class="d-flex align-items-center mb-4">
-                    <div style="background: rgba(26, 54, 93, 0.05); padding: 10px; border-radius: 10px; margin-right: 12px; border: 1px solid rgba(26, 54, 93, 0.1);">
-                        <i class="ri-user-add-fill" style="color: #1a365d; font-size: 1.3rem;"></i>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mb-4">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show users-alert"
+            role="alert">
+            <i
+                class="{{ 'ri-error-warning-line' if category in ['danger', 'error'] else 'ri-checkbox-circle-line' }}"></i>
+            <span>{{ message }}</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+
+        <div class="col-12 col-xl-4">
+            <div class="users-card">
+
+                <div class="users-card-heading">
+                    <div class="users-card-icon">
+                        <i class="ri-user-add-line"></i>
                     </div>
-                    <h4 style="color: #1a365d; font-weight: 700; margin: 0;">Crear Usuarios</h4>
+                    <div>
+                        <h2>Crear usuario</h2>
+                        <p>Registra una cuenta de la institución</p>
+                    </div>
                 </div>
-                
+
                 <form action="{{ url_for('users') }}" method="POST">
+
                     <div class="mb-3">
-                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Nombre Propio</label>
-                        <input type="text" name="nombre" class="form-control animated-input" required placeholder="Ej. Carlos">
+                        <label class="users-label" for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="users-input" required maxlength="100"
+                            placeholder="Nombre del usuario">
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">1° Apellido</label>
-                            <input type="text" name="apellido1" class="form-control animated-input" required placeholder="Primer apellido">
+
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <label class="users-label" for="apellido1">Primer apellido</label>
+                            <input type="text" id="apellido1" name="apellido1" class="users-input" required
+                                maxlength="100" placeholder="Primer apellido">
                         </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">2° Apellido</label>
-                            <input type="text" name="apellido2" class="form-control animated-input" placeholder="Segundo apellido">
+
+                        <div class="col-12 col-sm-6">
+                            <label class="users-label" for="apellido2">Segundo apellido</label>
+                            <input type="text" id="apellido2" name="apellido2" class="users-input" maxlength="100"
+                                placeholder="Segundo apellido">
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Correo Institucional</label>
-                            <!-- Se añade el atributo pattern y title -->
-                                <input type="email" name="email" class="form-control animated-input" required 
-                                placeholder="usuario@escuela.com" 
-                                pattern="[a-zA-Z0-9._%+-]+@escuela\.com$" 
-                                title="El correo debe pertenecer estrictamente al dominio @escuela.com">
+                    <div class="mt-3 mb-3">
+                        <label class="users-label" for="email">Correo institucional</label>
+                        <input type="email" id="email" name="email" class="users-input" required maxlength="150"
+                            placeholder="usuario@escuela.com" pattern="[a-zA-Z0-9._%+-]+@escuela\.com$"
+                            title="El correo debe pertenecer al dominio @escuela.com">
+                        <small class="users-help">Se permiten correos con dominio @escuela.com</small>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Contraseña Inicial</label>
-                        <input type="password" name="password" class="form-control animated-input" required placeholder="Asigna clave temporal">
+                        <label class="users-label" for="password">Contraseña inicial</label>
+                        <input type="password" id="password" name="password" class="users-input" required minlength="5"
+                            autocomplete="new-password" placeholder="Asigna una contraseña">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Teléfono</label>
-                        <input type="text" name="telefono" class="form-control animated-input" placeholder="Número de contacto">
+                        <label class="users-label" for="telefono">Teléfono</label>
+                        <input type="tel" id="telefono" name="telefono" class="users-input" maxlength="20"
+                            placeholder="Número de contacto">
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label" style="font-size: 0.8rem; color: #1a365d; font-weight: 700; text-transform: uppercase;">Asignar Rango / Rol</label>
-                        <select name="id_rol" class="form-select animated-input" required style="cursor: pointer;">
-                            <option value="" disabled selected>-- Selecciona un Perfil Escolar --</option>
+                        <label class="users-label" for="id_rol">Rol del usuario</label>
+                        <select id="id_rol" name="id_rol" class="users-input" required>
+                            <option value="" disabled selected>Selecciona un rol</option>
                             {% for r in roles %}
-                                <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
+                            <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-school w-100">
-                        <i class="ri-shield-user-line me-1" style="vertical-align: middle;"></i> Registrar en el Sistema
+                    <button type="submit" class="btn-users-primary w-100">
+                        <i class="ri-user-add-line"></i>
+                        Registrar usuario
                     </button>
+
                 </form>
             </div>
         </div>
 
-        <!-- TABLA DE REGISTROS -->
-         <div class="col-12 col-xl-11 mt-4">
-            <div class="interactive-card">
-                
-                <!-- SECCIÓN DE ENCABEZADO DE TABLA Y FILTRO BUSCADOR -->
-                <div class="row align-items-center mb-4 g-3">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <div style="background: rgba(26, 54, 93, 0.05); padding: 10px; border-radius: 10px; margin-right: 12px; border: 1px solid rgba(26, 54, 93, 0.1);">
-                                <i class="ri-team-fill" style="color: #1a365d; font-size: 1.3rem;"></i>
-                            </div>
-                            <div>
-                                <h4 style="color: #1a365d; font-weight: 700; margin: 0;">Registros de la Comunidad Escolar</h4>
-                                <small class="text-muted">Desplace dentro de la tabla para ver más cuentas</small>
-                            </div>
+        <div class="col-12 col-xl-8">
+            <div class="users-card">
+
+                <div class="users-table-heading">
+                    <div class="users-card-heading mb-0">
+                        <div class="users-card-icon">
+                            <i class="ri-team-line"></i>
+                        </div>
+                        <div>
+                            <h2>Comunidad escolar</h2>
+                            <p>Consulta y filtra las cuentas registradas</p>
                         </div>
                     </div>
-                    
-                    <!-- BARRA DE BÚSQUEDA GLOBAL -->
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 8px 0 0 8px;">
-                                <i class="ri-search-line"></i>
-                            </span>
-                            <input type="text" id="buscadorUsuarios" class="form-control bg-light border-start-0 animated-input" style="border-radius: 0 8px 8px 0 !important; margin: 0 !important;" placeholder="Buscar por nombre, correo o rol institucional...">
-                        </div>
-                    </div>
+
+                    <span class="users-count" id="usersCount">{{ users|length }}</span>
                 </div>
-                
-                <!-- CONTENEDOR CON ALTO FIJO Y SCROLL INTERNO -->
-                <div class="table-responsive" style="max-height: 480px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);">
-                    <table class="table table-hover table-school mb-0" style="margin: 0; background: transparent; min-width: 850px;">
+
+                <div class="users-filter-panel">
+
+                    <form method="GET" action="{{ url_for('users') }}" class="users-filter-form">
+                        <label class="users-label" for="rol">Filtrar por rol</label>
+
+                        <div class="users-filter-controls">
+                            <select id="rol" name="rol" class="users-input">
+                                <option value="">Todos los roles</option>
+                                {% for r in roles %}
+                                <option value="{{ r.id_rol }}" {% if rol_seleccionado and rol_seleccionado|int==r.id_rol
+                                    %}selected{% endif %}>
+                                    {{ r.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+
+                            <button type="submit" class="btn-users-filter">
+                                <i class="ri-filter-3-line"></i>
+                                Filtrar
+                            </button>
+
+                            {% if rol_seleccionado %}
+                            <a href="{{ url_for('users') }}" class="btn-users-reset" title="Mostrar todos los usuarios">
+                                <i class="ri-refresh-line"></i>
+                                Limpiar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+
+                    <div>
+                        <label class="users-label" for="buscadorUsuarios">Buscar en los resultados</label>
+                        <input type="search" id="buscadorUsuarios" class="users-input"
+                            placeholder="Nombre correo o rol">
+                        <small class="users-help">La búsqueda se aplica al listado visible</small>
+                    </div>
+
+                </div>
+
+                <div class="users-table-container">
+                    <table class="table users-table">
                         <thead>
-                            <tr style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
-                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Miembro</th>
-                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Credenciales</th>
-                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Rol</th>
-                                <th class="pb-3" style="border-bottom: 2px solid #e2e8f0;">Estado</th>
-                                <th class="pb-3 text-center" style="border-bottom: 2px solid #e2e8f0;">Acciones de Control</th>
+                            <tr>
+                                <th>Miembro</th>
+                                <th>Contacto</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+
+                        <tbody id="usersTableBody">
                             {% for u in users %}
-                             <tr class="hover-row usuario-fila" style="vertical-align: middle;">
-                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
-                                    <div class="d-flex align-items-center">
-                                        <div style="width: 36px; height: 36px; border-radius: 50%; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
-                                            <i class="ri-user-3-line" style="color: #64748b;"></i>
+                            <tr class="usuario-fila"
+                                data-search="{{ (u.nombre ~ ' ' ~ (u.apellido1 or '') ~ ' ' ~ (u.apellido2 or '') ~ ' ' ~ u.correo ~ ' ' ~ (u.nombre_rol or '') ~ ' ' ~ (u.telefono or '') ~ ' ' ~ u.estado)|lower }}">
+
+                                <td>
+                                    <div class="users-member">
+                                        <div class="users-member-avatar">
+                                            <i class="ri-user-3-line"></i>
                                         </div>
+
                                         <div>
-                                            <span style="font-weight: 600; display: block; color: #1e293b;">{{ u.nombre }} {{ u.apellido1 }}</span>
-                                            <span style="font-size: 0.8rem; color: #64748b;">ID #{{ u.id_usuario }}</span>
+                                            <span class="users-member-name">
+                                                {{ u.nombre }}
+                                                {{ u.apellido1 or '' }}
+                                                {{ u.apellido2 or '' }}
+                                            </span>
+
+                                            <span class="users-member-id">
+                                                ID #{{ u.id_usuario }}
+                                            </span>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
-                                    <span style="display: block; font-size: 0.9rem; color: #334155; font-weight: 500;">{{ u.correo }}</span>
-                                    <span style="font-size: 0.8rem; color: #64748b;"><i class="ri-phone-line"></i> {{ u.telefono if u.telefono else 'Sin teléfono' }}</span>
+
+                                <td>
+                                    <span class="users-email">{{ u.correo }}</span>
+                                    <span class="users-phone">
+                                        <i class="ri-phone-line"></i>
+                                        {{ u.telefono if u.telefono else 'Sin teléfono' }}
+                                    </span>
                                 </td>
-                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
-                                    <span class="badge" style="background: rgba(26, 54, 93, 0.08); color: #1a365d; padding: 6px 12px; border-radius: 6px; font-weight: 600; border: 1px solid rgba(26, 54, 93, 0.15);">
+
+                                <td>
+                                    <span class="users-role-badge">
+                                        <i class="ri-shield-user-line"></i>
                                         {{ u.nombre_rol }}
                                     </span>
                                 </td>
-                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
+
+                                <td>
                                     {% if u.estado == 'activo' %}
-                                        <span class="badge" style="background: rgba(40, 167, 69, 0.12); color: #1e7e34; padding: 6px 12px; border-radius: 6px; font-weight: 600;"><i class="ri-checkbox-blank-circle-fill me-1" style="font-size: 0.5rem; vertical-align: middle;"></i> Activo</span>
+                                    <span class="users-status users-status-active">
+                                        <i class="ri-checkbox-blank-circle-fill"></i>
+                                        Activo
+                                    </span>
                                     {% else %}
-                                        <span class="badge" style="background: rgba(220, 53, 69, 0.12); color: #bd2130; padding: 6px 12px; border-radius: 6px; font-weight: 600;"><i class="ri-checkbox-blank-circle-fill me-1" style="font-size: 0.5rem; vertical-align: middle;"></i> Inactivo</span>
+                                    <span class="users-status users-status-inactive">
+                                        <i class="ri-checkbox-blank-circle-fill"></i>
+                                        Inactivo
+                                    </span>
                                     {% endif %}
                                 </td>
-                                <td class="py-3 text-center" style="border-bottom: 1px solid #f1f5f9;">
+
+                                <td class="text-center">
+
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-editar-usuario"
+                                        style="border-radius: 6px; padding: 5px 10px; display: inline-flex; align-items: center; vertical-align: middle; height: 32px;"
+                                        data-bs-toggle="modal" data-bs-target="#modalEditarUsuario"
+                                        data-id="{{ u.id_usuario }}" data-nombre="{{ u.nombre }}"
+                                        data-ap1="{{ u.apellido1 }}" data-ap2="{{ u.apellido2 or '' }}"
+                                        data-correo="{{ u.correo }}" data-tel="{{ u.telefono or '' }}"
+                                        data-rol="{{ u.id_rol }}">
+                                        <i class="ri-edit-line"></i>
+                                    </button>
+                                    
+                                    <!--botones de desactivar/activar-->
                                     {% if u.estado == 'activo' %}
-                                        <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}" class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 6px; font-weight: 600; padding: 5px 12px; transition: all 0.2s;">
-                                            <i class="ri-user-unfollow-line me-1"></i> Desactivar
-                                        </a>
+                                    <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}"
+                                        class="btn-users-toggle btn-users-deactivate"
+                                        onclick="return confirm('¿Deseas desactivar esta cuenta?')">
+                                        <i class="ri-user-unfollow-line"></i>
+                                        Desactivar
+                                    </a>
                                     {% else %}
-                                        <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}" class="btn btn-sm" style="background: transparent; border: 1px solid #28a745; color: #28a745; border-radius: 6px; font-weight: 600; padding: 5px 12px; transition: all 0.2s;">
-                                            <i class="ri-user-follow-line me-1"></i> Activar
-                                        </a>
+                                    <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}"
+                                        class="btn-users-toggle btn-users-activate"
+                                        onclick="return confirm('¿Deseas activar esta cuenta?')">
+                                        <i class="ri-user-follow-line"></i>
+                                        Activar
+                                    </a>
                                     {% endif %}
                                 </td>
                             </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="users-empty-state">
+                                    <i class="ri-user-search-line"></i>
+                                    <strong>No hay usuarios para mostrar</strong>
+                                    <span>No se encontraron cuentas con el filtro seleccionado</span>
+                                </td>
+                            </tr>
                             {% endfor %}
+
+                            <tr id="noSearchResults" style="display: none;">
+                                <td colspan="5" class="users-empty-state">
+                                    <i class="ri-search-eye-line"></i>
+                                    <strong>No se encontraron coincidencias</strong>
+                                    <span>Prueba con otro nombre correo o rol</span>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <div class="users-results-footer">
+                    <span id="usersResultsText">
+                        Mostrando {{ users|length }} usuario(s)
+                    </span>
+
+                    {% if rol_seleccionado %}
+                    <span>Filtro por rol activo</span>
+                    {% else %}
+                    <span>Todos los roles</span>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #fff;">
+                <div class="modal-header"
+                    style="border-bottom: 1px solid #e2e8f0; background: #f8fafc; padding: 15px 20px;">
+                    <h5 class="modal-title" style="color: #1a365d; font-weight: 700;"><i
+                            class="ri-edit-box-line me-2"></i>Editar Información</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('edit_user') }}" method="POST">
+                    <div class="modal-body p-4">
+                        <!-- ID del usuario -->
+                        <input type="hidden" name="id_usuario" id="edit_id_usuario">
+
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Nombre
+                                Propio</label>
+                            <input type="text" name="nombre" id="edit_nombre" class="form-control animated-input"
+                                required style="width: 100%;">
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label"
+                                    style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">1°
+                                    Apellido</label>
+                                <input type="text" name="apellido1" id="edit_apellido1"
+                                    class="form-control animated-input" required style="width: 100%;">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label"
+                                    style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">2°
+                                    Apellido</label>
+                                <input type="text" name="apellido2" id="edit_apellido2"
+                                    class="form-control animated-input" style="width: 100%;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Correo
+                                Institucional</label>
+                            <input type="email" name="email" id="edit_correo" class="form-control animated-input"
+                                required pattern="[a-zA-Z0-9._%+-]+@escuela\.com$"
+                                title="Debe usar el dominio @escuela.com" style="width: 100%;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Teléfono</label>
+                            <input type="text" name="telefono" id="edit_telefono" class="form-control animated-input"
+                                style="width: 100%;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"
+                                style="font-size: 0.8rem; color: #1a365d; font-weight: 700; text-transform: uppercase;">Asignar
+                                Rango / Rol</label>
+                            <select name="id_rol" id="edit_id_rol" class="form-select animated-input" required
+                                style="width: 100%; cursor: pointer;">
+                                {% for r in roles %}
+                                <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #e2e8f0; background: #f8fafc;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            style="border-radius: 8px;">Cancelar</button>
+                        <button type="submit" class="btn btn-school"
+                            style="background: #1a365d; color: #fff; border-radius: 8px; padding: 8px 16px; border: none; font-weight: 600;">Guardar
+                            Cambios</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-</div>
+    <script src="{{ url_for('static', filename='js/usuarios.js') }}"></script>
 
-<script src="{{ url_for('static', filename='js/usuarios.js') }}"></script>
+</section>
+{% endblock %}
 
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('buscadorUsuarios');
+        const rows = Array.from(document.querySelectorAll('.usuario-fila'));
+        const emptySearchRow = document.getElementById('noSearchResults');
+        const countElement = document.getElementById('usersCount');
+        const resultsText = document.getElementById('usersResultsText');
+
+        function filterUsers() {
+            const query = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            rows.forEach(function (row) {
+                const content = row.dataset.search || '';
+                const matches = content.includes(query);
+
+                row.style.display = matches ? '' : 'none';
+
+                if (matches) {
+                    visibleCount++;
+                }
+            });
+
+            countElement.textContent = visibleCount;
+            resultsText.textContent = 'Mostrando ' + visibleCount + ' usuario(s)';
+
+            emptySearchRow.style.display =
+                rows.length > 0 && visibleCount === 0 ? '' : 'none';
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterUsers);
+        }
+    });
+</script>
 {% endblock %}

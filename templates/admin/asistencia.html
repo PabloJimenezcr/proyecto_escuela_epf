@@ -1,0 +1,425 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Asistencia diaria | Escuela EPF{% endblock %}
+
+{% block styles %}
+<style>
+    .att-page {
+        padding-bottom: 35px;
+        color: #17202a;
+        font-family: "DM Sans", sans-serif;
+    }
+
+    .att-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 24px;
+    }
+
+    .att-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        background: #eaf2f8;
+        color: #20639b;
+        font-size: 1.6rem;
+    }
+
+    .att-kicker {
+        color: #20639b;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+    }
+
+    .att-heading h1 {
+        margin: 4px 0;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        font-weight: 800;
+    }
+
+    .att-heading p {
+        margin: 0;
+        color: #667085;
+        font-size: .9rem;
+    }
+
+    .att-panel {
+        margin-bottom: 22px;
+        padding: 23px;
+        border: 1px solid #e4e7ec;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(23, 63, 95, .045);
+    }
+
+    .att-panel h2 {
+        margin: 0;
+        color: #173f5f;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .att-description {
+        margin: 6px 0 18px;
+        color: #667085;
+        font-size: .82rem;
+    }
+
+    .att-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .att-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #344054;
+        font-size: .78rem;
+        font-weight: 800;
+    }
+
+    .att-input {
+        width: 100%;
+        min-height: 44px;
+        padding: 9px 12px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #17202a;
+        font: inherit;
+        font-size: .83rem;
+    }
+
+    .att-input:focus {
+        border-color: #20639b;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(32, 99, 155, .1);
+    }
+
+    .att-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #e4e7ec;
+        border-radius: 12px;
+    }
+
+    .att-table {
+        width: 100%;
+        min-width: 720px;
+        border-collapse: collapse;
+    }
+
+    .att-table thead {
+        background: #f8fafc;
+    }
+
+    .att-table th {
+        padding: 13px;
+        border-bottom: 1px solid #e4e7ec;
+        color: #667085;
+        font-size: .68rem;
+        font-weight: 800;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .att-table td {
+        padding: 12px 13px;
+        border-bottom: 1px solid #eef2f6;
+        color: #344054;
+        font-size: .82rem;
+        vertical-align: middle;
+    }
+
+    .att-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .att-student {
+        color: #173f5f;
+        font-weight: 800;
+    }
+
+    .att-muted {
+        display: block;
+        margin-top: 3px;
+        color: #98a2b3;
+        font-size: .72rem;
+    }
+
+    .att-state {
+        min-width: 145px;
+    }
+
+    .att-observation {
+        min-width: 180px;
+    }
+
+    .att-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 9px 15px;
+        border: 1px solid #173f5f;
+        border-radius: 10px;
+        background: #173f5f;
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 800;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .att-btn:hover {
+        background: #20639b;
+        color: #fff;
+    }
+
+    .att-btn-secondary {
+        border-color: #d0d5dd;
+        background: #fff;
+        color: #344054;
+    }
+
+    .att-btn-secondary:hover {
+        background: #f8fafc;
+        color: #173f5f;
+    }
+
+    .att-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .att-alert {
+        margin-bottom: 16px;
+        padding: 12px 15px;
+        border-radius: 10px;
+        font-size: .85rem;
+    }
+
+    .att-alert-success {
+        border: 1px solid #b7e4ce;
+        background: #edf9f2;
+        color: #167347;
+    }
+
+    .att-alert-danger {
+        border: 1px solid #f1c4c4;
+        background: #fff1f1;
+        color: #b42318;
+    }
+
+    .att-empty {
+        padding: 28px;
+        color: #667085;
+        text-align: center;
+    }
+
+    @media (max-width: 760px) {
+        .att-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .att-panel {
+            padding: 16px;
+        }
+
+        .att-actions .att-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="att-page">
+
+    <header class="att-heading">
+        <div class="att-icon">
+            <i class="ri-calendar-check-line"></i>
+        </div>
+
+        <div>
+            <span class="att-kicker">EPF-06-01</span>
+            <h1>Registro diario de asistencia</h1>
+            <p>
+                Seleccione el grupo y la fecha para registrar
+                la asistencia de los estudiantes.
+            </p>
+        </div>
+    </header>
+
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+    <div class="att-alert att-alert-{{ 'success' if categoria == 'success' else 'danger' }}">
+        {{ mensaje }}
+    </div>
+    {% endfor %}
+
+    <section class="att-panel">
+        <h2>Seleccionar grupo y fecha</h2>
+
+        <p class="att-description">
+            Si ya existe asistencia para esa fecha,
+            los registros aparecerán cargados.
+        </p>
+
+        <form method="get" action="{{ url_for('admin_asistencia') }}">
+            <div class="att-grid">
+
+                <div>
+                    <label class="att-label" for="grupo">
+                        Grupo
+                    </label>
+
+                    <select class="att-input" id="grupo" name="grupo" required>
+                        <option value="">Seleccione un grupo</option>
+
+                        {% for grupo in grupos %}
+                        <option value="{{ grupo.id_grupo }}" {% if id_grupo==grupo.id_grupo %}selected{% endif %}>
+                            {{ grupo.nombre }} ·
+                            {{ grupo.nivel }}
+                            {{ grupo.seccion }} ·
+                            {{ grupo.anio_lectivo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="att-label" for="fecha">
+                        Fecha de asistencia
+                    </label>
+
+                    <input class="att-input" type="date" id="fecha" name="fecha" value="{{ fecha_seleccionada }}"
+                        max="{{ hoy }}" required>
+                </div>
+
+                <div class="att-actions" style="margin-top: 20px">
+                    <button class="att-btn" type="submit">
+                        <i class="ri-search-line"></i>
+                        Cargar estudiantes
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </section>
+
+    {% if id_grupo %}
+    <section class="att-panel">
+
+        <h2>Lista de estudiantes</h2>
+
+        <p class="att-description">
+            Fecha seleccionada:
+            <strong>{{ fecha_seleccionada }}</strong>
+        </p>
+
+        {% if estudiantes %}
+        <form method="post" action="{{ url_for('admin_asistencia') }}">
+            <input type="hidden" name="id_grupo" value="{{ id_grupo }}">
+
+            <input type="hidden" name="fecha" value="{{ fecha_seleccionada }}">
+
+            <div class="att-table-wrap">
+                <table class="att-table">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Correo</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for estudiante in estudiantes %}
+                        {% set estado_actual = estudiante.estado or '' %}
+
+                        <tr>
+                            <td>
+                                <span class="att-student">
+                                    {{ estudiante.apellido1 }}
+                                    {% if estudiante.apellido2 %}
+                                    {{ estudiante.apellido2 }}
+                                    {% endif %},
+                                    {{ estudiante.nombre }}
+                                </span>
+
+                                <span class="att-muted">
+                                    Código:
+                                    {{ estudiante.id_estudiante }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ estudiante.correo or 'Sin correo' }}
+                            </td>
+
+                            <td>
+                                <select class="att-input att-state" name="estado_{{ estudiante.id_estudiante }}"
+                                    aria-label="Estado de asistencia" required>
+                                    <option value="" {% if not estado_actual %}selected{% endif %}>
+                                        Seleccione
+                                    </option>
+
+                                    {% for clave, etiqueta in estados.items() %}
+                                    <option value="{{ clave }}" {% if estado_actual==clave %}selected{% endif %}>
+                                        {{ etiqueta }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+
+                            <td>
+                                <input class="att-input att-observation" type="text"
+                                    name="observacion_{{ estudiante.id_estudiante }}" maxlength="500"
+                                    value="{{ estudiante.observacion or '' }}" placeholder="Detalle opcional">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="att-actions">
+                <button class="att-btn" type="submit">
+                    <i class="ri-save-3-line"></i>
+                    Guardar asistencia
+                </button>
+
+                <a class="att-btn att-btn-secondary"
+                    href="{{ url_for('admin_asistencia', grupo=id_grupo, fecha=fecha_seleccionada) }}">
+                    Recargar lista
+                </a>
+            </div>
+        </form>
+
+        {% else %}
+        <div class="att-empty">
+            <i class="ri-user-search-line"></i>
+            <p>
+                No hay estudiantes activos registrados
+                en este grupo.
+            </p>
+        </div>
+        {% endif %}
+
+    </section>
+    {% endif %}
+
+</section>
+{% endblock %}
