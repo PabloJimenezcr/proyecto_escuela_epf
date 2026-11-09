@@ -1,3 +1,6 @@
+import os
+from flask import send_from_directory
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
@@ -86,6 +89,16 @@ from controllers.attendance_controller import (
     obtener_estudiante_por_usuario,
     consultar_reporte_asistencia
 )
+
+from controllers.task_controller import tasks_view
+from controllers.teacher_required import teacher_required
+
+from controllers.student_task_controller import student_tasks_view, student_view_task_logic, student_submit_task_logic, student_delete_submission_logic
+
+from controllers.task_controller import tasks_view, edit_task_logic, delete_task_logic, view_submissions_view, save_grade_logic
+
+from controllers.parent_task_controller import parent_tasks_view
+
 
 app = Flask(__name__)
 # llave de cifrado para proteger la sesion del usuario
@@ -1706,6 +1719,60 @@ def admin_asistencia_reportes():
         error_reporte=error_reporte,
         consulta_realizada=consulta_realizada
     )
+
+@app.route('/admin/tareas', methods=['GET', 'POST'])
+@teacher_required
+def admin_tareas():
+    return tasks_view()
+
+@app.route('/admin/tareas/edit', methods=['POST'])
+@teacher_required
+def edit_task():
+    from controllers.task_controller import edit_task_logic
+    return edit_task_logic()
+
+@app.route('/admin/tareas/delete/<int:id_tarea>', methods=['GET'])
+@teacher_required
+def delete_task(id_tarea):
+    from controllers.task_controller import delete_task_logic
+    return delete_task_logic(id_tarea)
+
+
+@app.route('/estudiante/tareas', methods=['GET'])
+def estudiante_tareas():
+    return student_tasks_view()
+
+@app.route('/estudiante/tareas/ver/<int:id_tarea>', methods=['GET'])
+def estudiante_ver_tarea(id_tarea):
+    return student_view_task_logic(id_tarea)
+
+@app.route('/estudiante/tareas/entregar', methods=['POST'])
+def estudiante_entregar_tarea():
+    return student_submit_task_logic()
+
+@app.route('/estudiante/tareas/eliminar/<int:id_tarea>', methods=['GET'])
+def estudiante_eliminar_tarea(id_tarea):
+    return student_delete_submission_logic(id_tarea)
+
+@app.route('/admin/tareas/revision/<int:id_tarea>', methods=['GET'])
+@teacher_required
+def admin_tareas_revision(id_tarea):
+    return view_submissions_view(id_tarea)
+
+@app.route('/uploads/tareas/<filename>')
+def descargar_archivo_tarea(filename):
+    base_dir = os.path.dirname(__file__)
+    ruta_entregas = os.path.join(base_dir, 'uploads', 'tareas')
+    return send_from_directory(ruta_entregas, filename, as_attachment=True)
+
+@app.route('/padre/tareas', methods=['GET'])
+def padre_tareas():
+    return parent_tasks_view()
+
+@app.route('/admin/tareas/calificar', methods=['POST'])
+@teacher_required
+def guardar_calificacion():
+    return save_grade_logic()
 
 
 if __name__ == '__main__':

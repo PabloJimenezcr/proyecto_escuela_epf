@@ -746,10 +746,11 @@
                                     {% endif %}
                                 </td>
 
-                                <td class="text-center">
+                                 <td class="py-3 text-center pe-3" style="white-space: nowrap; border-bottom: 1px solid #f1f5f9;">
+                                    <div class="d-inline-flex align-items-center gap-1">
 
                                     <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-editar-usuario"
-                                        style="border-radius: 6px; padding: 5px 10px; display: inline-flex; align-items: center; vertical-align: middle; height: 32px;"
+                                        style="height: 32px; width: 34px; border-radius: 6px;"
                                         data-bs-toggle="modal" data-bs-target="#modalEditarUsuario"
                                         data-id="{{ u.id_usuario }}" data-nombre="{{ u.nombre }}"
                                         data-ap1="{{ u.apellido1 }}" data-ap2="{{ u.apellido2 or '' }}"
@@ -764,14 +765,14 @@
                                         class="btn-users-toggle btn-users-deactivate"
                                         onclick="return confirm('¿Deseas desactivar esta cuenta?')">
                                         <i class="ri-user-unfollow-line"></i>
-                                        Desactivar
+                                        
                                     </a>
                                     {% else %}
                                     <a href="{{ url_for('toggle_user', id_usuario=u.id_usuario) }}"
                                         class="btn-users-toggle btn-users-activate"
                                         onclick="return confirm('¿Deseas activar esta cuenta?')">
                                         <i class="ri-user-follow-line"></i>
-                                        Activar
+                                        
                                     </a>
                                     {% endif %}
                                 </td>
