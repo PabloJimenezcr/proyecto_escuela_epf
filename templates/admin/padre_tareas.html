@@ -1,0 +1,75 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<style>
+    .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .interactive-card {
+        background: #ffffff !important; border: 1px solid #e2e8f0 !important; border-radius: 16px !important; padding: 24px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important; transition: all 0.3s ease;
+    }
+    .interactive-card:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 24px rgba(26, 54, 93, 0.06) !important; }
+    .status-badge { font-weight: 700; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; }
+    .badge-success { background: rgba(40, 167, 69, 0.1) !important; color: #28a745 !important; }
+    .badge-danger { background: rgba(220, 53, 69, 0.1) !important; color: #dc3545 !important; }
+</style>
+
+<div class="container-fluid pt-4 fade-in-up" style="color: #1e293b; font-family: 'DM Sans', sans-serif; padding-bottom: 40px;">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 style="color: #1a365d; font-weight: 800; margin: 0; letter-spacing: -0.5px; font-size: 1.8rem;">
+                <i class="ri-team-line me-2" style="vertical-align: middle;"></i>Seguimiento de Tareas de mis Hijos
+            </h2>
+            <p style="color: #475569; margin: 5px 0 0 0; font-size: 0.95rem; font-weight: 500;">Consulte de manera transparente el estado de las asignaciones y pautas escolares de sus tutelados.</p>
+        </div>
+    </div>
+
+    <!-- LISTADO DE ASIGNACIONES -->
+    <div class="row g-3 justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="d-flex flex-column gap-3">
+                
+                {% for t in tareas_hijos %}
+                <div class="interactive-card">
+                    <div class="row align-items-center g-3">
+                        <!-- INFORMACIÓN DEL ESTUDIANTE VINCULADO -->
+                        <div class="col-12 col-md-4" style="border-right: 1px solid #f1f5f9;">
+                            <span class="text-muted d-block" style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Hijo(a) Estudiante:</span>
+                            <strong style="color: #1a365d; font-size: 1.05rem;">{{ t.nombre_hijo }} {{ t.apellido_hijo }}</strong>
+                            <span class="badge d-block mt-1" style="background: rgba(26, 54, 93, 0.05); color: #1a365d; width: fit-content; font-size: 0.75rem; font-weight: 600;">Grupo {{ t.nombre_grupo }}</span>
+                        </div>
+
+                        <!-- DETALLE DE LA ASIGNACIÓN ACADÉMICA -->
+                        <div class="col-12 col-md-5">
+                            <span class="badge mb-1" style="background: #f8fafc; color: #475569; font-weight: 700; font-size: 0.75rem; border: 1px solid #e2e8f0; padding: 4px 8px;">{{ t.nombre_materia }}</span>
+                            <h6 style="color: #1a365d; font-weight: 700; margin: 0 0 3px 0; font-size: 1.05rem;">{{ t.titulo }}</h6>
+                            <small class="text-muted"><i class="ri-calendar-time-line me-1"></i>Fecha Límite: <strong class="text-danger">{{ t.fecha_entrega.strftime('%d/%m/%Y') }}</strong></small>
+                        </div>
+
+                        <!-- ESTADO DE ENTREGA -->
+                        <div class="col-12 col-md-3 text-md-end">
+                            {% if t.estado_entrega == 'Entregado' %}
+                                <span class="status-badge badge-success"><i class="ri-checkbox-circle-fill me-1"></i>Tarea Entregada</span>
+                            {% else %}
+                                <span class="status-badge badge-danger"><i class="ri-error-warning-fill me-1"></i>Falta Entregarse</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="interactive-card text-center py-5 text-muted">
+                    <i class="ri-notification-badge-line mb-2" style="font-size: 2.5rem; display: block; color: #94a3b8;"></i>
+                    <strong style="color: #64748b; display: block;">No hay asignaciones pendientes</strong>
+                    <span style="font-size: 0.9rem; color: #94a3b8;">Sus hijos vinculados se encuentran al día con todas sus pautas del aula virtual.</span>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,284 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+
+<style>
+    .fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .interactive-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 28px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .table-school {
+        color: #1e293b !important;
+    }
+
+    .table-school th {
+        color: #475569 !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+    }
+
+    .hover-row {
+        transition: background-color 0.2s ease !important;
+        color: #334155 !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    .hover-row:hover {
+        background-color: #f8fafc !important;
+    }
+
+    .btn-school {
+        background: #1a365d !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        padding: 10px 18px !important;
+        border: none !important;
+        font-size: 0.9rem;
+    }
+
+    .btn-school:hover {
+        background: #2a4a7d !important;
+    }
+</style>
+
+<div class="container-fluid pt-4 fade-in-up"
+    style="color: #1e293b; font-family: 'DM Sans', sans-serif; padding-bottom: 40px;">
+
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{{ url_for('admin_tareas') }}" class="btn btn-sm btn-outline-secondary mb-2"
+                    style="border-radius: 6px;">
+                    <i class="ri-arrow-left-line me-1"></i>Volver al Cronograma
+                </a>
+                <h2 style="color: #1a365d; font-weight: 800; margin: 0; letter-spacing: -0.5px; font-size: 1.8rem;">
+                    <i class="ri-file-list-3-line me-2" style="vertical-align: middle;"></i>Revisión de Entregas: {{
+                    tarea.titulo }}
+                </h2>
+                <p style="color: #475569; margin: 5px 0 0 0; font-size: 0.95rem; font-weight: 500;">
+                    Curso: <strong>{{ tarea.nombre_materia }}</strong> — Asignado a: <strong>Grupo {{ tarea.nombre_grupo
+                        }}</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- DETALLES DE LAS PAUTAS ORIGINALES -->
+        <div class="col-12 col-xl-11">
+            <div class="interactive-card mb-4"
+                style="background: #f8fafc Importer; border-left: 4px solid #1a365d !important; padding: 20px !important;">
+                <h6 style="color: #1a365d; font-weight: 700; margin-bottom: 8px;"><i
+                        class="ri-information-line me-1"></i>Instrucciones de la Asignación:</h6>
+                <p class="text-secondary mb-0" style="font-size: 0.95rem; white-space: pre-wrap;">{{ tarea.descripcion
+                    if tarea.descripcion else 'Sin pautas adicionales escritas.' }}</p>
+            </div>
+        </div>
+        <!-- TABLA COMPLETA DE REGISTROS DE ESTUDIANTES -->
+        <div class="col-12 col-xl-11">
+            <div class="interactive-card">
+
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-6">
+                        <h4 style="color: #1a365d; font-weight: 700; margin: 0;">Lista de Estudiantes y Entregas</h4>
+                        <small class="text-muted">Revise el estado de lectura y descargue los archivos adjuntos</small>
+                    </div>
+                </div>
+
+                <div class="table-responsive"
+                    style="max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+                    <table class="table table-hover table-school mb-0"
+                        style="margin: 0; background: transparent; min-width: 850px;">
+                        <thead class="sticky-top bg-white" style="z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <tr
+                                style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; background: #f8fafc;">
+                                <th class="py-3 ps-3" style="border-bottom: 2px solid #e2e8f0; color: #475569;">
+                                    Estudiante</th>
+                                <th class="py-3 text-center" style="border-bottom: 2px solid #e2e8f0; color: #475569;">
+                                    ¿Vio la Tarea?</th>
+                                <th class="py-3" style="border-bottom: 2px solid #e2e8f0; color: #475569;">Notas del
+                                    Alumno</th>
+                                <th class="py-3" style="border-bottom: 2px solid #e2e8f0; color: #475569;">Fecha de
+                                    Entrega</th>
+                                <th class="py-3 text-center" style="border-bottom: 2px solid #e2e8f0; color: #475569;">
+                                    Evaluación</th>
+                                <th class="py-3 text-center pe-3"
+                                    style="border-bottom: 2px solid #e2e8f0; color: #475569;">Archivo Adjunto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in alumnos %}
+                            <tr class="hover-row" style="vertical-align: middle;">
+                                <!-- NOMBRE COMPLETO DEL ALUMNO  -->
+                                <td class="py-3 ps-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    <div class="d-flex align-items-center">
+                                        <div
+                                            style="width: 36px; height: 36px; border-radius: 50%; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
+                                            <i class="ri-user-line" style="color: #64748b;"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark" style="display: block; font-weight: 600;">
+                                                {{ a.apellido1 }} {{ a.apellido2 or '' }}, {{ a.nombre }}
+                                            </strong>
+                                            <small class="text-muted">Estudiante ID #{{ a.id_estudiante }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- CONTADOR DE VISTAS INDIVIDUAL  -->
+                                <td class="py-3 text-center" style="border-bottom: 1px solid #f1f5f9;">
+                                    {% if a.visto == 'Sí' %}
+                                    <span class="badge"
+                                        style="background: rgba(40, 167, 69, 0.1); color: #28a745; padding: 6px 12px; border-radius: 6px; font-weight: 600;">
+                                        <i class="ri-eye-line me-1"></i>Visto
+                                    </span>
+                                    {% else %}
+                                    <span class="badge"
+                                        style="background: rgba(241, 245, 249, 1); color: #94a3b8; padding: 6px 12px; border-radius: 6px; font-weight: 600;">
+                                        <i class="ri-eye-off-line me-1"></i>No visto
+                                    </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- COMENTARIO DE ENTREGA -->
+                                <td class="py-3"
+                                    style="border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #475569; max-width: 250px;">
+                                    <span class="text-truncate d-block" title="{{ a.texto_entrega or '' }}">
+                                        {{ a.texto_entrega if a.texto_entrega else '—' }}
+                                    </span>
+                                </td>
+
+                                <!-- FECHA Y HORA EXACTA DE LA CARGA -->
+                                <td class="py-3"
+                                    style="border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #475569;">
+                                    {{ a.fecha_entrega.strftime('%d/%m/%Y %I:%M %p') if a.fecha_entrega else 'Sin
+                                    entregar' }}
+                                </td>
+
+                                <!-- CALIFICACIÓN -->
+                                <!-- ======================================================================= -->
+                                <!-- BOTÓN DE EVALUACIÓN / FEEDBACK (SE ACTIVA SI HAY una ENTREGA) -->
+                                <!-- ======================================================================= -->
+                                <td class="py-3 text-center" style="border-bottom: 1px solid #f1f5f9;">
+                                    {% if a.archivo_ruta %}
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                        style="border-radius: 6px; padding: 5px 10px; display: inline-flex; align-items: center; justify-content: center; height: 32px; width: 34px;"
+                                        data-bs-toggle="modal" data-bs-target="#modalCalificar"
+                                        data-id="{{ a.id_estudiante }}" data-nombre="{{ a.nombre }} {{ a.apellido1 }}">
+                                        <i class="ri-star-line" style="color: #f59e0b; font-weight: bold;"></i>
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-light"
+                                        style="border-radius: 6px; height: 32px; width: 34px;" disabled>
+                                        <i class="ri-star-line text-muted"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+
+                                <!-- BOTÓN DE DESCARGA-->
+                                <td class="py-3 text-center pe-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    {% if a.archivo_ruta %}
+
+                                    <a href="/uploads/tareas/{{ a.archivo_ruta }}"
+                                        class="btn btn-sm btn-success px-3 d-inline-flex align-items-center"
+                                        style="border-radius: 6px; font-weight: 600; font-size: 0.8rem; height: 32px;"
+                                        download>
+                                        <i class="ri-download-cloud-2-line me-1" style="font-size: 1rem;"></i>Descargar
+                                        Archivo
+                                    </a>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-light text-muted px-3"
+                                        style="border-radius: 6px; font-size: 0.8rem; height: 32px;" disabled>
+                                        <i class="ri-file-warning-line me-1"></i>Sin entrega
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- VENTANA MODAL PARA ASIGNAR CALIFICACIÓN Y FEEDBACK -->
+<div class="modal fade" id="modalCalificar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content"
+            style="border-radius: 12px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: #fff;">
+            <div class="modal-header"
+                style="border-bottom: 1px solid #e2e8f0; background: #f8fafc; padding: 12px 16px;">
+                <h6 class="modal-title" style="color: #1a365d; font-weight: 700;"><i
+                        class="ri-star-fill text-warning me-1"></i>Calificar a <span id="nombre_alumno_modal"></span>
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    style="font-size: 0.75rem;"></button>
+            </div>
+            <form action="{{ url_for('guardar_calificacion') }}" method="POST">
+                <input type="hidden" name="id_tarea" value="{{ tarea.id_tarea }}">
+                <input type="hidden" name="id_materia" value="{{ tarea.id_materia }}">
+                <input type="hidden" name="id_estudiante" id="modal_id_estudiante">
+
+                <div class="modal-body p-3">
+                    <div class="mb-2">
+                        <label class="form-label"
+                            style="font-size: 0.75rem; color: #475569; font-weight: 700; text-transform: uppercase;">Nota
+                            Obtenida (0-100)</label>
+                        <input type="number" name="nota" class="form-control" min="0" max="100" required
+                            placeholder="Ej. 95" style="border-radius: 6px; font-size: 0.9rem; padding: 6px 10px;">
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label"
+                            style="font-size: 0.75rem; color: #475569; font-weight: 700; text-transform: uppercase;">Retroalimentación
+                            / Feedback</label>
+                        <textarea name="comentario" class="form-control" rows="3"
+                            placeholder="Escribe un comentario o feedback para el estudiante..."
+                            style="border-radius: 6px; font-size: 0.85rem; padding: 6px 10px;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer"
+                    style="border-top: 1px solid #e2e8f0; background: #f8fafc; padding: 8px 12px;">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal"
+                        style="border-radius: 8px;">Cerrar</button>
+                    <button type="submit" class="btn btn-sm btn-primary"
+                        style="background: #1a365d; border: none; border-radius: 6px; font-weight: 600; padding: 6px 12px;">Asignar
+                        Nota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('click', function (e) {
+        let boton = e.target.closest('[data-bs-target="#modalCalificar"]');
+        if (boton) {
+            document.getElementById('modal_id_estudiante').value = boton.dataset.id;
+            document.getElementById('nombre_alumno_modal').textContent = boton.dataset.nombre;
+        }
+    });
+</script>
+{% endblock %}

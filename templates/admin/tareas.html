@@ -1,0 +1,393 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<style>
+    .fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .interactive-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 28px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        transition: all 0.3s ease;
+    }
+
+    .interactive-card:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 24px rgba(26, 54, 93, 0.06) !important;
+    }
+
+    .animated-input {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #1e293b !important;
+        padding: 10px 14px !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .animated-input:focus {
+        border-color: #1a365d !important;
+        box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.15) !important;
+    }
+
+    .table-school {
+        color: #1e293b !important;
+    }
+
+    .table-school th {
+        color: #475569 !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+    }
+
+    .hover-row {
+        transition: background-color 0.2s ease !important;
+        color: #334155 !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    .hover-row:hover {
+        background-color: #f8fafc !important;
+    }
+
+    .btn-school {
+        background: #1a365d !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        padding: 11px 20px !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .btn-school:hover {
+        background: #2a4a7d !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2) !important;
+    }
+</style>
+
+<div class="container-fluid pt-4 fade-in-up"
+    style="color: #1e293b; font-family: 'DM Sans', sans-serif; padding-bottom: 40px;">
+
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 style="color: #1a365d; font-weight: 800; margin: 0; letter-spacing: -0.5px; font-size: 1.8rem;">
+                    <i class="ri-book-open-fill me-2" style="vertical-align: middle;"></i>Gestión de Tareas Académicas
+                </h2>
+                <p style="color: #475569; margin: 5px 0 0 0; font-size: 0.95rem; font-weight: 500;">Módulo docente para
+                    la asignación, control y seguimiento de asignaciones evaluativas.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes Flash de Éxito o Alerta -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container-fluid p-0 mb-4">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+            role="alert" style="border-radius: 8px;">
+            <strong>{{ '¡Atención!' if category == 'danger' else '¡Éxito!' }}</strong> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="row g-4 justify-content-center">
+
+        <!-- FORMULARIO PARA PUBLICAR NUEVA TAREA (ARRIBA Y CENTRADO) -->
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+            <div class="interactive-card">
+                <div class="d-flex align-items-center mb-4">
+                    <div
+                        style="background: rgba(26, 54, 93, 0.05); padding: 10px; border-radius: 10px; margin-right: 12px; border: 1px solid rgba(26, 54, 93, 0.1);">
+                        <i class="ri-add-box-fill" style="color: #1a365d; font-size: 1.3rem;"></i>
+                    </div>
+                    <h4 style="color: #1a365d; font-weight: 700; margin: 0;">Publicar Tarea</h4>
+                </div>
+
+                <form action="{{ url_for('admin_tareas') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Título
+                            de la Tarea</label>
+                        <input type="text" name="titulo" class="form-control animated-input" required
+                            placeholder="Ej. Investigación del Método Científico">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Materia
+                            y Grupo Asignado</label>
+                        <select name="asignacion_dmg" class="form-select animated-input" required id="selectAsignacion"
+                            style="cursor: pointer;">
+                            <option value="" disabled selected>-- Selecciona Materia y Sección --</option>
+                            {% for a in asignaciones %}
+                            <option value="{{ a.id_materia }}-{{ a.id_grupo }}">{{ a.nombre_materia }} — Grupo {{
+                                a.nombre_grupo }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="hidden" name="id_materia" id="hidden_materia">
+                        <input type="hidden" name="id_grupo" id="hidden_grupo">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Fecha
+                            de Entrega</label>
+                        <input type="date" name="fecha_entrega" class="form-control animated-input" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Instrucciones
+                            / Descripción</label>
+                        <textarea name="descripcion" class="form-control animated-input" rows="4" required
+                            placeholder="Escribe las pautas detalladas de la tarea aquí..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-school w-100">
+                        <i class="ri-send-plane-fill me-1" style="vertical-align: middle;"></i> Publicar Tarea
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TABLA DE HISTORIAL DE TAREAS PUBLICADAS (ABAJO) -->
+        <div class="col-12 col-xl-11">
+            <div class="interactive-card">
+
+                <div class="row align-items-center mb-4 g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div
+                                style="background: rgba(26, 54, 93, 0.05); padding: 10px; border-radius: 10px; margin-right: 12px; border: 1px solid rgba(26, 54, 93, 0.1);">
+                                <i class="ri-history-line" style="color: #1a365d; font-size: 1.3rem;"></i>
+                            </div>
+                            <div>
+                                <h4 style="color: #1a365d; font-weight: 700; margin: 0;">Cronograma de Tareas Emitidas
+                                </h4>
+                                <small class="text-muted">Desplace verticalmente para examinar el registro</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"
+                                style="border-radius: 8px 0 0 8px;">
+                                <i class="ri-search-line"></i>
+                            </span>
+                            <input type="text" id="buscadorTareas"
+                                class="form-control bg-light border-start-0 animated-input"
+                                style="border-radius: 0 8px 8px 0 !important; margin: 0 !important;"
+                                placeholder="Filtrar por título, materia o grupo escolar...">
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="table-responsive"
+                    style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);">
+                    <table class="table table-hover table-school mb-0"
+                        style="margin: 0; background: transparent; min-width: 850px;">
+
+                        <thead class="sticky-top bg-white" style="z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <tr
+                                style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; background: #f8fafc;">
+                                <th class="py-3 ps-3" style="border-bottom: 2px solid #e2e8f0; color: #475569;">Detalle
+                                    de Asignación</th>
+                                <th class="py-3" style="border-bottom: 2px solid #e2e8f0; color: #475569;">Curso e
+                                    Institución</th>
+                                <th class="py-3" style="border-bottom: 2px solid #e2e8f0; color: #475569;">Fecha
+                                    Publicación</th>
+                                <th class="py-3" style="border-bottom: 2px solid #e2e8f0; color: #475569;">Fecha Límite
+                                </th>
+                                <th class="py-3 text-center" style="border-bottom: 2px solid #e2e8f0; color: #475569;">
+                                    Vistas</th>
+                                <th class="py-3 text-center pe-3"
+                                    style="border-bottom: 2px solid #e2e8f0; color: #475569;">Gestión</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tareasTableBody">
+                            {% for t in tareas %}
+                            <tr class="hover-row tarea-fila" style="vertical-align: middle;">
+                                <td class="py-3 ps-3" style="border-bottom: 1px solid #f1f5f9; max-width: 300px;">
+                                    <strong class="text-dark" style="display: block;">{{ t.titulo }}</strong>
+                                    <small class="text-muted d-block text-truncate" style="max-width: 280px;">{{
+                                        t.descripcion if t.descripcion else 'Sin instrucciones escritas' }}</small>
+                                </td>
+                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    <span style="font-weight: 600; display: block; color: #1e293b;">{{ t.nombre_materia
+                                        }}</span>
+                                    <span class="badge"
+                                        style="background: rgba(26, 54, 93, 0.08); color: #1a365d; font-size: 0.75rem; font-weight: 600; padding: 4px 8px; border-radius: 4px;">Grupo
+                                        {{ t.nombre_grupo }}</span>
+                                </td>
+                                <td class="py-3"
+                                    style="border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #475569;">
+                                    {{ t.fecha_publicacion.strftime('%d/%m/%Y %I:%M %p') if t.fecha_publicacion else '—'
+                                    }}
+                                </td>
+                                <td class="py-3" style="border-bottom: 1px solid #f1f5f9;">
+                                    <span class="text-danger" style="font-weight: 600;">
+                                        <i class="ri-calendar-todo-line me-1" style="vertical-align: middle;"></i>{{
+                                        t.fecha_entrega.strftime('%d/%m/%Y') if t.fecha_entrega else '—' }}
+                                    </span>
+                                </td>
+
+                                </td>
+                                <!-- COLUMNA DE GESTIÓN (HU EPF-07-02)-->
+                                <td class="py-3 text-center" style="border-bottom: 1px solid #f1f5f9;">
+                                    <!-- COLUMNA DE RECUENTO DE VISTAS-->
+                                    <span class="badge" style="background: rgba(26, 54, 93, 0.08); color: #1a365d; padding: 6px 12px; border-radius: 6px; font-weight: 600;">
+                                        <i class="ri-eye-line me-1" style="vertical-align: middle;"></i>{{ t.total_vistas if t.total_vistas else 0 }} Vistas
+                                    </span>
+                                </td>
+
+                                <td class="py-3 text-center pe-3"
+                                    style="white-space: nowrap; border-bottom: 1px solid #f1f5f9;">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <!-- ICONO DE OJITO Revision verde-->
+                                        <a href="{{ url_for('admin_tareas_revision', id_tarea=t.id_tarea) }}"
+                                            class="btn btn-sm btn-outline-success"
+                                            style="border-radius: 6px; padding: 5px 10px; display: inline-flex; align-items: center; justify-content: center; height: 32px;"
+                                            title="Revisar entregas de estudiantes">
+                                            <i class="ri-eye-line"></i>
+                                        </a>
+
+                                        <!-- MINI BOTÓN DE EDITAR TAREA -->
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                            style="border-radius: 6px; padding: 5px 10px; display: inline-flex; align-items: center; justify-content: center; height: 32px;"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditarTarea"
+                                            data-id="{{ t.id_tarea }}" data-titulo="{{ t.titulo }}"
+                                            data-desc="{{ t.descripcion or '' }}"
+                                            data-fecha="{{ t.fecha_entrega.strftime('%Y-%m-%d') if t.fecha_entrega else '' }}"
+                                            data-asignacion="{{ t.id_materia }}-{{ t.id_grupo }}">
+                                            <i class="ri-edit-line"></i>
+                                        </button>
+
+                                        <!-- MINI BOTÓN DE ELIMINAR TAREA -->
+                                        <a href="{{ url_for('delete_task', id_tarea=t.id_tarea) }}"
+                                            class="btn btn-sm btn-outline-danger"
+                                            style="border-radius: 6px; padding: 5px 10px; display: inline-flex; align-items: center; justify-content: center; height: 32px;"
+                                            onclick="return confirm('¿Estás seguro de que deseas eliminar esta tarea permanentemente?')">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </a>
+                                    </div>
+                                </td>
+
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted" style="background: #fafafa;">
+                                    <i class="ri-book-read-line mb-2"
+                                        style="font-size: 2rem; display: block; color: #94a3b8;"></i>
+                                    <strong style="color: #64748b; display: block;">No has publicado tareas
+                                        todavía</strong>
+                                    <span style="font-size: 0.85rem; color: #94a3b8;">Las asignaciones que crees arriba
+                                        aparecerán listadas en este espacio.</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- VENTANA MODAL EMERGENTE PARA EDITAR TAREA -->
+<!-- ======================================================================= -->
+<div class="modal fade" id="modalEditarTarea" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+            style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #fff;">
+            <div class="modal-header"
+                style="border-bottom: 1px solid #e2e8f0; background: #f8fafc; padding: 15px 20px;">
+                <h5 class="modal-title" style="color: #1a365d; font-weight: 700;"><i
+                        class="ri-edit-box-line me-2"></i>Modificar Tarea</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('edit_task') }}" method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="id_tarea" id="edit_id_tarea">
+
+                    <div class="mb-3">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Título
+                            de la Tarea</label>
+                        <input type="text" name="titulo" id="edit_titulo" class="form-control animated-input" required
+                            style="width: 100%;">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Materia
+                            y Grupo Asignado</label>
+                        <select name="asignacion_dmg" id="edit_selectAsignacion" class="form-select animated-input"
+                            required style="width: 100%; cursor: pointer;">
+                            {% for a in asignaciones %}
+                            <option value="{{ a.id_materia }}-{{ a.id_grupo }}">{{ a.nombre_materia }} — Grupo {{
+                                a.nombre_grupo }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="id_materia" id="edit_hidden_materia">
+                        <input type="hidden" name="id_grupo" id="edit_hidden_grupo">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Fecha
+                            de Entrega</label>
+                        <input type="date" name="fecha_entrega" id="edit_fecha_entrega"
+                            class="form-control animated-input" required style="width: 100%;">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"
+                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Instrucciones
+                            / Descripción</label>
+                        <textarea name="descripcion" id="edit_descripcion" class="form-control animated-input" rows="4"
+                            required style="width: 100%;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; background: #f8fafc;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        style="border-radius: 8px;">Cancelar</button>
+                    <button type="submit" class="btn btn-school"
+                        style="background: #1a365d; color: #fff; border-radius: 8px; border: none; font-weight: 600; padding: 8px 16px;">Guardar
+                        Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/tareas.js') }}"></script>
+{% endblock %}

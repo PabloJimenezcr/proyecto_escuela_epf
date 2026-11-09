@@ -1,0 +1,263 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<style>
+    .fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .interactive-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 24px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        transition: all 0.3s ease;
+    }
+
+    .interactive-card:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 24px rgba(26, 54, 93, 0.06) !important;
+    }
+
+    .task-status-badge {
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+    }
+
+    .status-pending {
+        background: rgba(220, 53, 69, 0.1) !important;
+        color: #dc3545 !important;
+    }
+
+    .status-done {
+        background: rgba(40, 167, 69, 0.1) !important;
+        color: #28a745 !important;
+    }
+
+    .animated-input {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #1e293b !important;
+        padding: 10px 14px !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+    }
+</style>
+
+<div class="container-fluid pt-4 fade-in-up"
+    style="color: #1e293b; font-family: 'DM Sans', sans-serif; padding-bottom: 40px;">
+
+    <!-- ENCABEZADO DE LA PANTALLA DEL ESTUDIANTE -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 style="color: #1a365d; font-weight: 800; margin: 0; letter-spacing: -0.5px; font-size: 1.8rem;">
+                    <i class="ri-assignment-user-line me-2" style="vertical-align: middle;"></i>Mis Tareas Asignadas
+                </h2>
+                <p style="color: #475569; margin: 5px 0 0 0; font-size: 0.95rem; font-weight: 500;">Aula virtual para la
+                    consulta de pautas académicas y el envío de entregas evaluativas.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes de éxito o error de Flask -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container-fluid p-0 mb-4">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+            role="alert" style="border-radius: 8px;">
+            <strong>{{ '¡Atención!' if category == 'danger' else '¡Éxito!' }}</strong> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- CONTENEDOR VERTICAL CENTRADO PARA LA LISTA DE ASIGNACIONES -->
+    <div class="row g-4 justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="d-flex flex-column gap-3">
+                {% for t in tareas %}
+                <div class="interactive-card shadow-sm">
+                    <div class="row align-items-center g-3">
+
+                        <!-- DETALLES PRINCIPALES DE LA TAREA -->
+                        <div class="col-12 col-md-5">
+                            <span class="badge mb-2"
+                                style="background: rgba(26, 54, 93, 0.08); color: #1a365d; font-weight: 700; padding: 5px 10px;">
+                                {{ t.nombre_materia }}
+                            </span>
+                            <h5 style="color: #1a365d; font-weight: 700; margin: 0 0 5px 0;">{{ t.titulo }}</h5>
+                            <small class="text-muted d-block text-truncate" style="max-width: 90%;">{{ t.descripcion if
+                                t.descripcion else 'Sin instrucciones adjuntas' }}</small>
+                        </div>
+
+                        <!-- FECHAS Y ESTADO DE ENTREGA -->
+                        <div class="col-6 col-md-4">
+                            <div class="d-flex flex-column">
+                                <span class="text-muted mb-1" style="font-size: 0.85rem;">
+                                    <i class="ri-calendar-event-line me-1"></i>Vence:
+                                    <strong class="text-danger">{{ t.fecha_entrega.strftime('%d/%m/%Y') if
+                                        t.fecha_entrega else '—' }}</strong>
+                                </span>
+                                <div>
+                                    {% if t.entregado_fecha %}
+                                    <span class="task-status-badge status-done">
+                                        <i class="ri-checkbox-circle-fill me-1"></i>Entregado el {{
+                                        t.entregado_fecha.strftime('%d/%m/%Y') }}
+                                    </span>
+                                    {% else %}
+                                    <span class="task-status-badge status-pending">
+                                        <i class="ri-time-line me-1"></i>Pendiente de Entrega
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES DE ACCIÓN (ABRIR E INSTANCIA DE SUBIDA) -->
+                        <div class="col-6 col-md-3 text-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary px-3 btn-abrir-pautas"
+                                style="border-radius: 8px; font-weight: 600; padding: 8px 16px;"
+                                data-bs-toggle="collapse" data-bs-target="#detalleTarea-{{ t.id_tarea }}"
+                                data-id="{{ t.id_tarea }}">
+                                <i class="ri-eye-line me-1"></i>Ver Pautas
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- DESPLEGABLE CON DETALLES COMPLETOS Y FORMULARIO DE CARGA -->
+                    <div class="collapse mt-4 pt-3" id="detalleTarea-{{ t.id_tarea }}"
+                        style="border-top: 1px solid #f1f5f9;">
+                        <div class="p-3 bg-light rounded-3 mb-3">
+                            <h6 style="color: #1a365d; font-weight: 700;"><i
+                                    class="ri-file-text-line me-1"></i>Instrucciones Completas:</h6>
+                            <p class="text-secondary mb-0" style="font-size: 0.95rem; white-space: pre-wrap;">{{
+                                t.descripcion if t.descripcion else 'El docente no especificó pautas adicionales.' }}
+                            </p>
+                        </div>
+
+                        <!-- ======================================================================= -->
+                        <!-- ACCIONES DE EDICIÓN / ELIMINACIÓN INTERACTIVAS (HU MODIFICAR ENTREGA) -->
+                        <!-- ======================================================================= -->
+                        {% if t.entregado_fecha %}
+                        <div class="p-3 mb-3 rounded-3 d-flex justify-content-between align-items-center"
+                            style="background: rgba(40, 167, 69, 0.04); border: 1px solid rgba(40, 167, 69, 0.15);">
+                            <div>
+                                <span class="text-success"
+                                    style="font-weight: 600; display: block; font-size: 0.95rem;">
+                                    <i class="ri-checkbox-circle-line me-1"></i>Ya has realizado una entrega para esta
+                                    tarea
+                                </span>
+                                <small class="text-muted">Si te equivocaste, puedes corregir el documento o borrar la
+                                    entrega actual de la plataforma.</small>
+                            </div>
+                            <div class="d-inline-flex gap-2">
+                                <!-- BOTÓN DE EDITAR: Despliega el cajón del formulario de abajo -->
+                                <button type="button" class="btn btn-sm btn-outline-primary px-3"
+                                    style="border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; height: 34px;"
+                                    data-bs-toggle="collapse" data-bs-target="#formReemplazo-{{ t.id_tarea }}">
+                                    <i class="ri-edit-line me-1"></i> Editar Entrega
+                                </button>
+
+                                <!-- BOTÓN DE ELIMINAR: Borra la fila de MySQL con advertencia -->
+                                <a href="{{ url_for('estudiante_eliminar_tarea', id_tarea=t.id_tarea) }}"
+                                    class="btn btn-sm btn-outline-danger px-3"
+                                    style="border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; height: 34px; text-decoration: none;"
+                                    onclick="return confirm('¿Estás seguro de que deseas eliminar tu entrega del sistema? Tu estado volverá a quedar como pendiente.')">
+                                    <i class="ri-delete-bin-line me-1"></i> Eliminar Entrega
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- CAJÓN DESPLEGABLE CON EL FORMULARIO DE ENVÍO / EDICIÓN -->
+                        <div class="collapse {% if not t.entregado_fecha %}show{% endif %}"
+                            id="formReemplazo-{{ t.id_tarea }}">
+                            <form action="{{ url_for('estudiante_entregar_tarea') }}" method="POST"
+                                enctype="multipart/form-data">
+                                <input type="hidden" name="id_tarea" value="{{ t.id_tarea }}">
+
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-12 col-md-5">
+                                        <label class="form-label"
+                                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">
+                                            {% if t.entregado_fecha %}Seleccionar Archivo de Corrección{% else %}Subir
+                                            Archivo de Solución{% endif %}
+                                        </label>
+                                        <input type="file" name="archivo_tarea" class="form-control animated-input"
+                                            required style="font-size: 0.85rem; padding: 7px 12px; border-radius: 8px;">
+                                    </div>
+                                    <div class="col-12 col-md-5">
+                                        <label class="form-label"
+                                            style="font-size: 0.8rem; color: #475569; font-weight: 700; text-transform: uppercase;">Notas
+                                            o Comentarios Adicionales</label>
+                                        <input type="text" name="texto_entrega" class="form-control animated-input"
+                                            placeholder="Ej. Adjunto el documento corregido..."
+                                            style="padding: 7px 12px; border-radius: 8px;">
+                                    </div>
+                                    <div class="col-12 col-md-2">
+                                        <button type="submit" class="btn btn-school w-100"
+                                            style="padding: 8px 16px; font-size: 0.9rem; background: #1a365d !important; color: #fff; height: 38px; border-radius: 8px; border: none; font-weight: 600;">
+                                            <i class="ri-upload-cloud-2-line me-1"></i>{% if t.entregado_fecha
+                                            %}Actualizar{% else %}Enviar Tarea{% endif %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- ESTADO VACÍO CUANDO NO HAY TAREAS ASIGNADAS AL GRUPO -->
+                <div class="interactive-card text-center py-5 text-muted">
+                    <i class="ri-bookmark-3-line mb-2" style="font-size: 2.5rem; display: block; color: #94a3b8;"></i>
+                    <strong style="color: #64748b; display: block; font-size: 1.1rem;">¡Al día con el aula
+                        virtual!</strong>
+                    <span style="font-size: 0.9rem; color: #94a3b8;">Tu sección no cuenta con asignaciones pendientes
+                        registradas por el personal docente.</span>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LÓGICA AUTOMÁTICA EN JAVASCRIPT: CONTADOR DE VISTAS (HU EPF-07-03) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Escucha cuando el estudiante hace clic en "Ver Pautas"
+        document.querySelectorAll('.btn-abrir-pautas').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                let idTarea = this.dataset.id;
+
+                // Llama de fondo a la ruta de Python para registrar que el alumno ya leyó la tarea
+                fetch('/estudiante/tareas/ver/' + idTarea)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Vista de tarea #' + idTarea + ' registrada correctamente.');
+                    })
+                    .catch(error => console.error('Error al registrar la vista:', error));
+            });
+        });
+    });
+</script>
+{% endblock %}
