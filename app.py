@@ -90,6 +90,24 @@ from controllers.attendance_controller import (
     consultar_reporte_asistencia
 )
 
+from controllers.grade_controller import (
+    obtener_materias_catalogo,
+    obtener_periodos_catalogo,
+    obtener_notas_grupo,
+    guardar_notas
+)
+from controllers.grade_controller import (
+    obtener_materias_catalogo,
+    obtener_periodos_catalogo,
+    obtener_notas_grupo,
+    guardar_notas,
+    obtener_calificaciones_periodo,
+    obtener_estudiantes_con_grupo,
+    obtener_historial_calificaciones,
+    generar_reporte_calificaciones,
+    exportar_calificaciones_csv
+)
+
 from controllers.task_controller import tasks_view
 from controllers.teacher_required import teacher_required
 
@@ -1774,6 +1792,215 @@ def padre_tareas():
 def guardar_calificacion():
     return save_grade_logic()
 
+# ============================================================
+# EPF-08-01 / 08-02 - REGISTRAR Y EDITAR CALIFICACIONES
+# ============================================================
 
+@app.route('/admin/calificaciones', methods=['GET'])
+@admin_required
+def admin_calificaciones():
+
+    grupo = request.args.get('grupo', '').strip()
+    materia = request.args.get('materia', '').strip()
+    periodo = request.args.get('periodo', '').strip()
+
+    estudiantes = []
+    listo = grupo.isdigit() and materia.isdigit() and periodo.isdigit()
+
+    if listo:
+        estudiantes = obtener_notas_grupo(int(grupo), int(materia), int(periodo))
+
+    return render_template(
+        'admin/calificaciones.html',
+        grupos=obtener_grupos(),
+        materias=obtener_materias_catalogo(),
+        periodos=obtener_periodos_catalogo(),
+        sel={'grupo': grupo, 'materia': materia, 'periodo': periodo},
+        listo=listo,
+        estudiantes=estudiantes
+    )
+
+
+@app.route('/admin/calificaciones/guardar', methods=['POST'])
+@admin_required
+def admin_calificaciones_guardar():
+
+    grupo = request.form.get('grupo', '')
+    materia = request.form.get('materia', '')
+    periodo = request.form.get('periodo', '')
+
+    notas = {
+        clave.split('_', 1)[1]: valor
+        for clave, valor in request.form.items()
+        if clave.startswith('nota_')
+    }
+
+    exito, mensaje = guardar_notas(grupo, materia, periodo, notas)
+
+    clave = 'success' if exito else 'error'
+
+    return redirect(url_for(
+        'admin_calificaciones',
+        grupo=grupo, materia=materia, periodo=periodo,
+        **{clave: mensaje}
+    ))
+# ============================================================
+# EPF-08-03 - CALIFICACIONES POR PERIODO
+# ============================================================
+
+@app.route('/admin/calificaciones/periodo', methods=['GET'])
+@admin_required
+def admin_calificaciones_periodo():
+
+    grupo = request.args.get('grupo', '').strip()
+    periodo = request.args.get('periodo', '').strip()
+
+    materias = []
+    filas = []
+    listo = grupo.isdigit() and periodo.isdigit()
+
+    if listo:
+        materias, filas = obtener_calificaciones_periodo(int(grupo), int(periodo))
+
+    return render_template(
+        'admin/calificaciones_periodo.html',
+        grupos=obtener_grupos(),
+        periodos=obtener_periodos_catalogo(),
+        sel={'grupo': grupo, 'periodo': periodo},
+        listo=listo,
+        materias=materias,
+        filas=filas
+    )
+# ============================================================
+# EPF-08-04 - HISTORIAL DE CALIFICACIONES
+# ============================================================
+
+@app.route('/admin/calificaciones/historial', methods=['GET'])
+@admin_required
+def admin_calificaciones_historial():
+
+    id_est = request.args.get('estudiante', '').strip()
+
+    estudiante = None
+    periodos = []
+    general = None
+    buscado = id_est.isdigit()
+
+    if buscado:
+        estudiante, periodos, general = obtener_historial_calificaciones(int(id_est))
+
+    return render_template(
+        'admin/calificaciones_historial.html',
+        estudiantes=obtener_estudiantes_con_grupo(),
+        sel=id_est,
+        buscado=buscado,
+        estudiante=estudiante,
+        periodos=periodos,
+        general=general
+    )
+# ============================================================
+# EPF-08-07 - REPORTES DE CALIFICACIONES
+# ============================================================
+
+def _filtros_calificaciones():
+    return {
+        "grupo": request.args.get("grupo", "").strip(),
+        "materia": request.args.get("materia", "").strip(),
+        "periodo": request.args.get("periodo", "").strip(),
+        "estudiante": request.args.get("estudiante", "").strip(),
+    }
+
+
+def _a_entero(valor):
+    return int(valor) if valor.isdigit() else None
+
+
+@app.route('/admin/calificaciones/reporte', methods=['GET'])
+@admin_required
+def admin_calificaciones_reporte():
+
+    f = _filtros_calificaciones()
+
+    columnas, filas, promedio = generar_reporte_calificaciones(
+        _a_entero(f["grupo"]), _a_entero(f["materia"]),
+        _a_entero(f["periodo"]), _a_entero(f["estudiante"])
+    )
+
+    return render_template(
+        'admin/calificaciones_reporte.html',
+        grupos=obtener_grupos(),
+        materias=obtener_materias_catalogo(),
+        periodos=obtener_periodos_catalogo(),
+        estudiantes=obtener_estudiantes_con_grupo(),
+        sel=f,
+        columnas=columnas,
+        filas=filas,
+        promedio=promedio
+    )
+
+
+@app.route('/admin/calificaciones/reporte/exportar', methods=['GET'])
+@admin_required
+def admin_calificaciones_reporte_exportar():
+
+    f = _filtros_calificaciones()
+
+    columnas, filas, promedio = generar_reporte_calificaciones(
+        _a_entero(f["grupo"]), _a_entero(f["materia"]),
+        _a_entero(f["periodo"]), _a_entero(f["estudiante"])
+    )
+
+    if not filas:
+        return redirect(url_for('admin_calificaciones_reporte',
+                                error='No hay datos para exportar.'))
+
+    return send_file(
+        exportar_calificaciones_csv(columnas, filas, promedio),
+        as_attachment=True,
+        download_name=f"calificaciones_{datetime.now():%Y%m%d_%H%M}.csv",
+        mimetype="text/csv"
+    )
+@app.route('/estudiante/calificaciones', methods=['GET'])
+def estudiante_calificaciones():
+
+    if session.get('rol_usuario') != 'Estudiante':
+        return redirect(url_for('dashboard'))
+
+    id_est = obtener_id_estudiante_por_usuario(session['id_usuario'])
+
+    bloques = []
+
+    if id_est:
+        estudiante, periodos, general = obtener_historial_calificaciones(id_est)
+        if estudiante:
+            bloques.append({'estudiante': estudiante, 'periodos': periodos, 'general': general})
+
+    return render_template(
+        'admin/calificaciones_consulta.html',
+        titulo='Mis calificaciones',
+        kicker='EPF-08-05',
+        bloques=bloques
+    )
+
+
+@app.route('/padre/calificaciones', methods=['GET'])
+def padre_calificaciones():
+
+    if session.get('rol_usuario') != 'Padre de Familia':
+        return redirect(url_for('dashboard'))
+
+    bloques = []
+
+    for h in obtener_hijos_de_usuario(session['id_usuario']):
+        estudiante, periodos, general = obtener_historial_calificaciones(h['id_estudiante'])
+        if estudiante:
+            bloques.append({'estudiante': estudiante, 'periodos': periodos, 'general': general})
+
+    return render_template(
+        'admin/calificaciones_consulta.html',
+        titulo='Calificaciones de mis hijos',
+        kicker='EPF-08-06',
+        bloques=bloques
+    )
 if __name__ == '__main__':
     app.run(debug=True)

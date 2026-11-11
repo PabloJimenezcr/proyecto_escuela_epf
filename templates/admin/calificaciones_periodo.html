@@ -1,0 +1,110 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Calificaciones por período{% endblock %}
+
+{% block content %}
+<section class="groups-page cp-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-table-line"></i></div>
+            <div>
+                <span class="page-kicker">EPF-08-03</span>
+                <h1>Calificaciones por período</h1>
+                <p>Consulta las notas de todos los estudiantes de un grupo en un período.</p>
+            </div>
+        </div>
+        <div class="page-heading-actions">
+            <a href="{{ url_for('admin_calificaciones') }}" class="cp-link">
+                <i class="ri-edit-line"></i> Registrar notas
+            </a>
+        </div>
+    </div>
+
+    <article class="dashboard-panel">
+        <form method="GET" action="{{ url_for('admin_calificaciones_periodo') }}" class="cp-form">
+            <label>Grupo
+                <select name="grupo" required>
+                    <option value="">Selecciona...</option>
+                    {% for g in grupos %}
+                    <option value="{{ g.id_grupo }}" {% if sel.grupo == g.id_grupo|string %}selected{% endif %}>
+                        {{ g.nombre }} ({{ g.anio_lectivo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Período
+                <select name="periodo" required>
+                    <option value="">Selecciona...</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}" {% if sel.periodo == p.id_periodo|string %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" class="cp-btn"><i class="ri-search-line"></i> Consultar</button>
+        </form>
+    </article>
+
+    {% if listo %}
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">RESULTADOS</span>
+                <h2>Estudiantes ({{ filas|length }})</h2>
+            </div>
+        </div>
+
+        {% if materias %}
+        <div class="cp-wrap">
+            <table class="cp-tabla">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        {% for m in materias %}<th>{{ m.nombre }}</th>{% endfor %}
+                        <th>Promedio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for f in filas %}
+                    <tr>
+                        <td>{{ f.nombre }}</td>
+                        {% for m in materias %}
+                            {% set n = f.notas.get(m.id_materia) %}
+                            <td>{{ '%.2f'|format(n) if n is not none else '-' }}</td>
+                        {% endfor %}
+                        <td><strong>{{ '%.2f'|format(f.promedio) if f.promedio is not none else '-' }}</strong></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="{{ materias|length + 2 }}" class="cp-vacio">Este grupo no tiene estudiantes activos.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="cp-vacio">No hay calificaciones registradas para este grupo en el período seleccionado.</p>
+        {% endif %}
+    </article>
+    {% endif %}
+
+</section>
+
+<style>
+.cp-page .dashboard-panel { margin-bottom:24px; }
+.cp-page .cp-form { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+.cp-page .cp-form label { display:flex; flex-direction:column; gap:4px; font-size:.78rem; font-weight:600; color:#6b7280; }
+.cp-page select { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:.9rem; min-width:200px; background:#fff; }
+.cp-page .cp-wrap { overflow-x:auto; }
+.cp-page .cp-tabla { width:100%; border-collapse:collapse; }
+.cp-page .cp-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                        color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+.cp-page .cp-tabla td { padding:12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.cp-page .cp-vacio { text-align:center; color:#6b7280; padding:24px; }
+.cp-page .cp-link { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:.9rem;
+                    color:#1b3d5e; text-decoration:none; }
+.cp-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border:0; border-radius:8px;
+          background:#1b3d5e; color:#fff; font-weight:600; font-size:.85rem; cursor:pointer; }
+.cp-btn:hover { background:#0f2a43; }
+</style>
+{% endblock %}
