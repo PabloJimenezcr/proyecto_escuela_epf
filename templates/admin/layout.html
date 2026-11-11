@@ -65,6 +65,31 @@
                         <i class="ri-megaphone-line"></i><span>Comunicados</span>
                     </a>
 
+                    <!-- Rol Docente / Administrador -->
+                    <a href="{{ url_for('admin_tareas') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_tareas' %}active{% endif %}">
+                        <i class="ri-book-open-line"></i>
+                        <span>Tareas Académicas</span>
+                    </a>
+
+                    <!-- Rol Padre de Familia -->
+                    {% if session.get('rol_usuario') == 'Padre de Familia' %}
+                    <a href="{{ url_for('padre_tareas') }}"
+                        class="sidebar-link {% if request.endpoint == 'padre_tareas' %}active{% endif %}">
+                        <i class="ri-team-line"></i>
+                        <span>Tareas de mis Hijos</span>
+                    </a>
+                    {% endif %}
+
+                    <!-- Rol Estudiante -->
+                    {% if session.get('rol_usuario') == 'Estudiante' %}
+                    <a href="{{ url_for('estudiante_tareas') }}"
+                        class="sidebar-link {% if request.endpoint == 'estudiante_tareas' %}active{% endif %}">
+                        <i class="ri-task-line"></i>
+                        <span>Mis Tareas</span>
+                    </a>
+                    {% endif %}
+
 
                     <a href="{{ url_for('admin_asistencia') }}"
                         class="sidebar-link {% if request.endpoint == 'admin_asistencia' %}active{% endif %}">
