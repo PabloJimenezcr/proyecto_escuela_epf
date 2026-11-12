@@ -502,3 +502,61 @@ def exportar_calificaciones_csv(columnas, filas, promedio):
     datos.seek(0)
     return datos
 
+
+def obtener_id_estudiante_por_usuario(id_usuario):
+    """id_estudiante del usuario logueado (o None)."""
+
+    connection = get_db_connection()
+
+    if not connection:
+        return None
+
+    cursor = None
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id_estudiante FROM estudiantes WHERE id_usuario = %s LIMIT 1",
+            (id_usuario,)
+        )
+        fila = cursor.fetchone()
+        return fila["id_estudiante"] if fila else None
+    except Exception as e:
+        print(f"Error al obtener estudiante: {e}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        connection.close()
+
+
+def obtener_hijos_de_usuario(id_usuario):
+    """Estudiantes vinculados al padre que inició sesión."""
+
+    connection = get_db_connection()
+
+    if not connection:
+        return []
+
+    cursor = None
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+                SELECT e.id_estudiante
+                FROM padres p
+                INNER JOIN padre_estudiante pe ON pe.id_padre = p.id_padre
+                INNER JOIN estudiantes e       ON e.id_estudiante = pe.id_estudiante
+                WHERE p.id_usuario = %s
+            """,
+            (id_usuario,)
+        )
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error al obtener hijos: {e}")
+        return []
+    finally:
+        if cursor:
+            cursor.close()
+        connection.close()
