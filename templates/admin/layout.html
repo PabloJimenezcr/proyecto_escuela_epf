@@ -80,7 +80,6 @@
                         <span>Tareas de mis Hijos</span>
                     </a>
                     {% endif %}
-                    
 
                     <!-- Rol Estudiante -->
                     {% if session.get('rol_usuario') == 'Estudiante' %}
@@ -90,8 +89,6 @@
                         <span>Mis Tareas</span>
                     </a>
                     {% endif %}
-                    
-
 
                     <a href="{{ url_for('admin_asistencia') }}"
                         class="sidebar-link {% if request.endpoint == 'admin_asistencia' %}active{% endif %}">
@@ -113,12 +110,10 @@
                     </a>
                     {% endif %}
 
-
                     <a href="{{ url_for('admin_reportes') }}"
                         class="sidebar-link {% if request.endpoint in ['admin_reportes', 'admin_reportes_exportar'] %}active{% endif %}">
                         <i class="ri-bar-chart-box-line"></i><span>Reportes</span>
                     </a>
-
 
                     {% if session.get('rol_usuario') == 'Administrador' %}
                     <a href="{{ url_for('admin_asistencia_reportes') }}"
@@ -127,7 +122,6 @@
                         <span>Reporte de asistencia</span>
                     </a>
                     {% endif %}
-
 
                     <a href="{{ url_for('admin_estudiantes_registro') }}"
                         class="sidebar-link {% if request.endpoint == 'admin_estudiantes_registro' %}active{% endif %}">
@@ -145,24 +139,41 @@
                         class="sidebar-link {% if request.endpoint == 'admin_vinculos' %}active{% endif %}">
                         <i class="ri-parent-line"></i><span>Padres y estudiantes</span>
                     </a>
-                    <a href="{{ url_for('admin_calificaciones') }}" class="sidebar-link">
-                      <i class="ri-medal-line"></i>
-                   <span>Calificaciones</span>
+
+                    <!-- Calificaciones: Docente / Administrador -->
+                    <a href="{{ url_for('admin_calificaciones') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_calificaciones' %}active{% endif %}">
+                        <i class="ri-medal-line"></i><span>Calificaciones</span>
                     </a>
-                    <a href="{{ url_for('admin_calificaciones_periodo') }}" class="sidebar-link">
-                     <i class="ri-table-line"></i>
-                     <span>Notas por período</span>
+                    <a href="{{ url_for('admin_calificaciones_periodo') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_calificaciones_periodo' %}active{% endif %}">
+                        <i class="ri-table-line"></i><span>Notas por período</span>
                     </a>
-                    <a href="{{ url_for('admin_calificaciones_historial') }}" class="sidebar-link">
-                     <i class="ri-history-line"></i>
-                     <span>Historial de notas</span>
+                    <a href="{{ url_for('admin_calificaciones_historial') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_calificaciones_historial' %}active{% endif %}">
+                        <i class="ri-history-line"></i><span>Historial de notas</span>
                     </a>
-                    <a href="{{ url_for('admin_calificaciones_reporte') }}" class="sidebar-link">
-                     <i class="ri-file-chart-line"></i>
-                    <span>Reporte de notas</span>
-                                     
+                    <a href="{{ url_for('admin_calificaciones_reporte') }}"
+                        class="sidebar-link {% if request.endpoint in ['admin_calificaciones_reporte', 'admin_calificaciones_reporte_exportar'] %}active{% endif %}">
+                        <i class="ri-file-chart-line"></i><span>Reporte de notas</span>
                     </a>
-                    
+
+                    <!-- Calificaciones: Padre de Familia -->
+                    {% if session.get('rol_usuario') == 'Padre de Familia' %}
+                    <a href="{{ url_for('padre_calificaciones') }}"
+                        class="sidebar-link {% if request.endpoint == 'padre_calificaciones' %}active{% endif %}">
+                        <i class="ri-parent-line"></i><span>Notas de mis Hijos</span>
+                    </a>
+                    {% endif %}
+
+                    <!-- Calificaciones: Estudiante -->
+                    {% if session.get('rol_usuario') == 'Estudiante' %}
+                    <a href="{{ url_for('estudiante_calificaciones') }}"
+                        class="sidebar-link {% if request.endpoint == 'estudiante_calificaciones' %}active{% endif %}">
+                        <i class="ri-medal-line"></i><span>Mis Calificaciones</span>
+                    </a>
+                    {% endif %}
+
                 </nav>
             </div>
 
