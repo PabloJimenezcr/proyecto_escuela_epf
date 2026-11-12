@@ -1,0 +1,170 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Calificaciones{% endblock %}
+
+{% block content %}
+<section class="groups-page cal-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-medal-line"></i></div>
+            <div>
+                <span class="page-kicker">EPF-08-01 · 08-02</span>
+                <h1>Calificaciones</h1>
+                <p>Registra y edita las notas por grupo, materia y período.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-heading-actions">
+    <a href="{{ url_for('admin_calificaciones_periodo') }}" class="cal-btn">
+        <i class="ri-table-line"></i> Ver por período
+    </a>
+    </div>
+
+    {% if request.args.get('success') %}
+    <div class="custom-alert success-alert">
+        <div class="custom-alert-icon"><i class="ri-checkbox-circle-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>Acción realizada</strong>
+            <span>{{ request.args.get('success') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    {% if request.args.get('error') %}
+    <div class="custom-alert error-alert">
+        <div class="custom-alert-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>No se pudo completar la acción</strong>
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <article class="dashboard-panel">
+        <form method="GET" action="{{ url_for('admin_calificaciones') }}" class="cal-form">
+            <label>Grupo
+                <select name="grupo" required>
+                    <option value="">Selecciona...</option>
+                    {% for g in grupos %}
+                    <option value="{{ g.id_grupo }}" {% if sel.grupo == g.id_grupo|string %}selected{% endif %}>
+                        {{ g.nombre }} ({{ g.anio_lectivo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Materia
+                <select name="materia" required>
+                    <option value="">Selecciona...</option>
+                    {% for m in materias %}
+                    <option value="{{ m.id_materia }}" {% if sel.materia == m.id_materia|string %}selected{% endif %}>
+                        {{ m.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Período
+                <select name="periodo" required>
+                    <option value="">Selecciona...</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}" {% if sel.periodo == p.id_periodo|string %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" class="cal-btn"><i class="ri-search-line"></i> Cargar estudiantes</button>
+        </form>
+    </article>
+
+    {% if listo %}
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">NOTAS (0 A 100)</span>
+                <h2>Estudiantes ({{ estudiantes|length }})</h2>
+            </div>
+        </div>
+
+        {% if estudiantes %}
+        <form method="POST" action="{{ url_for('admin_calificaciones_guardar') }}">
+            <input type="hidden" name="grupo" value="{{ sel.grupo }}">
+            <input type="hidden" name="materia" value="{{ sel.materia }}">
+            <input type="hidden" name="periodo" value="{{ sel.periodo }}">
+
+            <div class="cal-wrap">
+                <table class="cal-tabla">
+                    <thead><tr><th>Estudiante</th><th>Nota</th></tr></thead>
+                    <tbody>
+                    {% for e in estudiantes %}
+                        <tr>
+                            <td>{{ e.apellido1 }} {{ e.apellido2 or '' }}, {{ e.nombre }}</td>
+                            <td>
+                                <input type="number" name="nota_{{ e.id_estudiante }}"
+                                       min="0" max="100" step="0.01"
+                                       value="{{ e.nota if e.nota is not none else '' }}"
+                                       class="cal-nota">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="cal-nota-info">Las notas vacías no se guardan. Si ya existe una nota, se actualiza.</p>
+            <button type="submit" class="cal-btn"><i class="ri-save-line"></i> Guardar calificaciones</button>
+        </form>
+        {% else %}
+        <p class="cal-vacio">Este grupo no tiene estudiantes activos.</p>
+        {% endif %}
+    </article>
+    {% endif %}
+
+</section>
+
+<style>
+.cal-page .dashboard-panel:first-of-type { margin-top: 24px; }
+.cal-page .dashboard-panel { margin-bottom:24px; }
+.cal-page .cal-form { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+.cal-page .cal-form label { display:flex; flex-direction:column; gap:4px; font-size:.78rem; font-weight:600; color:#6b7280; }
+.cal-page select, .cal-page .cal-nota { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px;
+                                        font-size:.9rem; background:#fff; }
+.cal-page select { min-width:200px; }
+.cal-page .cal-nota { width:110px; }
+.cal-page .cal-wrap { overflow-x:auto; margin-bottom:12px; }
+.cal-page .cal-tabla { width:100%; border-collapse:collapse; }
+.cal-page .cal-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                          color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.cal-page .cal-tabla td { padding:10px 12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.cal-page .cal-vacio { text-align:center; color:#6b7280; padding:24px; }
+.cal-page .cal-nota-info { color:#6b7280; font-size:.82rem; margin:0 0 12px; }
+.cal-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border:0; border-radius:8px;
+           background:#1b3d5e; color:#fff; font-weight:600; font-size:.85rem; cursor:pointer; }
+.cal-btn:hover { background:#0f2a43; }
+.cal-page .page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.cal-page .page-heading-actions { display: flex; align-items: center; }
+.cp-page .page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.cp-page .page-heading-actions { display: flex; align-items: center; }
+</style>
+{% endblock %}

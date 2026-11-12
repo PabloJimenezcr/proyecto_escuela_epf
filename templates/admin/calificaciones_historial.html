@@ -1,0 +1,112 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Historial de calificaciones{% endblock %}
+
+{% block content %}
+<section class="groups-page ch-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-history-line"></i></div>
+            <div>
+                <span class="page-kicker">EPF-08-04</span>
+                <h1>Historial de calificaciones</h1>
+                <p>Consulta todas las notas de un estudiante por período.</p>
+            </div>
+        </div>
+        <div class="page-heading-actions">
+            <a href="{{ url_for('admin_calificaciones_periodo') }}" class="ch-link">
+                <i class="ri-table-line"></i> Notas por período
+            </a>
+        </div>
+    </div>
+
+    <article class="dashboard-panel">
+        <form method="GET" action="{{ url_for('admin_calificaciones_historial') }}" class="ch-form">
+            <label>Estudiante
+                <select name="estudiante" required>
+                    <option value="">Selecciona...</option>
+                    {% for e in estudiantes %}
+                    <option value="{{ e.id_estudiante }}" {% if sel == e.id_estudiante|string %}selected{% endif %}>
+                        {{ e.apellido1 }} {{ e.apellido2 or '' }}, {{ e.nombre }} ({{ e.grupo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" class="ch-btn"><i class="ri-search-line"></i> Consultar</button>
+        </form>
+    </article>
+
+    {% if buscado %}
+        {% if estudiante %}
+        <article class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="panel-eyebrow">GRUPO {{ estudiante.grupo }}</span>
+                    <h2>{{ estudiante.nombre }} {{ estudiante.apellido1 }} {{ estudiante.apellido2 or '' }}</h2>
+                </div>
+                <div class="ch-general">
+                    Promedio general:
+                    <strong>{{ '%.2f'|format(general) if general is not none else '-' }}</strong>
+                </div>
+            </div>
+        </article>
+
+        {% for p in periodos %}
+        <article class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="panel-eyebrow">PERÍODO</span>
+                    <h2>{{ p.nombre }}</h2>
+                </div>
+                <div class="ch-general">Promedio: <strong>{{ '%.2f'|format(p.promedio) }}</strong></div>
+            </div>
+            <div class="ch-wrap">
+                <table class="ch-tabla">
+                    <thead><tr><th>Materia</th><th>Nota</th></tr></thead>
+                    <tbody>
+                    {% for n in p.notas %}
+                        <tr><td>{{ n.materia }}</td><td>{{ '%.2f'|format(n.nota) }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+        {% else %}
+        <article class="dashboard-panel">
+            <p class="ch-vacio">Este estudiante aún no tiene calificaciones registradas.</p>
+        </article>
+        {% endfor %}
+
+        {% else %}
+        <article class="dashboard-panel">
+            <p class="ch-vacio">El estudiante seleccionado no existe.</p>
+        </article>
+        {% endif %}
+    {% endif %}
+
+</section>
+
+<style>
+.ch-page .dashboard-panel { margin-bottom:24px; }
+.ch-page .page-heading { display:flex; justify-content:space-between; align-items:center;
+                         gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+.ch-page .page-heading-actions { display:flex; align-items:center; }
+.ch-page .ch-form { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+.ch-page .ch-form label { display:flex; flex-direction:column; gap:4px; font-size:.78rem; font-weight:600; color:#6b7280; }
+.ch-page select { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:.9rem; min-width:280px; background:#fff; }
+.ch-page .ch-wrap { overflow-x:auto; }
+.ch-page .ch-tabla { width:100%; border-collapse:collapse; }
+.ch-page .ch-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                        color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.ch-page .ch-tabla td { padding:12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.ch-page .ch-vacio { text-align:center; color:#6b7280; padding:24px; }
+.ch-page .ch-general { font-size:.9rem; color:#6b7280; }
+.ch-page .ch-general strong { color:#1b3d5e; font-size:1.1rem; }
+.ch-page .ch-link { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:.9rem;
+                    color:#1b3d5e; text-decoration:none; }
+.ch-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border:0; border-radius:8px;
+          background:#1b3d5e; color:#fff; font-weight:600; font-size:.85rem; cursor:pointer; }
+.ch-btn:hover { background:#0f2a43; }
+</style>
+{% endblock %}

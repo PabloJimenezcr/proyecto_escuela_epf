@@ -1,0 +1,147 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}EPF | Reporte de calificaciones{% endblock %}
+
+{% block content %}
+<section class="groups-page cr-page">
+
+    <div class="page-heading">
+        <div class="page-heading-main">
+            <div class="page-heading-icon"><i class="ri-file-chart-line"></i></div>
+            <div>
+                <span class="page-kicker">EPF-08-07</span>
+                <h1>Reporte de calificaciones</h1>
+                <p>Filtra, consulta y exporta las calificaciones.</p>
+            </div>
+        </div>
+    </div>
+
+    {% if request.args.get('error') %}
+    <div class="custom-alert error-alert">
+        <div class="custom-alert-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="custom-alert-content">
+            <strong>No se pudo completar la acción</strong>
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        <button type="button" class="custom-alert-close" onclick="this.parentElement.remove()">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <article class="dashboard-panel cr-filtros">
+        <form method="GET" action="{{ url_for('admin_calificaciones_reporte') }}" class="cr-form">
+            <label>Grupo
+                <select name="grupo">
+                    <option value="">Todos</option>
+                    {% for g in grupos %}
+                    <option value="{{ g.id_grupo }}" {% if sel.grupo == g.id_grupo|string %}selected{% endif %}>
+                        {{ g.nombre }} ({{ g.anio_lectivo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Materia
+                <select name="materia">
+                    <option value="">Todas</option>
+                    {% for m in materias %}
+                    <option value="{{ m.id_materia }}" {% if sel.materia == m.id_materia|string %}selected{% endif %}>
+                        {{ m.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Período
+                <select name="periodo">
+                    <option value="">Todos</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}" {% if sel.periodo == p.id_periodo|string %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Estudiante
+                <select name="estudiante">
+                    <option value="">Todos</option>
+                    {% for e in estudiantes %}
+                    <option value="{{ e.id_estudiante }}" {% if sel.estudiante == e.id_estudiante|string %}selected{% endif %}>
+                        {{ e.apellido1 }} {{ e.apellido2 or '' }}, {{ e.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" class="cr-btn"><i class="ri-search-line"></i> Generar</button>
+        </form>
+    </article>
+
+    <article class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-eyebrow">RESULTADOS</span>
+                <h2>Calificaciones ({{ filas|length }})</h2>
+            </div>
+
+            {% if filas %}
+            <div class="cr-export">
+                <a class="cr-btn" href="{{ url_for('admin_calificaciones_reporte_exportar', **request.args) }}">
+                    <i class="ri-file-excel-2-line"></i> Excel (CSV)
+                </a>
+                <button type="button" class="cr-btn cr-btn-light" onclick="window.print()">
+                    <i class="ri-file-pdf-2-line"></i> Imprimir / PDF
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="cr-wrap">
+            <table class="cr-tabla">
+                <thead>
+                    <tr>{% for c in columnas %}<th>{{ c }}</th>{% endfor %}</tr>
+                </thead>
+                <tbody>
+                {% for fila in filas %}
+                    <tr>{% for celda in fila %}<td>{{ celda }}</td>{% endfor %}</tr>
+                {% else %}
+                    <tr><td colspan="5" class="cr-vacio">No hay calificaciones con los filtros seleccionados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if promedio is not none %}
+        <p class="cr-promedio">Promedio de los resultados: <strong>{{ '%.2f'|format(promedio) }}</strong></p>
+        {% endif %}
+    </article>
+
+</section>
+
+<style>
+.cr-page .dashboard-panel { margin-bottom:24px; }
+.cr-page .page-heading { display:flex; justify-content:space-between; align-items:center;
+                         gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+.cr-page .cr-form { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+.cr-page .cr-form label { display:flex; flex-direction:column; gap:4px; font-size:.78rem; font-weight:600; color:#6b7280; }
+.cr-page select { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:.9rem; min-width:170px; background:#fff; }
+.cr-page .cr-wrap { overflow-x:auto; }
+.cr-page .cr-tabla { width:100%; border-collapse:collapse; }
+.cr-page .cr-tabla th { text-align:left; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+                        color:#6b7280; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+.cr-page .cr-tabla td { padding:12px; border-bottom:1px solid #f0f2f5; font-size:.9rem; }
+.cr-page .cr-vacio { text-align:center; color:#6b7280; padding:24px; }
+.cr-page .cr-promedio { margin:16px 0 0; text-align:right; color:#6b7280; }
+.cr-page .cr-promedio strong { color:#1b3d5e; font-size:1.1rem; }
+.cr-page .cr-export { display:flex; gap:8px; }
+.cr-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border:0; border-radius:8px;
+          background:#1b3d5e; color:#fff; font-weight:600; font-size:.85rem; cursor:pointer; text-decoration:none; }
+.cr-btn:hover { background:#0f2a43; }
+.cr-btn-light { background:#e0ecf8; color:#1b3d5e; }
+
+@media print {
+    aside, nav, header, .sidebar, .cr-filtros, .cr-export,
+    .page-heading, .custom-alert { display:none !important; }
+    .cr-page .dashboard-panel { box-shadow:none; border:0; }
+    .cr-page .cr-tabla th, .cr-page .cr-tabla td { font-size:11px; }
+}
+</style>
+{% endblock %}
