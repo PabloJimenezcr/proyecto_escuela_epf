@@ -90,39 +90,7 @@
                         <span>Mis Tareas</span>
                     </a>
                     {% endif %}
-                    <!-- Calificaciones: Rol Docente / Administrador -->
-<a href="{{ url_for('admin_calificaciones') }}"
-    class="sidebar-link {% if request.endpoint == 'admin_calificaciones' %}active{% endif %}">
-    <i class="ri-medal-line"></i><span>Calificaciones</span>
-</a>
-<a href="{{ url_for('admin_calificaciones_periodo') }}"
-    class="sidebar-link {% if request.endpoint == 'admin_calificaciones_periodo' %}active{% endif %}">
-    <i class="ri-table-line"></i><span>Notas por período</span>
-</a>
-<a href="{{ url_for('admin_calificaciones_historial') }}"
-    class="sidebar-link {% if request.endpoint == 'admin_calificaciones_historial' %}active{% endif %}">
-    <i class="ri-history-line"></i><span>Historial de notas</span>
-</a>
-<a href="{{ url_for('admin_calificaciones_reporte') }}"
-    class="sidebar-link {% if request.endpoint == 'admin_calificaciones_reporte' %}active{% endif %}">
-    <i class="ri-file-chart-line"></i><span>Reporte de notas</span>
-</a>
-
-<!-- Calificaciones: Rol Padre de Familia -->
-{% if session.get('rol_usuario') == 'Padre de Familia' %}
-<a href="{{ url_for('padre_calificaciones') }}"
-    class="sidebar-link {% if request.endpoint == 'padre_calificaciones' %}active{% endif %}">
-    <i class="ri-parent-line"></i><span>Notas de mis Hijos</span>
-</a>
-{% endif %}
-
-<!-- Calificaciones: Rol Estudiante -->
-{% if session.get('rol_usuario') == 'Estudiante' %}
-<a href="{{ url_for('estudiante_calificaciones') }}"
-    class="sidebar-link {% if request.endpoint == 'estudiante_calificaciones' %}active{% endif %}">
-    <i class="ri-medal-line"></i><span>Mis Calificaciones</span>
-</a>
-{% endif %}
+                    
 
 
                     <a href="{{ url_for('admin_asistencia') }}"
@@ -192,7 +160,7 @@
                     <a href="{{ url_for('admin_calificaciones_reporte') }}" class="sidebar-link">
                      <i class="ri-file-chart-line"></i>
                     <span>Reporte de notas</span>
-                    
+                                     
                     </a>
                     
                 </nav>
