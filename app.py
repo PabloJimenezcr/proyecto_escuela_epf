@@ -1960,47 +1960,8 @@ def admin_calificaciones_reporte_exportar():
         download_name=f"calificaciones_{datetime.now():%Y%m%d_%H%M}.csv",
         mimetype="text/csv"
     )
-@app.route('/estudiante/calificaciones', methods=['GET'])
-def estudiante_calificaciones():
-
-    if session.get('rol_usuario') != 'Estudiante':
-        return redirect(url_for('dashboard'))
-
-    id_est = obtener_id_estudiante_por_usuario(session['id_usuario'])
-
-    bloques = []
-
-    if id_est:
-        estudiante, periodos, general = obtener_historial_calificaciones(id_est)
-        if estudiante:
-            bloques.append({'estudiante': estudiante, 'periodos': periodos, 'general': general})
-
-    return render_template(
-        'admin/calificaciones_consulta.html',
-        titulo='Mis calificaciones',
-        kicker='EPF-08-05',
-        bloques=bloques
-    )
 
 
-@app.route('/padre/calificaciones', methods=['GET'])
-def padre_calificaciones():
 
-    if session.get('rol_usuario') != 'Padre de Familia':
-        return redirect(url_for('dashboard'))
-
-    bloques = []
-
-    for h in obtener_hijos_de_usuario(session['id_usuario']):
-        estudiante, periodos, general = obtener_historial_calificaciones(h['id_estudiante'])
-        if estudiante:
-            bloques.append({'estudiante': estudiante, 'periodos': periodos, 'general': general})
-
-    return render_template(
-        'admin/calificaciones_consulta.html',
-        titulo='Calificaciones de mis hijos',
-        kicker='EPF-08-06',
-        bloques=bloques
-    )
 if __name__ == '__main__':
     app.run(debug=True)
