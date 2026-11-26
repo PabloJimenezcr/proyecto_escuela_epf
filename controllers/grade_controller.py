@@ -560,3 +560,115 @@ def obtener_hijos_de_usuario(id_usuario):
         if cursor:
             cursor.close()
         connection.close()
+
+
+def obtener_resumen_academico_hijo(id_estudiante):
+    """
+    Devuelve un diccionario corto y ejecutivo para EPF-10-02:
+    - info del estudiante y docente guía
+    - promedio_general
+    - resumen_materias (promedio por materia)
+    - porcentaje_asistencia
+    - tareas_entregadas y tareas_totales
+    """
+    connection = get_db_connection()
+    if not connection:
+        return None
+
+    cursor = None
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        #Datos del estudiante docente guía etc
+        cursor.execute(
+            """
+            SELECT
+                e.id_estudiante,
+                u.nombre, u.apellido1, u.apellido2, u.correo,
+                g.id_grupo, g.nombre AS nombre_grupo, g.nivel, g.seccion, g.anio_lectivo,
+                CONCAT_WS(' ', ud.nombre, ud.apellido1, ud.apellido2) AS docente_guia
+            FROM estudiantes e
+            INNER JOIN usuarios u ON u.id_usuario = e.id_usuario
+            INNER JOIN grupos g ON g.id_grupo = e.id_grupo
+            LEFT JOIN docentes d ON d.id_docente = g.id_docente_guia
+            LEFT JOIN usuarios ud ON ud.id_usuario = d.id_usuario
+            WHERE e.id_estudiante = %s
+            LIMIT 1
+            """,
+            (id_estudiante,)
+        )
+        estudiante = cursor.fetchone()
+        if not estudiante:
+            return None
+
+        #Promedio por materia y promedio general
+        cursor.execute(
+            """
+            SELECT
+                m.nombre AS materia,
+                ROUND(AVG(c.nota), 2) AS promedio
+            FROM calificaciones c
+            INNER JOIN materias m ON m.id_materia = c.id_materia
+            WHERE c.id_estudiante = %s
+            GROUP BY m.id_materia, m.nombre
+            ORDER BY m.nombre ASC
+            """,
+            (id_estudiante,)
+        )
+        materias = cursor.fetchall()
+        promedio_general = (
+            round(sum(float(m["promedio"]) for m in materias) / len(materias), 2)
+            if materias else None
+        )
+
+        #Porcentaje de asistencia
+        cursor.execute(
+            """
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN estado IN ('presente', 'tardanza') THEN 1 ELSE 0 END) AS asistidas
+            FROM asistencias
+            WHERE id_estudiante = %s
+            """,
+            (id_estudiante,)
+        )
+        asist = cursor.fetchone()
+        total_asist = asist["total"] or 0
+        porcentaje_asistencia = (
+            round((float(asist["asistidas"] or 0) / total_asist) * 100, 1)
+            if total_asist > 0 else None
+        )
+
+        # Conteo rápido de tareas
+        cursor.execute(
+            """
+            SELECT
+                COUNT(DISTINCT t.id_tarea) AS totales,
+                COUNT(DISTINCT te.id_entrega) AS entregadas
+            FROM tareas t
+            LEFT JOIN tarea_entregas te
+                ON te.id_tarea = t.id_tarea AND te.id_estudiante = %s
+            WHERE t.id_grupo = %s
+            """,
+            (id_estudiante, estudiante["id_grupo"])
+        )
+        tareas = cursor.fetchone()
+
+        return {
+            "estudiante": estudiante,
+            "materias": materias,
+            "promedio_general": promedio_general,
+            "porcentaje_asistencia": porcentaje_asistencia,
+            "total_asistencias": total_asist,
+            "tareas_entregadas": tareas["entregadas"] or 0,
+            "tareas_totales": tareas["totales"] or 0
+        }
+
+    except Exception as e:
+        print(f"Error al obtener resumen académico del hijo: {e}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        connection.close()

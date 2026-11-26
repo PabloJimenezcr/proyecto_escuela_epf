@@ -119,6 +119,25 @@ from controllers.task_controller import tasks_view, edit_task_logic, delete_task
 
 from controllers.parent_task_controller import parent_tasks_view
 
+from controllers.attendance_controller import (
+    obtener_historial_asistencia_estudiante,
+    obtener_hijos_por_padre_usuario
+)
+from controllers.grade_controller import (
+    obtener_hijos_de_usuario,
+    obtener_historial_calificaciones
+)
+from controllers.grade_controller import (
+    obtener_resumen_academico_hijo
+)
+
+from controllers.calendar_controller import (
+    obtener_grupos_activos,
+    crear_evento_calendario,
+    actualizar_evento_calendario,
+    eliminar_evento_calendario,
+    obtener_eventos_para_usuario
+)
 
 app = Flask(__name__)
 # llave de cifrado para proteger la sesion del usuario
@@ -186,13 +205,11 @@ def register():
 
     if request.method == 'POST':
 
-        correo = request.form.get('email', '')
+        correo = request.form.get('email', '').strip()
 
         if not correo.lower().endswith('@escuela.com'):
-            return (
-                "<h3>Error: El registro está restringido "
-                "únicamente para correos institucionales autorizados.</h3>"
-            )
+            flash('El registro está restringido únicamente a correos institucionales (@escuela.com).', 'danger')
+            return render_template('register.html')
 
         nombre = request.form.get('nombre')
         apellido1 = request.form.get('apellido1')
@@ -213,12 +230,11 @@ def register():
         )
 
         if exito:
+            flash('Cuenta creada correctamente. Ya puedes iniciar sesión.', 'success')
             return redirect(url_for('login'))
 
-        return render_template(
-            'register.html',
-            error_registro=True
-        )
+        flash('Este correo electrónico ya está registrado en el sistema. Intenta iniciar sesión o usa otro correo.', 'danger')
+        return render_template('register.html', error_registro=True)
 
     return render_template('register.html')
 
@@ -2010,6 +2026,147 @@ def padre_calificaciones():
         titulo='Calificaciones de mis hijos',
         kicker='EPF-08-06',
         bloques=bloques
+    )
+
+#10-01
+
+@app.route('/admin/asistencia/mis-hijos')
+def padre_asistencia_hijos():
+    if 'id_usuario' not in session or session.get('rol_usuario') != 'Padre de Familia':
+        flash('Acceso denegado: Sección exclusiva para padres de familia.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    hijos = obtener_hijos_por_padre_usuario(session['id_usuario'])
+    hijo_seleccionado = None
+    historial = []
+    resumen = {
+        "total": 0,
+        "presente": 0,
+        "ausente": 0,
+        "tardanza": 0,
+        "justificado": 0
+    }
+
+    if hijos:
+        id_hijo_param = request.args.get('id_estudiante', type=int)
+        for h in hijos:
+            if h['id_estudiante'] == id_hijo_param:
+                hijo_seleccionado = h
+                break
+        if not hijo_seleccionado:
+            hijo_seleccionado = next(iter(hijos))
+
+        historial = obtener_historial_asistencia_estudiante(hijo_seleccionado['id_estudiante'])
+        resumen["total"] = len(historial)
+        for reg in historial:
+            estado = reg.get("estado")
+            if estado in resumen:
+                resumen[estado] += 1
+
+    return render_template(
+        'admin/padre_asistencia.html',
+        hijos=hijos,
+        hijo_seleccionado=hijo_seleccionado,
+        historial=historial,
+        resumen=resumen
+    )
+
+
+#10-02
+
+@app.route('/admin/informacion-academica/mis-hijos')
+def padre_info_academica_hijos():
+    if 'id_usuario' not in session or session.get('rol_usuario') != 'Padre de Familia':
+        flash('Acceso denegado: Sección exclusiva para padres de familia.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    hijos = obtener_hijos_por_padre_usuario(session['id_usuario'])
+    hijo_seleccionado = None
+    resumen_academico = None
+
+    if hijos:
+        id_hijo_param = request.args.get('id_estudiante', type=int)
+        for h in hijos:
+            if h['id_estudiante'] == id_hijo_param:
+                hijo_seleccionado = h
+                break
+        if not hijo_seleccionado:
+            hijo_seleccionado = next(iter(hijos))
+
+        resumen_academico = obtener_resumen_academico_hijo(hijo_seleccionado['id_estudiante'])
+
+    return render_template(
+        'admin/padre_info_academica.html',
+        hijos=hijos,
+        hijo_seleccionado=hijo_seleccionado,
+        resumen=resumen_academico
+    )
+
+
+# EPF-11-01 & EPF-11-02
+
+@app.route('/admin/calendario', methods=['GET', 'POST'])
+def admin_calendario():
+    if 'id_usuario' not in session:
+        flash('Debes iniciar sesión para acceder al calendario.', 'warning')
+        return redirect(url_for('login'))
+
+    rol = session.get('rol_usuario')
+    puede_gestionar = (rol == 'Administrador')
+
+    if request.method == 'POST':
+        if not puede_gestionar:
+            flash('No tienes permiso para gestionar eventos del calendario.', 'danger')
+            return redirect(url_for('admin_calendario'))
+
+        accion = request.form.get('accion')
+
+        if accion == 'crear':
+            exito, msg = crear_evento_calendario(
+                session['id_usuario'],
+                request.form.get('titulo'),
+                request.form.get('descripcion'),
+                request.form.get('fecha'),
+                request.form.get('alcance'),
+                request.form.get('id_grupo')
+            )
+            flash(msg, 'success' if exito else 'danger')
+
+        elif accion == 'editar':
+            exito, msg = actualizar_evento_calendario(
+                request.form.get('id_evento'),
+                request.form.get('titulo'),
+                request.form.get('descripcion'),
+                request.form.get('fecha'),
+                request.form.get('alcance'),
+                request.form.get('id_grupo')
+            )
+            flash(msg, 'success' if exito else 'danger')
+
+        elif accion == 'eliminar':
+            exito, msg = eliminar_evento_calendario(request.form.get('id_evento'))
+            flash(msg, 'success' if exito else 'danger')
+
+        return redirect(url_for('admin_calendario'))
+
+    mes_filtro = request.args.get('mes', '').strip()
+    alcance_filtro = request.args.get('alcance', '').strip()
+
+    eventos = obtener_eventos_para_usuario(
+        session['id_usuario'],
+        rol,
+        mes=mes_filtro or None,
+        alcance_filtro=alcance_filtro or None
+    )
+    grupos = obtener_grupos_activos() if puede_gestionar else []
+
+    return render_template(
+        'admin/calendario.html',
+        eventos=eventos,
+        grupos=grupos,
+        puede_gestionar=puede_gestionar,
+        mes_filtro=mes_filtro,
+        alcance_filtro=alcance_filtro
     )
 
 if __name__ == '__main__':

@@ -58,7 +58,8 @@
             <div class="sidebar-section">
                 <span class="sidebar-label">ACADÉMICO</span>
                 <nav class="sidebar-nav">
-                    <a href="#" class="sidebar-link disabled-link">
+                    <a href="{{ url_for('admin_calendario') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin_calendario' %}active{% endif %}">
                         <i class="ri-calendar-event-line"></i><span>Calendario</span>
                     </a>
                     <a href="#" class="sidebar-link disabled-link">
@@ -101,6 +102,19 @@
                         <i class="ri-history-line"></i>
                         <span>Historial individual</span>
                     </a>
+
+                    {% if session.get('rol_usuario') == 'Padre de Familia' %}
+                    <a href="{{ url_for('padre_asistencia_hijos') }}"
+                        class="sidebar-link {% if request.endpoint == 'padre_asistencia_hijos' %}active{% endif %}">
+                        <i class="ri-parent-line"></i>
+                        <span>Historial de mis Hijos</span>
+                    </a>
+                    <a href="{{ url_for('padre_info_academica_hijos') }}"
+                        class="sidebar-link {% if request.endpoint == 'padre_info_academica_hijos' %}active{% endif %}">
+                        <i class="ri-graduation-cap-line"></i>
+                        <span>Información académica</span>
+                    </a>
+                    {% endif %}
 
                     {% if session.get('rol_usuario') == 'Estudiante' %}
                     <a href="{{ url_for('estudiante_mi_asistencia') }}"
