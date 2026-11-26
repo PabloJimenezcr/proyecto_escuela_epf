@@ -1,0 +1,403 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Calendario Escolar | Escuela EPF{% endblock %}
+
+{% block styles %}
+<style>
+    .cal-page {
+        padding-bottom: 35px;
+        color: #17202a;
+        font-family: "DM Sans", sans-serif;
+    }
+
+    .cal-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 24px;
+    }
+
+    .cal-icon {
+        display: flex;
+        width: 56px;
+        height: 56px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: #eaf2f8;
+        color: #20639b;
+        font-size: 1.7rem;
+    }
+
+    .cal-kicker {
+        color: #20639b;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+    }
+
+    .cal-heading h1 {
+        margin: 4px 0;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+    }
+
+    .cal-heading p {
+        margin: 0;
+        color: #667085;
+        font-size: .88rem;
+    }
+
+    .cal-panel {
+        margin-bottom: 22px;
+        padding: 22px;
+        border: 1px solid #e4e7ec;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(23, 63, 95, .045);
+    }
+
+    .cal-panel h2 {
+        margin: 0 0 14px;
+        color: #173f5f;
+        font-size: 1.05rem;
+        font-weight: 800;
+    }
+
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 14px;
+    }
+
+    .cal-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #344054;
+        font-size: .78rem;
+        font-weight: 700;
+    }
+
+    .cal-input,
+    .cal-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: .88rem;
+        box-sizing: border-box;
+    }
+
+    .cal-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        border: 0;
+        border-radius: 10px;
+        background: #173f5f;
+        color: #fff;
+        font-weight: 700;
+        font-size: .85rem;
+        cursor: pointer;
+    }
+
+    .cal-btn:hover {
+        background: #20639b;
+    }
+
+    .cal-btn-sm {
+        padding: 6px 10px;
+        font-size: .78rem;
+        border-radius: 8px;
+    }
+
+    .cal-btn-danger {
+        background: #b42318;
+    }
+
+    .cal-btn-light {
+        background: #f2f4f7;
+        color: #344054;
+        text-decoration: none;
+    }
+
+    .cal-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 18px;
+    }
+
+    .cal-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .cal-card {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px 18px;
+        border: 1px solid #e4e7ec;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .cal-date-box {
+        min-width: 74px;
+        padding: 10px;
+        border-radius: 12px;
+        background: #173f5f;
+        color: #fff;
+        text-align: center;
+    }
+
+    .cal-date-box strong {
+        display: block;
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    .cal-date-box span {
+        font-size: .72rem;
+        text-transform: uppercase;
+        opacity: .9;
+    }
+
+    .cal-info {
+        flex: 1;
+        min-width: 220px;
+    }
+
+    .cal-info h3 {
+        margin: 4px 0;
+        color: #173f5f;
+        font-size: 1rem;
+    }
+
+    .cal-info p {
+        margin: 4px 0 0;
+        color: #667085;
+        font-size: .84rem;
+    }
+
+    .cal-badge {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: .7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .cal-badge.institucional {
+        background: #e8f7ee;
+        color: #167347;
+    }
+
+    .cal-badge.grupo {
+        background: #eaf2ff;
+        color: #2458a6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="cal-page">
+    <header class="cal-heading">
+        <div class="cal-icon"><i class="ri-calendar-event-line"></i></div>
+        <div>
+            <span class="cal-kicker">{{ 'EPF-11-01 · EPF-11-02' if puede_gestionar else 'EPF-11-02' }}</span>
+            <h1>Calendario Escolar</h1>
+            <p>Eventos institucionales, actividades académicas y fechas importantes.</p>
+        </div>
+    </header>
+
+    {% if puede_gestionar %}
+    <div class="cal-panel">
+        <h2><i class="ri-calendar-todo-line"></i> Registrar nuevo evento</h2>
+        <form method="POST" action="{{ url_for('admin_calendario') }}">
+            <input type="hidden" name="accion" value="crear">
+            <div class="cal-grid">
+                <div class="cal-field">
+                    <label>Título del evento *</label>
+                    <input type="text" name="titulo" class="cal-input" maxlength="150"
+                        placeholder="Ej. Acto cívico / Entrega de notas" required>
+                </div>
+                <div class="cal-field">
+                    <label>Fecha *</label>
+                    <input type="date" name="fecha" class="cal-input" required>
+                </div>
+                <div class="cal-field">
+                    <label>Alcance *</label>
+                    <select name="alcance" id="alcanceCrear" class="cal-select" onchange="toggleGrupoCrear()" required>
+                        <option value="institucional">Institucional (Toda la escuela)</option>
+                        <option value="grupo">Grupo específico</option>
+                    </select>
+                </div>
+                <div class="cal-field" id="campoGrupoCrear" style="display:none;">
+                    <label>Grupo *</label>
+                    <select name="id_grupo" class="cal-select">
+                        <option value="">Selecciona un grupo...</option>
+                        {% for g in grupos %}
+                        <option value="{{ g.id_grupo }}">{{ g.nombre }} - {{ g.nivel }} {{ g.seccion }} ({{
+                            g.anio_lectivo }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="cal-field" style="margin-top: 12px;">
+                <label>Descripción (opcional)</label>
+                <input type="text" name="descripcion" class="cal-input" maxlength="300"
+                    placeholder="Detalles adicionales del evento...">
+            </div>
+            <div style="margin-top: 14px;">
+                <button type="submit" class="cal-btn"><i class="ri-add-line"></i> Guardar evento</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="cal-panel">
+        <h2><i class="ri-calendar-2-line"></i> Próximos eventos y actividades</h2>
+
+        <form method="GET" action="{{ url_for('admin_calendario') }}" class="cal-filters">
+            <div class="cal-field">
+                <label>Filtrar por mes</label>
+                <input type="month" name="mes" value="{{ mes_filtro }}" class="cal-input">
+            </div>
+            <div class="cal-field">
+                <label>Alcance</label>
+                <select name="alcance" class="cal-select">
+                    <option value="">Todos</option>
+                    <option value="institucional" {% if alcance_filtro=='institucional' %}selected="selected" {% endif
+                        %}>Institucional</option>
+                    <option value="grupo" {% if alcance_filtro=='grupo' %}selected="selected" {% endif %}>Por grupo
+                    </option>
+                </select>
+            </div>
+            <button type="submit" class="cal-btn">Filtrar</button>
+            {% if mes_filtro or alcance_filtro %}
+            <a href="{{ url_for('admin_calendario') }}" class="cal-btn cal-btn-light">Limpiar</a>
+            {% endif %}
+        </form>
+
+        {% if eventos %}
+        <div class="cal-list">
+            {% for ev in eventos %}
+            <div class="cal-card">
+                <div class="cal-date-box">
+                    <strong>{{ ev.fecha.strftime('%d') }}</strong>
+                    <span>{{ ev.fecha.strftime('%m/%Y') }}</span>
+                </div>
+
+                <div class="cal-info">
+                    <span class="cal-badge {{ ev.alcance }}">
+                        {% if ev.alcance == 'institucional' %}
+                        Institucional
+                        {% else %}
+                        Grupo {{ ev.nombre_grupo }} ({{ ev.nivel }} {{ ev.seccion }})
+                        {% endif %}
+                    </span>
+                    <h3>{{ ev.titulo }}</h3>
+                    {% if ev.descripcion %}
+                    <p>{{ ev.descripcion }}</p>
+                    {% endif %}
+                </div>
+
+                {% if puede_gestionar %}
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button type="button" class="cal-btn cal-btn-sm cal-btn-light" data-id="{{ ev.id_evento }}"
+                        onclick="toggleEditar(this.dataset.id)">
+                        <i class="ri-edit-line"></i> Editar
+                    </button>
+                    <form method="POST" action="{{ url_for('admin_calendario') }}"
+                        onsubmit="return confirm('¿Eliminar este evento del calendario?');" style="margin:0;">
+                        <input type="hidden" name="accion" value="eliminar">
+                        <input type="hidden" name="id_evento" value="{{ ev.id_evento }}">
+                        <button type="submit" class="cal-btn cal-btn-sm cal-btn-danger"><i
+                                class="ri-delete-bin-line"></i></button>
+                    </form>
+                </div>
+
+                <form id="formEditar-{{ ev.id_evento }}" method="POST" action="{{ url_for('admin_calendario') }}"
+                    style="display:none; width:100%; margin-top:12px; padding-top:12px; border-top:1px solid #e4e7ec;">
+                    <input type="hidden" name="accion" value="editar">
+                    <input type="hidden" name="id_evento" value="{{ ev.id_evento }}">
+                    <div class="cal-grid">
+                        <div class="cal-field">
+                            <label>Título</label>
+                            <input type="text" name="titulo" value="{{ ev.titulo }}" class="cal-input" required>
+                        </div>
+                        <div class="cal-field">
+                            <label>Fecha</label>
+                            <input type="date" name="fecha" value="{{ ev.fecha.strftime('%Y-%m-%d') }}"
+                                class="cal-input" required>
+                        </div>
+                        <div class="cal-field">
+                            <label>Alcance</label>
+                            <select name="alcance" class="cal-select" required>
+                                <option value="institucional" {% if ev.alcance=='institucional' %}selected="selected" {%
+                                    endif %}>Institucional</option>
+                                <option value="grupo" {% if ev.alcance=='grupo' %}selected="selected" {% endif %}>Grupo
+                                </option>
+                            </select>
+                        </div>
+                        <div class="cal-field">
+                            <label>Grupo (si aplica)</label>
+                            <select name="id_grupo" class="cal-select">
+                                <option value="">Ninguno (Institucional)</option>
+                                {% for g in grupos %}
+                                <option value="{{ g.id_grupo }}" {% if ev.id_grupo==g.id_grupo %}selected="selected" {%
+                                    endif %}>{{ g.nombre }} - {{ g.nivel }} {{ g.seccion }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="cal-field" style="margin-top:8px;">
+                        <label>Descripción</label>
+                        <input type="text" name="descripcion" value="{{ ev.descripcion or '' }}" class="cal-input">
+                    </div>
+                    <div style="margin-top:10px; display:flex; gap:8px;">
+                        <button type="submit" class="cal-btn cal-btn-sm">Guardar cambios</button>
+                        <button type="button" class="cal-btn cal-btn-sm cal-btn-light" data-id="{{ ev.id_evento }}"
+                            onclick="toggleEditar(this.dataset.id)">Cancelar</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center; padding:32px; color:#667085;">
+            <i class="ri-calendar-close-line" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+            <strong>No hay eventos registrados para mostrar</strong>
+            <p style="margin:6px 0 0;">Prueba cambiando los filtros o espera a que se publiquen nuevas actividades.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    function toggleGrupoCrear() {
+        const sel = document.getElementById('alcanceCrear');
+        const campo = document.getElementById('campoGrupoCrear');
+        if (sel && campo) {
+            campo.style.display = (sel.value === 'grupo') ? 'block' : 'none';
+        }
+    }
+    function toggleEditar(id) {
+        const f = document.getElementById('formEditar-' + id);
+        if (f) {
+            f.style.display = (f.style.display === 'none') ? 'block' : 'none';
+        }
+    }
+</script>
+{% endblock %}

@@ -858,3 +858,63 @@ def consultar_reporte_asistencia(
             cursor.close()
 
         conexion.close()
+
+
+def obtener_hijos_por_padre_usuario(id_usuario):
+    try:
+        id_usuario = int(id_usuario)
+    except (TypeError, ValueError):
+        return []
+
+    if id_usuario <= 0:
+        return []
+
+    conexion = get_db_connection()
+    if not conexion:
+        return []
+
+    cursor = None
+    try:
+        cursor = conexion.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id_padre FROM padres WHERE id_usuario = %s LIMIT 1",
+            (id_usuario,)
+        )
+        padre = cursor.fetchone()
+        if not padre:
+            return []
+
+        cursor.execute(
+            """
+            SELECT
+                e.id_estudiante,
+                u.nombre,
+                u.apellido1,
+                u.apellido2,
+                u.correo,
+                g.id_grupo,
+                g.nombre AS nombre_grupo,
+                g.nivel,
+                g.seccion,
+                g.anio_lectivo
+            FROM padre_estudiante pe
+            INNER JOIN estudiantes e ON e.id_estudiante = pe.id_estudiante
+            INNER JOIN usuarios u ON u.id_usuario = e.id_usuario
+            INNER JOIN grupos g ON g.id_grupo = e.id_grupo
+            WHERE pe.id_padre = %s
+              AND u.estado = 'activo'
+            ORDER BY u.nombre ASC, u.apellido1 ASC
+            """,
+            (padre["id_padre"],)
+        )
+        return cursor.fetchall()
+
+    except Exception as error:
+        print(f"Error al consultar hijos del padre: {error}")
+        return []
+
+    finally:
+        if cursor:
+            cursor.close()
+        conexion.close()

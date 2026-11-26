@@ -1,0 +1,158 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Información académica de mis Hijos | Escuela EPF{% endblock %}
+
+{% block styles %}
+<style>
+    .info-acad { padding-bottom: 35px; color: #17202a; font-family: "DM Sans", sans-serif; }
+    .ia-heading { display: flex; align-items: center; gap: 15px; margin-bottom: 24px; }
+    .ia-icon { display: flex; width: 56px; height: 56px; align-items: center; justify-content: center; border-radius: 16px; background: #eaf2f8; color: #20639b; font-size: 1.7rem; }
+    .ia-kicker { color: #20639b; font-size: .7rem; font-weight: 800; letter-spacing: .12em; }
+    .ia-heading h1 { margin: 4px 0; color: #173f5f; font-family: "Montserrat", sans-serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+    .ia-heading p { margin: 0; color: #667085; font-size: .88rem; }
+
+    .ia-panel { margin-bottom: 20px; padding: 22px; border: 1px solid #e4e7ec; border-radius: 16px; background: #fff; box-shadow: 0 5px 20px rgba(23, 63, 95, .045); }
+    .ia-top-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+    .ia-select { min-width: 260px; padding: 10px 14px; border: 1px solid #d0d5dd; border-radius: 10px; background: #fff; color: #173f5f; font-weight: 700; font-size: .88rem; cursor: pointer; }
+
+    .ia-student-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #eef2f6; color: #667085; font-size: .83rem; }
+    .ia-student-meta strong { color: #173f5f; }
+
+    .ia-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .ia-kpi { padding: 18px; border: 1px solid #e4e7ec; border-radius: 14px; background: #fff; }
+    .ia-kpi span { display: block; color: #667085; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .ia-kpi strong { display: block; margin: 8px 0 4px; color: #173f5f; font-family: "Montserrat", sans-serif; font-size: 1.75rem; font-weight: 800; }
+    .ia-kpi small { color: #667085; font-size: .78rem; }
+
+    .ia-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .ia-table th { padding: 11px 12px; border-bottom: 1px solid #e4e7ec; color: #667085; font-size: .7rem; font-weight: 800; text-align: left; text-transform: uppercase; }
+    .ia-table td { padding: 12px; border-bottom: 1px solid #eef2f6; font-size: .86rem; color: #344054; }
+    .ia-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: .72rem; font-weight: 800; }
+    .ia-badge.ok { background: #e8f7ee; color: #167347; }
+    .ia-badge.risk { background: #fff0ef; color: #b42318; }
+
+    .ia-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .ia-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 10px; background: #f2f6fa; color: #173f5f; font-size: .82rem; font-weight: 700; text-decoration: none; }
+    .ia-btn:hover { background: #e2ecf5; }
+
+    @media (max-width: 900px) { .ia-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 540px) { .ia-kpis { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="info-acad">
+    <header class="ia-heading">
+        <div class="ia-icon"><i class="ri-graduation-cap-line"></i></div>
+        <div>
+            <span class="ia-kicker">EPF-10-02</span>
+            <h1>Información académica de mis Hijos</h1>
+            <p>Resumen general del rendimiento, asistencia y cumplimiento de tareas.</p>
+        </div>
+    </header>
+
+    {% if hijos and resumen %}
+    <div class="ia-panel">
+        <div class="ia-top-bar">
+            <div>
+                <h2 style="margin:0; color:#173f5f; font-size:1.15rem;">
+                    {{ resumen.estudiante.nombre }} {{ resumen.estudiante.apellido1 }} {{ resumen.estudiante.apellido2 or '' }}
+                </h2>
+            </div>
+
+            {% if hijos|length > 1 %}
+            <form method="GET" action="{{ url_for('padre_info_academica_hijos') }}">
+                <select name="id_estudiante" class="ia-select" onchange="this.form.submit()">
+                    {% for h in hijos %}
+                    <option value="{{ h.id_estudiante }}" {% if h.id_estudiante == hijo_seleccionado.id_estudiante %}selected{% endif %}>
+                        {{ h.nombre }} {{ h.apellido1 }} ({{ h.nombre_grupo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
+        </div>
+
+        <div class="ia-student-meta">
+            <span><strong>Grupo:</strong> {{ resumen.estudiante.nombre_grupo }} ({{ resumen.estudiante.nivel }} {{ resumen.estudiante.seccion }})</span>
+            <span><strong>Año lectivo:</strong> {{ resumen.estudiante.anio_lectivo }}</span>
+        </div>
+    </div>
+
+    <div class="ia-kpis">
+        <div class="ia-kpi">
+            <span>Promedio general</span>
+            <strong>{{ '%.2f'|format(resumen.promedio_general) if resumen.promedio_general is not none else '-' }}</strong>
+            <small>Nota mínima aprobación: 65</small>
+        </div>
+
+        <div class="ia-kpi">
+            <span>Asistencia</span>
+            <strong>{{ resumen.porcentaje_asistencia ~ '%' if resumen.porcentaje_asistencia is not none else '-' }}</strong>
+            <small>{{ resumen.total_asistencias }} registros en total</small>
+        </div>
+
+        <div class="ia-kpi">
+            <span>Tareas entregadas</span>
+            <strong>{{ resumen.tareas_entregadas }} / {{ resumen.tareas_totales }}</strong>
+            <small>Actividades del grupo</small>
+        </div>
+
+        <div class="ia-kpi">
+            <span>Materias evaluadas</span>
+            <strong>{{ resumen.materias|length }}</strong>
+            <small>Con notas registradas</small>
+        </div>
+    </div>
+
+    <div class="ia-panel">
+        <h2 style="margin:0; color:#173f5f; font-size:1rem;">Resumen por materia</h2>
+
+        {% if resumen.materias %}
+        <table class="ia-table">
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Promedio</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in resumen.materias %}
+                <tr>
+                    <td><strong>{{ m.materia }}</strong></td>
+                    <td>{{ '%.2f'|format(m.promedio) }}</td>
+                    <td>
+                        {% if m.promedio >= 65 %}
+                        <span class="ia-badge ok">Aprobado</span>
+                        {% else %}
+                        <span class="ia-badge risk">Requiere apoyo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color:#667085; text-align:center; padding:20px 0;">Aún no hay calificaciones registradas para este estudiante.</p>
+        {% endif %}
+
+        <div class="ia-links">
+            <a href="{{ url_for('padre_asistencia_hijos', id_estudiante=hijo_seleccionado.id_estudiante) }}" class="ia-btn">
+                <i class="ri-calendar-check-line"></i> Ver detalle de asistencia
+            </a>
+            <a href="{{ url_for('padre_tareas') }}" class="ia-btn">
+                <i class="ri-task-line"></i> Ver tareas de mis hijos
+            </a>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="ia-panel" style="text-align:center; color:#667085; padding:32px;">
+        <i class="ri-user-search-line" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+        <strong>No tienes hijos vinculados a tu cuenta</strong>
+        <p style="margin:6px 0 0;">Solicita al personal administrativo la vinculación en Vínculos Familiares.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,433 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Asistencia de mis Hijos | Escuela EPF{% endblock %}
+
+{% block styles %}
+<style>
+    .mi-asistencia {
+        padding-bottom: 35px;
+        color: #17202a;
+        font-family: "DM Sans", sans-serif;
+    }
+
+    .mi-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .mi-icon {
+        display: flex;
+        width: 56px;
+        height: 56px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: #eaf2f8;
+        color: #20639b;
+        font-size: 1.7rem;
+    }
+
+    .mi-kicker {
+        color: #20639b;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+    }
+
+    .mi-heading h1 {
+        margin: 4px 0;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-weight: 800;
+    }
+
+    .mi-heading p {
+        margin: 0;
+        color: #667085;
+        font-size: .88rem;
+    }
+
+    .mi-panel {
+        margin-bottom: 22px;
+        padding: 23px;
+        border: 1px solid #e4e7ec;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(23, 63, 95, .045);
+    }
+
+    .mi-panel h2 {
+        margin: 0;
+        color: #173f5f;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .mi-description {
+        margin: 7px 0 18px;
+        color: #667085;
+        font-size: .82rem;
+    }
+
+    .hijo-selector-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #eef2f6;
+    }
+
+    .hijo-select {
+        min-width: 260px;
+        padding: 10px 14px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #173f5f;
+        font-family: "DM Sans", sans-serif;
+        font-size: .88rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .mi-profile {
+        padding: 18px;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .mi-profile strong {
+        display: block;
+        color: #173f5f;
+        font-size: 1.05rem;
+    }
+
+    .mi-profile span {
+        display: block;
+        margin-top: 6px;
+        color: #667085;
+        font-size: .82rem;
+    }
+
+    .mi-stats {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .mi-stat {
+        padding: 18px;
+        border: 1px solid #e4e7ec;
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .mi-stat span {
+        display: block;
+        color: #667085;
+        font-size: .76rem;
+        font-weight: 700;
+    }
+
+    .mi-stat strong {
+        display: block;
+        margin-top: 9px;
+        color: #173f5f;
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+    }
+
+    .mi-stat.presentes strong { color: #167347; }
+    .mi-stat.ausencias strong { color: #b42318; }
+    .mi-stat.tardanzas strong { color: #975900; }
+    .mi-stat.justificados strong { color: #2458a6; }
+
+    .mi-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #e4e7ec;
+        border-radius: 12px;
+    }
+
+    .mi-table {
+        width: 100%;
+        min-width: 620px;
+        border-collapse: collapse;
+    }
+
+    .mi-table thead {
+        background: #f8fafc;
+    }
+
+    .mi-table th {
+        padding: 13px;
+        border-bottom: 1px solid #e4e7ec;
+        color: #667085;
+        font-size: .68rem;
+        font-weight: 800;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .mi-table td {
+        padding: 13px;
+        border-bottom: 1px solid #eef2f6;
+        color: #344054;
+        font-size: .82rem;
+        vertical-align: top;
+    }
+
+    .mi-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .mi-status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: #f2f4f7;
+        color: #344054;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .mi-status.presente { background: #e8f7ee; color: #167347; }
+    .mi-status.ausente { background: #fff0ef; color: #b42318; }
+    .mi-status.tardanza { background: #fff5df; color: #975900; }
+    .mi-status.justificado { background: #eaf2ff; color: #2458a6; }
+
+    .mi-alert {
+        margin-bottom: 16px;
+        padding: 12px 15px;
+        border: 1px solid #f1c4c4;
+        border-radius: 10px;
+        background: #fff1f1;
+        color: #b42318;
+        font-size: .85rem;
+    }
+
+    .mi-empty {
+        padding: 30px 15px;
+        color: #667085;
+        text-align: center;
+    }
+
+    .mi-empty i {
+        display: block;
+        margin-bottom: 9px;
+        font-size: 2rem;
+    }
+
+    @media (max-width: 1050px) {
+        .mi-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .mi-panel { padding: 16px; }
+        .mi-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .mi-stat { padding: 14px; }
+    }
+
+     .hijo-selector-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #eef2f6;
+    }
+
+    .hijo-select {
+        min-width: 260px;
+        padding: 10px 14px;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #fff;
+        color: #173f5f;
+        font-family: "DM Sans", sans-serif;
+        font-size: .88rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="mi-asistencia">
+
+    <header class="mi-heading">
+        <div class="mi-icon">
+            <i class="ri-parent-line"></i>
+        </div>
+
+        <div>
+            <span class="mi-kicker">EPF-10-01</span>
+            <h1>Asistencia de mis Hijos</h1>
+            <p>
+                Consulta el historial de asistencias, ausencias y llegadas tardías de tus hijos vinculados.
+            </p>
+        </div>
+    </header>
+
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+    <div class="mi-alert">
+        {{ mensaje }}
+    </div>
+    {% endfor %}
+
+    {% if hijos and hijo_seleccionado %}
+
+    <section class="mi-panel">
+        {% if hijos|length > 1 %}
+        <div class="hijo-selector-bar">
+            <div>
+                <h2>Seleccionar hijo</h2>
+                <p class="mi-description" style="margin-bottom: 0;">
+                    Tienes {{ hijos|length }} estudiantes vinculados a tu cuenta.
+                </p>
+            </div>
+
+            <form method="GET" action="{{ url_for('padre_asistencia_hijos') }}">
+                <select name="id_estudiante" class="hijo-select" onchange="this.form.submit()">
+                    {% for h in hijos %}
+                    <option value="{{ h.id_estudiante }}" {% if h.id_estudiante == hijo_seleccionado.id_estudiante %}selected{% endif %}>
+                        {{ h.nombre }} {{ h.apellido1 }} ({{ h.nombre_grupo }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+        {% else %}
+        <h2>Información del estudiante</h2>
+        <p class="mi-description">
+            Datos del expediente académico vinculado a tu cuenta.
+        </p>
+        {% endif %}
+
+        <div class="mi-profile">
+            <strong>
+                {{ hijo_seleccionado.nombre }}
+                {{ hijo_seleccionado.apellido1 }}
+                {% if hijo_seleccionado.apellido2 %}
+                {{ hijo_seleccionado.apellido2 }}
+                {% endif %}
+            </strong>
+
+            <span>
+                Correo: {{ hijo_seleccionado.correo }}
+            </span>
+
+            <span>
+                Grupo: {{ hijo_seleccionado.nombre_grupo }}
+                · {{ hijo_seleccionado.nivel }}
+                {{ hijo_seleccionado.seccion }}
+                · Año lectivo {{ hijo_seleccionado.anio_lectivo }}
+            </span>
+        </div>
+    </section>
+
+    <div class="mi-stats">
+        <div class="mi-stat">
+            <span>Total de registros</span>
+            <strong>{{ resumen.total }}</strong>
+        </div>
+
+        <div class="mi-stat presentes">
+            <span>Presentes</span>
+            <strong>{{ resumen.presente }}</strong>
+        </div>
+
+        <div class="mi-stat ausencias">
+            <span>Ausencias</span>
+            <strong>{{ resumen.ausente }}</strong>
+        </div>
+
+        <div class="mi-stat tardanzas">
+            <span>Llegadas tardías</span>
+            <strong>{{ resumen.tardanza }}</strong>
+        </div>
+
+        <div class="mi-stat justificados">
+            <span>Justificados</span>
+            <strong>{{ resumen.justificado }}</strong>
+        </div>
+    </div>
+
+    <section class="mi-panel">
+        <h2>Detalle de asistencia</h2>
+
+        <p class="mi-description">
+            Los registros aparecen del más reciente al más antiguo.
+        </p>
+
+        {% if historial %}
+        <div class="mi-table-wrap">
+            <table class="mi-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for registro in historial %}
+                    <tr>
+                        <td>
+                            {{ registro.fecha.strftime('%d/%m/%Y') }}
+                        </td>
+
+                        <td>
+                            <span class="mi-status {{ registro.estado }}">
+                                {{ registro.estado|capitalize }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ registro.observacion or 'Sin observaciones' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="mi-empty">
+            <i class="ri-calendar-close-line"></i>
+            <strong>Aún no hay asistencias registradas</strong>
+            <p>
+                Cuando el docente registre la asistencia del estudiante,
+                aparecerá en esta sección.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    {% else %}
+    <section class="mi-panel">
+        <div class="mi-empty">
+            <i class="ri-user-search-line"></i>
+            <strong>No tienes hijos vinculados a tu cuenta</strong>
+            <p>
+                Solicita al personal administrativo que realice la vinculación
+                en el módulo de Vínculos Familiares.
+            </p>
+        </div>
+    </section>
+    {% endif %}
+
+</section>
+{% endblock %}
